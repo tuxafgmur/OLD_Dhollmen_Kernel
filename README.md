@@ -6,10 +6,8 @@ Samsung Galaxy Tab 2 Kernel version 3.0.31
 Compatible Cyanogenmod 10.1 - 4.2.2 
 
 
-*** HOW TO BUILD KERNEL ***
-
 1. How to Build:
-   ------------
+   
 
   - get Toolchain
       From Codesourcery site( http://www.codesourcery.com )
@@ -22,16 +20,16 @@ Compatible Cyanogenmod 10.1 - 4.2.2
       make ARCH=arm {defconfig_file}
       make ARCH=arm
  
-   ---------------
+   
    defconfig_files
-   ---------------
-
+   
       - dhollmen_P51XX_defconfig     : Normal Tab2 10.1 inch
       - dhollmen_P31XX_defconfig     : Normal Tab2  7   inch
       
       - dhollmen_P51XXHOT_defconfig  : Overcloked Tab2 10.1 inch
       - dhollmen_P31XXHOT_defconfig  : Overcloked Tab2  7   inch
- 
+
+
 2. Output files
    ------------
    - kernel  : arch/arm/boot/zImage
