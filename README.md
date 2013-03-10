@@ -31,6 +31,6 @@ Compatible Cyanogenmod 10.1 - 4.2.2
 
 
 2. Output files
-   ------------
+   
    - kernel  : arch/arm/boot/zImage
    - modules : drivers/*/*.ko
