@@ -6,64 +6,63 @@ Lastly synchronized with CyanogenMod / android_kernel_samsung_espresso10
 
 Credits to Kernel Team, Google, Samsung and anyone else with merit not listed here.
 
-
-
 HOW TO COMPILE
 
-	# Sets environment
-	export DIRE=$PWD/DhollmenCM
-	export KERNELDIR=$DIRE/DhollmenCM_kernel
-	export ARCH=arm
-	export CROSS_DIR=/opt/toolchains/arm-2010q1/bin
-	export CROSS_COMPILE=$CROSS_DIR/arm-none-linux-gnueabi-
+# Sets environment
+export DIRE=$PWD/DhollmenCM
+export KERNELDIR=$DIRE/DhollmenCM_kernel
+export ARCH=arm
+export CROSS_DIR=/opt/toolchains/arm-2010q1/bin
+export CROSS_COMPILE=$CROSS_DIR/arm-none-linux-gnueabi-
 
-	# Create directories
-	mkdir -p $DIRE
-	mkdir -p $DIRE/Modules
-	mkdir -p $DIRE/Zimage 
-	mkdir -p $KERNELDIR 
-	mkdir -p $DIRE/PowerVRSGX
+# Create directories
+mkdir -p $DIRE
+mkdir -p $DIRE/Modules
+mkdir -p $DIRE/Zimage 
+mkdir -p $KERNELDIR 
+mkdir -p $DIRE/PowerVRSGX
 
-	# Get omaplfb sources
-	cd 	  $DIRE/PowerVRSGX
-	git clone git://git.omapzoom.org/repo/graphics/omaplfb.git -b omaplfb-1.9 --depth 1
-	git clone git://git.omapzoom.org/device/ti/proprietary-open.git -b d-jb-mr1-release --depth 1 
+# Get omaplfb sources
+cd 	  $DIRE/PowerVRSGX
+git clone git://git.omapzoom.org/repo/graphics/omaplfb.git -b omaplfb-1.9 --depth 1
+git clone git://git.omapzoom.org/device/ti/proprietary-open.git -b d-jb-mr1-release --depth 1 
 
-	# Get kernel sources
-	cd $KERNELDIR
-	git clone https://github.com/Dhollmen/DhollmenCM_kernel.git
+# Get kernel sources
+cd $KERNELDIR
+git clone https://github.com/Dhollmen/DhollmenCM_kernel.git
 
-	# Copy config file to comile
-	cp 	  ./arch/arm/configs/<file_name_config>  .config
+# Copy config file to comile
+cp  ./arch/arm/configs/<file_name_config>  .config
 
-		NOTE: 'file_name_config' can be:
-			dhollmen_P51XX_defconfig		P51xx device normal version
-			dhollmen_P51XXHOT_defconfig		P51xx device  HOT   version
-			dhollmen_P31XX_defconfig		P31xx device normal version
-			dhollmen_P31XXHOT_defconfig		P31xx device  HOT   version
+	NOTE: 'file_name_config' can be:
+	
+	dhollmen_P51XX_defconfig	   P51xx device normal
+	dhollmen_P51XXHOT_defconfig	   P51xx device  HOT  
+	dhollmen_P31XX_defconfig	   P31xx device normal
+	dhollmen_P31XXHOT_defconfig	   P31xx device  HOT  
 
-	# Compile
-	make  ARCH=arm -j<n>
-		
-		NOTE: 'n' may be the number of CPU cores + 1
+# Compile
+make  ARCH=arm -j<n>
+	
+	NOTE: 'n' may be the number of CPU cores + 1
 
-	# Copy kernel image and modules
-	rm -fr $DIRE/Modules/*
-	cp     ./arch/arm/boot/zImage $DIRE/Zimage/
-	find   . -type f -name *.ko -exec cp {} $DIRE/Modules/ \;
+# Copy kernel image and modules
+rm -fr $DIRE/Modules/*
+cp   ./arch/arm/boot/zImage $DIRE/Zimage/
+find . -type f -name *.ko -exec cp {} $DIRE/Modules/ \;
 
-	# Compile omaplfb
-	cd 	  $DIRE/PowerVRSGX
-				
-	rm -fr  eurasia_km
-	tar -xzf proprietary-open/omap4/sgx_src/eurasia_km.tgz
-	rm -rf eurasia_km/eurasiacon/binary*
+# Compile omaplfb
+cd 	$DIRE/PowerVRSGX
+			
+rm -fr  eurasia_km
+tar -xzf proprietary-open/omap4/sgx_src/eurasia_km.tgz
+rm -rf eurasia_km/eurasiacon/binary*
 
-	cd eurasia_km/eurasiacon/build/linux2/omap4430_android/
-	make ARCH=arm TARGET_PRODUCT="blaze_tablet" BUILD=release TARGET_SGX=540 PLATFORM_VERSION=4.0
+cd eurasia_km/eurasiacon/build/linux2/omap4430_android/
+make ARCH=arm TARGET_PRODUCT="blaze_tablet" BUILD=release TARGET_SGX=540 PLATFORM_VERSION=4.0
 
-	# Copy module and end
-	cp ../../../binary2_540_120_omap4430_android_release/target/pvrsrvkm_sgx540_120.ko $DIRE/Modules
-	$CROSS_DIR/arm-none-linux-gnueabi-strip --strip-unneeded $DIRE/Modules/*.ko
+# Copy module and end
+cp ../../../binary2_540_120_omap4430_android_release/target/pvrsrvkm_sgx540_120.ko $DIRE/Modules
+$CROSS_DIR/arm-none-linux-gnueabi-strip --strip-unneeded $DIRE/Modules/*.ko
 
-	cd $DIRE
+cd $DIRE
