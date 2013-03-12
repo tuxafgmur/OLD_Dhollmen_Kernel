@@ -876,7 +876,7 @@ static ssize_t store_gpu_top_speed(struct cpufreq_policy *policy, const char *bu
 #else
 	if (prev_gpu_top_speed < 0 || prev_gpu_top_speed > 1) {
 #endif
-		pr_info("GPU top speed out of range\n");	
+		pr_info("GPU_oc: frequency value out of range\n");	
 		return size;
 	}
 
@@ -884,16 +884,16 @@ static ssize_t store_gpu_top_speed(struct cpufreq_policy *policy, const char *bu
 	
 	if (gpu_top_speed < 0) {
 		gpu_top_speed = 0;
-		pr_info("GPU top speed value out of range: changed to 0\n");	
+		pr_info("GPU_oc: frequency value out of range set to 0\n");	
 	}
 #ifdef CONFIG_OMAP4430_GPU_OVERCLOCK
 	if (gpu_top_speed > 2) {
 		gpu_top_speed = 2;
-		pr_info("GPU top speed value out of range: changed to 2\n");	
+		pr_info("GPU_oc: frequency value out of range set to 2\n");	
 #else	
 	if (gpu_top_speed > 1) {
 		gpu_top_speed = 1;
-		pr_info("GPU top speed value out of range: changed to 1\n");	
+		pr_info("GPU_oc: frequency value out of range set to 1\n");	
 #endif	
 	}
 	
@@ -903,14 +903,14 @@ static ssize_t store_gpu_top_speed(struct cpufreq_policy *policy, const char *bu
     dev = omap_hwmod_name_get_dev("gpu");
 	dummy1 = opp_disable(dev, gpu_freqs[prev_gpu_top_speed]);
 	dummy2 = opp_enable(dev, gpu_freqs[gpu_top_speed]);
-	pr_info("GPU frequency is now %lu Hz\n", gpu_freqs[gpu_top_speed]);
+	pr_info("GPU_oc: frequency is now %lu Hz\n", gpu_freqs[gpu_top_speed]);
 	
 	return size;
 	
 }
 
 static struct freq_attr omap_cpufreq_attr_gpu_top_speed = {
-	.attr = { .name = "gpu_top_speed",
+	.attr = { .name = "gpu_oc",
 	.mode = 0644,
 	},
 	.show = show_gpu_top_speed,
