@@ -103,9 +103,9 @@ static u64 hispeed_freq;
 
 /* Go to hi speed when CPU load at or above this value. */
 #ifdef CONFIG_OMAP4430_CPU_OVERCLOCK
-#define DEFAULT_GO_HISPEED_LOAD 95
-#else
 #define DEFAULT_GO_HISPEED_LOAD 85
+#else
+#define DEFAULT_GO_HISPEED_LOAD 95
 #endif
 static unsigned long go_hispeed_load;
 /*
