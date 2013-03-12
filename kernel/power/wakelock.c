@@ -662,14 +662,18 @@ int wake_lock_active(struct wake_lock *lock)
 }
 EXPORT_SYMBOL(wake_lock_active);
 
+#ifdef CONFIG_WAKELOCK_STAT
 static int wakelock_stats_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, wakelock_stats_show, NULL);
 }
+#endif
 
 static const struct file_operations wakelock_stats_fops = {
 	.owner = THIS_MODULE,
+#ifdef CONFIG_WAKELOCK_STAT	
 	.open = wakelock_stats_open,
+#endif		
 	.read = seq_read,
 	.llseek = seq_lseek,
 	.release = single_release,
