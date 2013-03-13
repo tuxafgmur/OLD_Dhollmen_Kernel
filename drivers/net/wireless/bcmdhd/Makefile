@@ -190,7 +190,7 @@ DHDCFLAGS += -DWLAN_REGION_CODE=$(REGION_CODE)
 
 #EXTRA_LDFLAGS += --strip-debug
 
-EXTRA_CFLAGS += $(DHDCFLAGS) -DDHD_DEBUG
+EXTRA_CFLAGS += $(DHDCFLAGS) 
 EXTRA_CFLAGS += -DSRCBASE=\"$(src)\"
 EXTRA_CFLAGS += -I$(src)/include/ -I$(src)/
 KBUILD_CFLAGS += -I$(LINUXDIR)/include -I$(shell pwd)
