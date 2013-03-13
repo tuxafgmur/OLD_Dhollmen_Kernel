@@ -1189,7 +1189,6 @@ static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq,
 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
 }
 
-
 /**
  * cpufreq_quick_get - get the CPU frequency (in kHz) from policy->cur
  * @cpu: CPU number
@@ -1198,19 +1197,21 @@ static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq,
  * Return value will be same as what is shown in scaling_cur_freq in sysfs.
  */
 unsigned int cpufreq_quick_get(unsigned int cpu)
-{
-	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+{ 
+	struct cpufreq_policy *policy;
 	unsigned int ret_freq = 0;
 
+	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
+		return cpufreq_driver->get(cpu);
+
+	policy = cpufreq_cpu_get(cpu);
 	if (policy) {
 		ret_freq = policy->cur;
-		cpufreq_cpu_put(policy);
+		cpufreq_cpu_put(policy); 
 	}
-
-	return ret_freq;
+		return ret_freq;
 }
 EXPORT_SYMBOL(cpufreq_quick_get);
-
 
 static unsigned int __cpufreq_get(unsigned int cpu)
 {
