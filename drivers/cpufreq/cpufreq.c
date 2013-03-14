@@ -1720,7 +1720,21 @@ int cpufreq_update_policy(unsigned int cpu)
 	pr_debug("updating policy for CPU %u\n", cpu);
 	memcpy(&policy, data, sizeof(struct cpufreq_policy));
 	policy.min = data->user_policy.min;
-	policy.max = data->user_policy.max;
+	
+	/*
+	 * DhollmenCM - tuxafgmur. As I commented in XDA forum kernel's, governors must regulate
+	 * the optimal CPU's operation, according to the table of frequencies available. 
+	 * Governors are based an available table by the CPU frequencies for their regulation.
+	 * When we alter this table, the governor continues to perform well its function,
+	 * but without using the limit we have imposed by 'scaling_max_freq' param.
+	 * Then, we must resort to external libraries to compensate this issue.
+	 * I think, at this, it's the best to adjust the governor to work within the limits
+	 * we allowed, once we have altered the frequency table including a overclock 
+	 * Thus, it becomes unnecessary to use an external library.
+	 */ 
+	
+	/* policy.max = data->user_policy.max; */
+	
 	policy.policy = data->user_policy.policy;
 	policy.governor = data->user_policy.governor;
 
