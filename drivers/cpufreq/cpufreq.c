@@ -876,7 +876,7 @@ err_out_kobj_put:
 static int cpufreq_add_dev(struct sys_device *sys_dev)
 {
 	unsigned int cpu = sys_dev->id;
-	int ret = 0, found = 0;
+	int ret = 0;
 	struct cpufreq_policy *policy;
 	unsigned long flags;
 	unsigned int j;
@@ -916,6 +916,7 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
 		goto err_free_cpumask;
 
 	policy->cpu = cpu;
+	policy->governor = CPUFREQ_DEFAULT_GOVERNOR; 
 	cpumask_copy(policy->cpus, cpumask_of(cpu));
 
 	/* Initially set CPU itself as the policy_cpu */
@@ -926,20 +927,6 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
 	init_completion(&policy->kobj_unregister);
 	INIT_WORK(&policy->update, handle_update);
 
-	/* Set governor before ->init, so that driver could check it */
-#ifdef CONFIG_HOTPLUG_CPU
-	for_each_online_cpu(sibling) {
-		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
-		if (cp && cp->governor &&
-		    (cpumask_test_cpu(cpu, cp->related_cpus))) {
-			policy->governor = cp->governor;
-			found = 1;
-			break;
-		}
-	}
-#endif
-	if (!found)
-		policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
 	/* call driver. From then on the cpufreq must be able
 	 * to accept all calls to ->verify and ->setpolicy for this CPU
 	 */
