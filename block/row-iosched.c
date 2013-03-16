@@ -195,13 +195,11 @@ static void kick_queue(struct work_struct *work)
 	struct row_data *rd =
 		container_of(read_data, struct row_data, read_idle);
 
-	row_log_rowq(rd, rd->curr_queue, "Performing delayed work");
 	/* Mark idling process as done */
 	rd->row_queues[rd->curr_queue].rqueue.idle_data.begin_idling = false;
 
-	if (!(rd->nr_reqs[0] + rd->nr_reqs[1]))
-		row_log(rd->dispatch_queue, "No requests in scheduler");
-	else {
+	if ((rd->nr_reqs[0] + rd->nr_reqs[1]))
+	{
 		spin_lock_irq(rd->dispatch_queue->queue_lock);
 		__blk_run_queue(rd->dispatch_queue);
 		spin_unlock_irq(rd->dispatch_queue->queue_lock);
@@ -225,7 +223,6 @@ static inline void row_restart_disp_cycle(struct row_data *rd)
 		rd->row_queues[i].rqueue.nr_dispatched = 0;
 
 	rd->curr_queue = ROWQ_PRIO_HIGH_READ;
-	row_log(rd->dispatch_queue, "Restarting cycle");
 }
 
 static inline void row_get_next_queue(struct row_data *rd)
@@ -261,15 +258,12 @@ static void row_add_request(struct request_queue *q,
 				rqueue->idle_data.last_insert_time)) <
 				rd->read_idle.freq) {
 			rqueue->idle_data.begin_idling = true;
-			row_log_rowq(rd, rqueue->prio, "Enable idling");
 		} else {
 			rqueue->idle_data.begin_idling = false;
-			row_log_rowq(rd, rqueue->prio, "Disable idling");
 		}
 
 		rqueue->idle_data.last_insert_time = ktime_get();
 	}
-	row_log_rowq(rd, rqueue->prio, "added request");
 }
 
 /*
@@ -304,8 +298,6 @@ static void row_dispatch_insert(struct row_data *rd)
 	elv_dispatch_add_tail(rd->dispatch_queue, rq);
 	rd->row_queues[rd->curr_queue].rqueue.nr_dispatched++;
 	row_clear_rowq_unserved(rd, rd->curr_queue);
-	row_log_rowq(rd, rd->curr_queue, " Dispatched request nr_disp = %d",
-		     rd->row_queues[rd->curr_queue].rqueue.nr_dispatched);
 }
 
 /*
@@ -320,10 +312,8 @@ static int row_choose_queue(struct row_data *rd)
 {
 	int prev_curr_queue = rd->curr_queue;
 
-	if (!(rd->nr_reqs[0] + rd->nr_reqs[1])) {
-		row_log(rd->dispatch_queue, "No more requests in scheduler");
+	if (!(rd->nr_reqs[0] + rd->nr_reqs[1]))
 		return 0;
-	}
 
 	row_get_next_queue(rd);
 
@@ -364,8 +354,6 @@ static int row_dispatch_requests(struct request_queue *q, int force)
 	for (i = 0; i < currq; i++) {
 		if (row_rowq_unserved(rd, i) &&
 		    !list_empty(&rd->row_queues[i].rqueue.fifo)) {
-			row_log_rowq(rd, currq,
-				" Preemting for unserved rowq%d", i);
 			rd->curr_queue = i;
 			row_dispatch_insert(rd);
 			ret = 1;
@@ -376,7 +364,6 @@ static int row_dispatch_requests(struct request_queue *q, int force)
 	if (rd->row_queues[currq].rqueue.nr_dispatched >=
 	    rd->row_queues[currq].disp_quantum) {
 		rd->row_queues[currq].rqueue.nr_dispatched = 0;
-		row_log_rowq(rd, currq, "Expiring rqueue");
 		ret = row_choose_queue(rd);
 		if (ret)
 			row_dispatch_insert(rd);
@@ -390,11 +377,7 @@ static int row_dispatch_requests(struct request_queue *q, int force)
 			if (force) {
 				(void)cancel_delayed_work(
 				&rd->read_idle.idle_work);
-				row_log_rowq(rd, currq,
-					"Canceled delayed work - forced dispatch");
 			} else {
-				row_log_rowq(rd, currq,
-						 "Delayed work pending. Exiting");
 				goto done;
 			}
 		}
@@ -404,16 +387,9 @@ static int row_dispatch_requests(struct request_queue *q, int force)
 			if (!queue_delayed_work(rd->read_idle.idle_workqueue,
 						&rd->read_idle.idle_work,
 						rd->read_idle.idle_time)) {
-				row_log_rowq(rd, currq,
-					     "Work already on queue!");
-				pr_err("ROW_BUG: Work already on queue!");
 			} else
-				row_log_rowq(rd, currq,
-				     "Scheduled delayed work. exiting");
 			goto done;
 		} else {
-			row_log_rowq(rd, currq,
-				     "Currq empty. Choose next queue");
 			ret = row_choose_queue(rd);
 			if (!ret)
 				goto done;
