@@ -190,11 +190,9 @@ static ssize_t clock_store(struct device *dev, struct device_attribute *attr,
 			|| _data == 1008000
 #ifdef CONFIG_OMAP4430_TOP_CPU
 			|| _data == 1200000 
-#ifdef CONFIG_OMAP4430_CPU_OVERCLOCK		    
 			|| _data == 1350000
 			|| _data == 1420000
 			|| _data == 1480000
-#endif
 #endif
 		)
 		ir_data.cpu_frequency = _data;

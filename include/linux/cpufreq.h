@@ -85,22 +85,22 @@ struct cpufreq_real_policy {
 };
 
 struct cpufreq_policy {
-	cpumask_var_t		cpus;	/* CPUs requiring sw coordination */
-	cpumask_var_t		related_cpus; /* CPUs with any coordination */
-	unsigned int		shared_type; /* ANY or ALL affected CPUs
-						should set cpufreq */
-	unsigned int		cpu;    /* cpu nr of registered CPU */
+	cpumask_var_t		cpus;			/* CPUs requiring sw coordination */
+	cpumask_var_t		related_cpus; 	/* CPUs with any coordination */
+	unsigned int		shared_type; 	/* ANY or ALL affected CPUs
+										 * should set cpufreq */
+	unsigned int		cpu;    		/* cpu nr of registered CPU */
 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
 
 	unsigned int		min;    /* in kHz */
 	unsigned int		max;    /* in kHz */
 	unsigned int		cur;    /* in kHz, only needed if cpufreq
-					 * governors are used */
+								 * governors are used */
 	unsigned int		policy; /* see above */
 	struct cpufreq_governor	*governor; /* see below */
 
 	struct work_struct	update; /* if update_policy() needs to be
-					 * called, but you're in IRQ context */
+								 * called, but you're in IRQ context */
 
 	struct cpufreq_real_policy	user_policy;
 
@@ -241,12 +241,12 @@ struct cpufreq_driver {
 /* flags */
 
 #define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if
-					 * all ->init() calls failed */
+									 * all ->init() calls failed */
 #define CPUFREQ_CONST_LOOPS	0x02	/* loops_per_jiffy or other kernel
-					 * "constants" aren't affected by
-					 * frequency transitions */
+									 * "constants" aren't affected by
+									 * frequency transitions */
 #define CPUFREQ_PM_NO_WARN	0x04	/* don't warn on suspend/resume speed
-					 * mismatches */
+									 * mismatches */
 
 int cpufreq_register_driver(struct cpufreq_driver *driver_data);
 int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
@@ -286,7 +286,7 @@ __ATTR(_name, _perm, show_##_name, NULL)
 
 #define cpufreq_freq_attr_rw(_name)		\
 static struct freq_attr _name =			\
-__ATTR(_name, 0644, show_##_name, store_##_name)
+__ATTR(_name, 0664, show_##_name, store_##_name)
 
 struct global_attr {
 	struct attribute attr;
@@ -302,7 +302,7 @@ __ATTR(_name, 0444, show_##_name, NULL)
 
 #define define_one_global_rw(_name)		\
 static struct global_attr _name =		\
-__ATTR(_name, 0644, show_##_name, store_##_name)
+__ATTR(_name, 0664, show_##_name, store_##_name)
 
 
 /*********************************************************************
@@ -335,7 +335,6 @@ static inline unsigned int cpufreq_quick_get(unsigned int cpu)
 /*********************************************************************
  *                       CPUFREQ DEFAULT GOVERNOR                    *
  *********************************************************************/
-
 
 /*
   Performance governor is fallback governor if any other gov failed to
@@ -385,8 +384,7 @@ extern struct cpufreq_governor cpufreq_gov_hotplug;
 
 struct cpufreq_frequency_table {
 	unsigned int	index;     /* any */
-	unsigned int	frequency; /* kHz - doesn't need to be in ascending
-				    * order */
+	unsigned int	frequency; /* kHz - doesn't need to be in ascending	order */
 };
 
 int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
