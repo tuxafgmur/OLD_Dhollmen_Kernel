@@ -846,7 +846,7 @@ out:
 
 struct freq_attr omap_cpufreq_attr_screen_off_freq = {
 	.attr = { .name = "screen_off_max_freq",
-		  .mode = 0644,
+		  .mode = 0664,
 		},
 	.show = show_screen_off_freq,
 	.store = store_screen_off_freq,
