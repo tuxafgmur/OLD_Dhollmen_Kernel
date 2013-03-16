@@ -36,12 +36,11 @@ git clone https://github.com/Dhollmen/DhollmenCM_kernel.git
 # Copy config file to comile
 cp  ./arch/arm/configs/<file_name_config>  .config
 
-	NOTE: 'file_name_config' can be:
+	NOTE: 'file_name_config' can be one of:
 	
-	dhollmen_P51XX_defconfig	   P51xx device normal
-	dhollmen_P51XXHOT_defconfig	   P51xx device  HOT  
-	dhollmen_P31XX_defconfig	   P31xx device normal
-	dhollmen_P31XXHOT_defconfig	   P31xx device  HOT  
+	dhollmen_P51XX_defconfig	   P51xx device
+	
+	dhollmen_P31XX_defconfig	   P31xx device
 
 # Compile
 make ARCH=arm -j<n>
