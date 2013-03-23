@@ -966,13 +966,11 @@ static chanspec_t wl_cfg80211_get_shared_freq(struct wiphy *wiphy)
 static struct net_device* wl_cfg80211_add_monitor_if(char *name)
 {
 #if defined(WLP2P) && defined(WL_ENABLE_P2P_IF)
-	WL_INFO(("wl_cfg80211_add_monitor_if: No more support monitor interface\n"));
 	return ERR_PTR(-EOPNOTSUPP);
 #else
 	struct net_device* ndev = NULL;
 
 	dhd_add_monitor(name, &ndev);
-	WL_INFO(("wl_cfg80211_add_monitor_if net device returned: 0x%p\n", ndev));
 	return ndev;
 #endif /* defined(WLP2P) && defined(WL_ENABLE_P2P_IF) */
 }
@@ -1008,11 +1006,9 @@ wl_cfg80211_add_virtual_iface(struct wiphy *wiphy, char *name,
 	dhd = (dhd_pub_t *)(wl->pub);
 #endif /* PROP_TXSTATUS */
 
-
 	/* Use primary I/F for sending cmds down to firmware */
 	_ndev = wl_to_prmry_ndev(wl);
 
-	WL_DBG(("if name: %s, type: %d\n", name, type));
 	switch (type) {
 	case NL80211_IFTYPE_ADHOC:
 	case NL80211_IFTYPE_AP_VLAN:
@@ -1052,8 +1048,6 @@ wl_cfg80211_add_virtual_iface(struct wiphy *wiphy, char *name,
 				rtnl_unlock();
 				rollback_lock = true;
 			}
-			WL_INFO(("%s: Released the lock and wait till IF_DEL is complete\n",
-				__func__));
 			timeout = wait_event_interruptible_timeout(wl->netif_change_event,
 				(wl_get_p2p_status(wl, IF_DELETING) == false),
 				msecs_to_jiffies(MAX_WAIT_TIME));
@@ -1102,8 +1096,6 @@ wl_cfg80211_add_virtual_iface(struct wiphy *wiphy, char *name,
 			dhd->wlfc_enabled = true;
 			dhd_wlfc_init(dhd);
 			err = wldev_ioctl(_ndev, WLC_UP, &up, sizeof(s32), true);
-			if (err < 0)
-				WL_ERR(("WLC_UP return err:%d\n", err));
 			wl->wlfc_on = true;
 		}
 #endif /* PROP_TXSTATUS */
@@ -1139,8 +1131,6 @@ wl_cfg80211_add_virtual_iface(struct wiphy *wiphy, char *name,
 				return ERR_PTR(-ENOMEM);
 			}
 			vwdev->wiphy = wl->wdev->wiphy;
-			WL_INFO((" virtual interface(%s) is created memalloc done \n",
-				wl->p2p->vir_ifname));
 			vwdev->iftype = type;
 			_ndev =  wl_to_p2p_bss_ndev(wl, P2PAPI_BSSCFG_CONNECTION);
 			_ndev->ieee80211_ptr = vwdev;
@@ -1913,16 +1903,13 @@ wl_run_escan(struct wl_priv *wl, struct net_device *ndev,
 						(default_chan_list[2] == SOCIAL_CHAN_3))) {
 				/* SOCIAL CHANNELS 1, 6, 11 */
 				search_state = WL_P2P_DISC_ST_SEARCH;
-				WL_INFO(("P2P SEARCH PHASE START \n"));
 			} else if ((dev = wl_to_p2p_bss_ndev(wl, P2PAPI_BSSCFG_CONNECTION)) &&
 				(wl_get_mode_by_netdev(wl, dev) == WL_MODE_AP)) {
 				/* If you are already a GO, then do SEARCH only */
-				WL_INFO(("Already a GO. Do SEARCH Only"));
 				search_state = WL_P2P_DISC_ST_SEARCH;
 				num_chans = n_nodfs;
 
 			} else {
-				WL_INFO(("P2P SCAN STATE START \n"));
 				num_chans = n_nodfs;
 			}
 
@@ -4544,9 +4531,6 @@ exit:
 	if (wl->afx_hdl->pending_tx_act_frm)
 		wl->afx_hdl->pending_tx_act_frm = NULL;
 
-	WL_INFO(("-- sending Action Frame is %s, listen chan: %d\n",
-		(ack) ? "Succeeded!!":"Failed!!", wl->afx_hdl->my_listen_chan));
-
 #ifdef WL_CFG80211_GON_COLLISION
 	if (wl->block_gon_req_tx_count) {
 		wl->block_gon_req_tx_count--;
@@ -6355,6 +6339,7 @@ exit:
 		}
 		sinfo.assoc_req_ies = data;
 		sinfo.assoc_req_ies_len = len;
+		cfg80211_del_sta(ndev, e->addr.octet, GFP_ATOMIC);
 		cfg80211_new_sta(ndev, e->addr.octet, &sinfo, GFP_ATOMIC);
 	} else if (event == WLC_E_DISASSOC_IND) {
 		cfg80211_del_sta(ndev, e->addr.octet, GFP_ATOMIC);
@@ -7876,7 +7861,6 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 	escan_result = (wl_escan_result_t *) data;
 #endif
 	if (status == WLC_E_STATUS_PARTIAL) {
-		WL_INFO(("WLC_E_STATUS_PARTIAL \n"));
 		escan_result = (wl_escan_result_t *) data;
 		if (!escan_result) {
 			WL_ERR(("Invalid escan result (NULL pointer)\n"));
@@ -8055,13 +8039,11 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 			status, wl->escan_info.cur_sync_id, escan_result->sync_id));
 #endif
 		if (wl_get_drv_status_all(wl, FINDING_COMMON_CHANNEL)) {
-			WL_INFO(("ACTION FRAME SCAN DONE\n"));
 			wl_clr_p2p_status(wl, SCANNING);
 			wl_clr_drv_status(wl, SCANNING, wl->afx_hdl->dev);
 			if (wl->afx_hdl->peer_chan == WL_INVALID)
 				complete(&wl->act_frm_scan);
 		} else if (likely(wl->scan_request)) {
-			WL_INFO(("ESCAN COMPLETED\n"));
 #if defined(DUAL_ESCAN_RESULT_BUFFER)
 			wl->bss_list = (wl_scan_results_t *)
 				wl->escan_info.escan_buf[wl->escan_info.cur_sync_id%2];
@@ -8084,13 +8066,11 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 			status, wl->escan_info.cur_sync_id, escan_result->sync_id));
 #endif
 		if (wl_get_drv_status_all(wl, FINDING_COMMON_CHANNEL)) {
-			WL_INFO(("ACTION FRAME SCAN DONE\n"));
 			wl_clr_drv_status(wl, SCANNING, wl->afx_hdl->dev);
 			wl_clr_p2p_status(wl, SCANNING);
 			if (wl->afx_hdl->peer_chan == WL_INVALID)
 				complete(&wl->act_frm_scan);
 		} else if (likely(wl->scan_request)) {
-			WL_INFO(("ESCAN ABORTED\n"));
 #if defined(DUAL_ESCAN_RESULT_BUFFER)
 			wl->bss_list = (wl_scan_results_t *)
 				wl->escan_info.escan_buf[(wl->escan_info.cur_sync_id+1)%2];
@@ -8120,7 +8100,6 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 			status, wl->escan_info.cur_sync_id, escan_result->sync_id));
 #endif
 		if (wl_get_drv_status_all(wl, FINDING_COMMON_CHANNEL)) {
-			WL_INFO(("ACTION FRAME SCAN DONE\n"));
 			wl_clr_p2p_status(wl, SCANNING);
 			wl_clr_drv_status(wl, SCANNING, wl->afx_hdl->dev);
 			if (wl->afx_hdl->peer_chan == WL_INVALID)
