@@ -71,7 +71,3 @@ static void omap4430_phy_init_for_eyediagram(u32 swcap_trim_offset)
 #endif	/* CONFIG_USB_SWITCH_FSA9480 */
 }
 
-static void omap4430_phy_remove_for_eyediagram(void)
-{
-	iounmap(ctrl_base);
-}
