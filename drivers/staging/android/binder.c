@@ -642,7 +642,7 @@ static int binder_update_page_range(struct binder_proc *proc, int allocate,
 		page = &proc->pages[(page_addr - proc->buffer) / PAGE_SIZE];
 
 		BUG_ON(*page);
-		*page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+		*page = alloc_page(GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO);
 		if (*page == NULL) {
 			goto err_alloc_page_failed;
 		}
@@ -2250,19 +2250,26 @@ static void binder_release_work(struct list_head *list)
 		w = list_first_entry(list, struct binder_work, entry);
 		list_del_init(&w->entry);
 		switch (w->type) {
-		case BINDER_WORK_TRANSACTION: {
-			struct binder_transaction *t;
-
-			t = container_of(w, struct binder_transaction, work);
-			if (t->buffer->target_node && !(t->flags & TF_ONE_WAY))
-				binder_send_failed_reply(t, BR_DEAD_REPLY);
-		} break;
-		case BINDER_WORK_TRANSACTION_COMPLETE: {
-			kfree(w);
-			binder_stats_deleted(BINDER_STAT_TRANSACTION_COMPLETE);
-		} break;
-		default:
-			break;
+			case BINDER_WORK_TRANSACTION: {
+				struct binder_transaction *t;
+				t = container_of(w, struct binder_transaction, work);
+				if (t->buffer->target_node && !(t->flags & TF_ONE_WAY))
+						binder_send_failed_reply(t, BR_DEAD_REPLY);
+			} break;
+			case BINDER_WORK_TRANSACTION_COMPLETE: {
+				kfree(w);
+				binder_stats_deleted(BINDER_STAT_TRANSACTION_COMPLETE);
+			} break;
+			case BINDER_WORK_DEAD_BINDER_AND_CLEAR:
+			case BINDER_WORK_CLEAR_DEATH_NOTIFICATION: {
+			    struct binder_ref_death *death;
+			    death = container_of(w, struct binder_ref_death, work);
+				kfree(death);
+				binder_stats_deleted(BINDER_STAT_DEATH);
+			} break;		
+			default:
+			    pr_err("binder: unexpected work type, %d, not freed\n", w->type); 
+				break;
 		}
 	}
 
@@ -2690,6 +2697,7 @@ static void binder_deferred_release(struct binder_proc *proc)
 		nodes++;
 		rb_erase(&node->rb_node, &proc->nodes);
 		list_del_init(&node->work.entry);
+		binder_release_work(&node->async_todo);
 		if (hlist_empty(&node->refs)) {
 			kfree(node);
 			binder_stats_deleted(BINDER_STAT_NODE);
@@ -2724,6 +2732,7 @@ static void binder_deferred_release(struct binder_proc *proc)
 		binder_delete_ref(ref);
 	}
 	binder_release_work(&proc->todo);
+	binder_release_work(&proc->delivered_death);
 	buffers = 0;
 
 	while ((n = rb_first(&proc->allocated_buffers))) {
@@ -2992,7 +3001,7 @@ static void print_binder_proc(struct seq_file *m,
 		m->count = start_pos;
 }
 
-static const char *binder_return_strings[] = {
+static const char * const binder_return_strings[] = { 
 	"BR_ERROR",
 	"BR_OK",
 	"BR_TRANSACTION",
@@ -3013,7 +3022,7 @@ static const char *binder_return_strings[] = {
 	"BR_FAILED_REPLY"
 };
 
-static const char *binder_command_strings[] = {
+static const char * const binder_command_strings[] = {
 	"BC_TRANSACTION",
 	"BC_REPLY",
 	"BC_ACQUIRE_RESULT",
@@ -3033,7 +3042,7 @@ static const char *binder_command_strings[] = {
 	"BC_DEAD_BINDER_DONE"
 };
 
-static const char *binder_objstat_strings[] = {
+static const char * const binder_objstat_strings[] = {
 	"proc",
 	"thread",
 	"node",
