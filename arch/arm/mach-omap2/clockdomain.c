@@ -226,32 +226,6 @@ void _clkdm_del_autodeps(struct clockdomain *clkdm)
 	}
 }
 
-/**
- * _resolve_clkdm_deps() - resolve clkdm_names in @clkdm_deps to clkdms
- * @clkdm: clockdomain that we are resolving dependencies for
- * @clkdm_deps: ptr to array of struct clkdm_deps to resolve
- *
- * Iterates through @clkdm_deps, looking up the struct clockdomain named by
- * clkdm_name and storing the clockdomain pointer in the struct clkdm_dep.
- * No return value.
- */
-static void _resolve_clkdm_deps(struct clockdomain *clkdm,
-				struct clkdm_dep *clkdm_deps)
-{
-	struct clkdm_dep *cd;
-
-	for (cd = clkdm_deps; cd && cd->clkdm_name; cd++) {
-		if (!omap_chip_is(cd->omap_chip))
-			continue;
-		if (cd->clkdm)
-			continue;
-		cd->clkdm = _clkdm_lookup(cd->clkdm_name);
-
-		WARN(!cd->clkdm, "clockdomain: %s: could not find clkdm %s while resolving dependencies - should never happen",
-		     clkdm->name, cd->clkdm_name);
-	}
-}
-
 /* Public functions */
 
 /**

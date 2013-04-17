@@ -117,8 +117,6 @@ int ReadSoundConfigFile(char *Filename)
 	token = strsep(&last, ",");
 	tuing_delay_time = kstrtoull(token, NULL, 10);
 
-	pr_info("TUNING_DELAY_TIME=%d", tuing_delay_time);
-
 	/* Close the file */
 	filp_close(filp, NULL);
 
@@ -359,8 +357,6 @@ static int set_hp_output_mode(struct snd_kcontrol *kcontrol,
 #ifndef DISABLE_NEEDLESS_GPIO_PIN
 	gpio_set_value(ear_select.gpio, hp_output_mode);
 #endif
-
-	pr_debug("set hp mode : %s\n", hp_analogue_text[hp_output_mode]);
 
 	return 0;
 }
@@ -733,8 +729,6 @@ static void omap4_micd_set_rate(struct snd_soc_codec *codec)
 
 	idle = !wm8994->jack_mic;
 
-	dev_info(codec->dev, "omap4_micd_set_rate\n");
-
 	sysclk = snd_soc_read(codec, WM8994_CLOCKING_1);
 	if (sysclk & WM8994_SYSCLK_SRC)
 		sysclk = wm8994->aifclk[1];
@@ -791,7 +785,6 @@ static void omap4_micdet(u16 status, void *data)
 	if (!(status & WM8958_MICD_STS)) {
 		if (!wm8994->jackdet) {
 			/* If nothing present then clear our statuses */
-			dev_info(wm1811->codec->dev, "Detected open circuit\n");
 			wm8994->jack_mic = false;
 			wm8994->mic_detecting = true;
 
@@ -801,8 +794,6 @@ static void omap4_micdet(u16 status, void *data)
 					    wm8994->btn_mask |
 					     SND_JACK_HEADSET);
 		}
-		/*ToDo*/
-		/*return;*/
 	}
 
 	/*
@@ -949,8 +940,6 @@ static void omap4_wm8994_start_fll1(struct snd_soc_dai *aif1_dai)
 {
 	int ret;
 
-	dev_info(aif1_dai->dev, "Moving to audio clocking settings\n");
-
 	/* Switch the FLL */
 	ret = snd_soc_dai_set_pll(aif1_dai,
 				  WM8994_FLL1,
@@ -1019,8 +1008,6 @@ static int omap4_wm8994_aif2_hw_params(struct snd_pcm_substream *substream,
 	int prate;
 	/* The source of fll is actually the mclk. */
 	int mclk;
-
-	pr_info("%s: enter\n", __func__);
 
 	prate = params_rate(params);
 	switch (prate) {
@@ -1264,8 +1251,6 @@ static ssize_t reselect_jack_store(struct device *dev,
 
 	reg = snd_soc_read(codec, WM8958_MIC_DETECT_3);
 	if (reg == 0x402) {
-		dev_info(codec->dev, "Detected open circuit\n");
-
 		snd_soc_update_bits(codec, WM8958_MICBIAS2,
 				    WM8958_MICB2_DISCH, WM8958_MICB2_DISCH);
 		/* Enable debounce while removed */

@@ -120,25 +120,6 @@ static int ts_read_reg_data(const struct i2c_client *client, u8 address,
 	return 1;
 }
 
-static int ts_write_reg_data(const struct i2c_client *client, u8 address,
-			u8 *buf, u8 size)
-{
-	int ret = 0;
-
-	if (size > 32) {
-		pr_err("tsp: %s: data size: %d, SMBus allows at most 32 bytes.",
-								__func__, size);
-		return -1;
-	}
-
-	ret = i2c_smbus_write_i2c_block_data(client, address, size, buf);
-	if (ret < 0) {
-		pr_err("tsp: %s: i2c write failed. %d", __func__, ret);
-		return ret;
-	}
-	return 1;
-}
-
 static void set_ta_mode(int *ta_state)
 {
 	struct sec_ts_platform_data *platform_data =
@@ -1011,7 +992,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 
 	int i, j;
 	int cur_state, id;
-	static u32 cnt;
 	u16 x, y;
 	u8 buf;
 	u8 state[3] = {0, };
@@ -1062,8 +1042,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 #if TRACKING_COORD
 				tsp_debug("%d up (%d, %d, %d)\n",
 							id, x, y, point[4]);
-#else
-				tsp_debug("%d up. remain: %d\n", id, --cnt);
 #endif
 				input_mt_slot(ts->input_dev, id);
 				input_mt_report_slot_state(ts->input_dev,
@@ -1078,8 +1056,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 #if TRACKING_COORD
 				tsp_debug("%d dn (%d, %d, %d)\n",
 							id, x, y, point[4]);
-#else
-				tsp_debug("%d dn. remain: %d\n", id, ++cnt);
 #endif
 				ts->finger_state[id] = 1;
 			}

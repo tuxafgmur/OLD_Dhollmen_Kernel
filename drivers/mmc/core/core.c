@@ -1787,15 +1787,6 @@ int mmc_set_blocklen(struct mmc_card *card, unsigned int blocklen)
 }
 EXPORT_SYMBOL(mmc_set_blocklen);
 
-static void mmc_hw_reset_for_init(struct mmc_host *host)
-{
-	if (!(host->caps & MMC_CAP_HW_RESET) || !host->ops->hw_reset)
-		return;
-	mmc_host_clk_hold(host);
-	host->ops->hw_reset(host);
-	mmc_host_clk_release(host);
-}
-
 int mmc_can_reset(struct mmc_card *card)
 {
 	u8 rst_n_function;
