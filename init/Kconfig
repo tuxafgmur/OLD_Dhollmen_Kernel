@@ -20,12 +20,11 @@ config CONSTRUCTORS
 	bool
 	depends on !UML
 
-config HAVE_IRQ_WORK
+config HAVE_I_WORK
 	bool
 
 config IRQ_WORK
 	bool
-	depends on HAVE_IRQ_WORK
 
 menu "General setup"
 
@@ -1243,6 +1242,15 @@ config SLUB
 	   and has enhanced diagnostics. SLUB is the default choice for
 	   a slab allocator.
 
+config SLQB
+    bool "SLQB (Queued allocator)"
+    help
+       SLQB is a slab allocator designed for small number of CPUs system
+	   (such as desktop or smart phone devices). This allocator is design
+	   to be simple and it is optimized for using order-0 pages as much as
+	   possible (order-0 pages are the simplest therefore quickest type of
+	   memory to allocate).
+	   
 config SLOB
 	depends on EXPERT
 	bool "SLOB (Simple Allocator)"

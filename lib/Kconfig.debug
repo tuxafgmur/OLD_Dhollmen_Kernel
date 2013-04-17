@@ -19,13 +19,13 @@ config PRINTK_CPU_ID
 	  See Documentation/kernel-parameters.txt
 
 config PRINTK_PID
-        bool "Show pid on printks"
-        depends on PRINTK
-        help
-          Selecting this option causes current task's pid to be
-          included in printk output. Or add printk.pid=1 at boot-time.
-          This allows you to see the running process with kernel log.
-          See Documentation/kernel-parameters.txt
+    bool "Show pid on printks"
+    depends on PRINTK
+    help
+      Selecting this option causes current task's pid to be
+      included in printk output. Or add printk.pid=1 at boot-time.
+      This allows you to see the running process with kernel log.
+      See Documentation/kernel-parameters.txt
 
 config DEFAULT_MESSAGE_LOGLEVEL
 	int "Default message log level (1-7)"
@@ -427,6 +427,26 @@ config SLUB_STATS
 	  supports the determination of the most active slabs to figure
 	  out which slabs are relevant to a particular load.
 	  Try running: slabinfo -DA
+
+config SLQB_DEBUG
+	default n
+	bool "Enable SLQB debugging support"
+	depends on SLQB
+
+config SLQB_DEBUG_ON
+	default n
+	bool "SLQB debugging on by default"
+	depends on SLQB_DEBUG
+
+config SLQB_SYSFS
+	bool "Create SYSFS entries for slab caches"
+	default n
+	depends on SLQB
+
+config SLQB_STATS
+	bool "Enable SLQB performance statistics"
+	default n
+	depends on SLQB_SYSFS
 
 config DEBUG_KMEMLEAK
 	bool "Kernel memory leak detector"
@@ -1058,7 +1078,7 @@ config FAULT_INJECTION
 config FAILSLAB
 	bool "Fault-injection capability for kmalloc"
 	depends on FAULT_INJECTION
-	depends on SLAB || SLUB
+	depends on SLAB || SLUB || SLQB
 	help
 	  Provide fault-injection capability for kmalloc.
 
