@@ -13,7 +13,6 @@
 #include <linux/jiffies.h>
 #include <linux/rbtree.h>
 #include <linux/ioprio.h>
-#include <linux/blktrace_api.h>
 #include "cfq.h"
 
 /*
@@ -1558,8 +1557,6 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
 	struct cfq_data *cfqd = q->elevator->elevator_data;
 
 	cfqd->rq_in_driver++;
-	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
-						cfqd->rq_in_driver);
 
 	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
 }
@@ -1570,8 +1567,6 @@ static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
 
 	WARN_ON(!cfqd->rq_in_driver);
 	cfqd->rq_in_driver--;
-	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "deactivate rq, drv=%d",
-						cfqd->rq_in_driver);
 }
 
 static void cfq_remove_request(struct request *rq)
