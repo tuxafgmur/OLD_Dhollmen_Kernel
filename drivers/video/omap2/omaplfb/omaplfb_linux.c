@@ -206,7 +206,6 @@ OMAPLFB_ERROR OMAPLFBGetLibFuncAddr (char *szFunctionName, PFN_DC_GET_PVRJTABLE 
 	{
 		return (OMAPLFB_ERROR_INVALID_PARAMS);
 	}
-
 	
 	*ppfnFuncTable = PVRGetDisplayClassJTable;
 
@@ -216,12 +215,8 @@ OMAPLFB_ERROR OMAPLFBGetLibFuncAddr (char *szFunctionName, PFN_DC_GET_PVRJTABLE 
 
 void OMAPLFBQueueBufferForSwap(OMAPLFB_SWAPCHAIN *psSwapChain, OMAPLFB_BUFFER *psBuffer)
 {
-	int res = queue_work(psSwapChain->psWorkQueue, &psBuffer->sWork);
+	queue_work(psSwapChain->psWorkQueue, &psBuffer->sWork);
 
-	if (res == 0)
-	{
-		printk(KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Buffer already on work queue\n", __FUNCTION__, psSwapChain->uiFBDevID);
-	}
 }
 
 static void WorkQueueHandler(struct work_struct *psWork)
@@ -247,7 +242,6 @@ OMAPLFB_ERROR OMAPLFBCreateSwapQueue(OMAPLFB_SWAPCHAIN *psSwapChain)
 	if (psSwapChain->psWorkQueue == NULL)
 	{
 		printk(KERN_ERR DRIVER_PREFIX ": %s: Device %u: Couldn't create workqueue\n", __FUNCTION__, psSwapChain->uiFBDevID);
-
 		return (OMAPLFB_ERROR_INIT_FAILURE);
 	}
 
@@ -356,20 +350,6 @@ void OMAPLFBFlip(OMAPLFB_DEVINFO *psDevInfo, OMAPLFB_BUFFER *psBuffer)
 }
 
 #if !defined(PVR_OMAPLFB_DRM_FB) || defined(DEBUG)
-static OMAPLFB_BOOL OMAPLFBValidUpdateMode(enum OMAP_UPDATE_MODE eMode)
-{
-	switch (eMode)
-	{
-		case OMAP_UPDATE_MODE_AUTO:
-		case OMAP_UPDATE_MODE_MANUAL:
-		case OMAP_UPDATE_MODE_DISABLED:
-			return OMAPLFB_TRUE;
-		default:
-			break;
-	}
-
-	return OMAPLFB_FALSE;
-}
 
 static OMAPLFB_UPDATE_MODE OMAPLFBFromUpdateMode(enum OMAP_UPDATE_MODE eMode)
 {
@@ -458,15 +438,11 @@ void OMAPLFBPrintInfo(OMAPLFB_DEVINFO *psDevInfo)
 	unsigned uConnectors;
 	unsigned uConnector;
 
-	DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": Device %u: DRM framebuffer\n", psDevInfo->uiFBDevID));
-
 	for (psConnector = NULL, uConnectors = 0;
 		(psConnector = omap_fbdev_get_next_connector(psDevInfo->psLINFBInfo, psConnector)) != NULL;)
 	{
 		uConnectors++;
 	}
-
-	DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": Device %u: Number of screens (DRM connectors): %u\n", psDevInfo->uiFBDevID, uConnectors));
 
 	if (uConnectors == 0)
 	{
@@ -477,16 +453,9 @@ void OMAPLFBPrintInfo(OMAPLFB_DEVINFO *psDevInfo)
 		(psConnector = omap_fbdev_get_next_connector(psDevInfo->psLINFBInfo, psConnector)) != NULL; uConnector++)
 	{
 		enum OMAP_UPDATE_MODE eMode = omap_connector_get_update_mode(psConnector);
-
-		DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": Device %u: Screen %u: %s (%d)\n", psDevInfo->uiFBDevID, uConnector, OMAPLFBDSSUpdateModeToString(eMode), (int)eMode));
-
 	}
 #else	
 	OMAPLFB_UPDATE_MODE eMode = OMAPLFBGetUpdateMode(psDevInfo);
-
-	DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": Device %u: non-DRM framebuffer\n", psDevInfo->uiFBDevID));
-
-	DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": Device %u: %s\n", psDevInfo->uiFBDevID, OMAPLFBUpdateModeToString(eMode)));
 #endif	
 }
 #endif
@@ -536,7 +505,6 @@ OMAPLFB_BOOL OMAPLFBSetUpdateMode(OMAPLFB_DEVINFO *psDevInfo, OMAPLFB_UPDATE_MOD
 
 	if (!OMAPLFBValidateUpdateMode(eMode))
 	{
-			DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Unknown update mode (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, (int)eMode));
 			return OMAPLFB_FALSE;
 	}
 	eDSSMode = OMAPLFBToUpdateMode(eMode);
@@ -547,34 +515,24 @@ OMAPLFB_BOOL OMAPLFBSetUpdateMode(OMAPLFB_DEVINFO *psDevInfo, OMAPLFB_UPDATE_MOD
 		int iRes = omap_connector_set_update_mode(psConnector, eDSSMode);
 		OMAPLFB_BOOL bRes = (iRes == 0);
 
-
 		bSuccess |= bRes;
 		bFailure |= !bRes;
 	}
 
 	if (!bFailure)
 	{
-		if (!bSuccess)
-		{
-			DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: No screens\n", __FUNCTION__, psDevInfo->uiFBDevID));
-		}
-
 		return OMAPLFB_TRUE;
 	}
 
 	if (!bSuccess)
 	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Couldn't set %s for any screen\n", __FUNCTION__, psDevInfo->uiFBDevID, OMAPLFBUpdateModeToString(eMode)));
 		return OMAPLFB_FALSE;
 	}
 
 	if (eMode == OMAPLFB_UPDATE_MODE_AUTO)
 	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Couldn't set %s for all screens\n", __FUNCTION__, psDevInfo->uiFBDevID, OMAPLFBUpdateModeToString(eMode)));
 		return OMAPLFB_FALSE;
 	}
-
-	DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": %s: Device %u: %s set for some screens\n", __FUNCTION__, psDevInfo->uiFBDevID, OMAPLFBUpdateModeToString(eMode)));
 
 	return OMAPLFB_TRUE;
 }
@@ -587,11 +545,6 @@ OMAPLFB_UPDATE_MODE OMAPLFBGetUpdateMode(OMAPLFB_DEVINFO *psDevInfo)
 
 	omapfb_get_update_mode(psDevInfo->psLINFBInfo, &eMode);
 
-	if (!OMAPLFBValidUpdateMode(eMode))
-	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Unknown update mode (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, (int)eMode));
-	}
-
 	return OMAPLFBFromUpdateMode(eMode);
 }
 
@@ -602,16 +555,10 @@ OMAPLFB_BOOL OMAPLFBSetUpdateMode(OMAPLFB_DEVINFO *psDevInfo, OMAPLFB_UPDATE_MOD
 
 	if (!OMAPLFBValidateUpdateMode(eMode))
 	{
-			DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Unknown update mode (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, (int)eMode));
 			return OMAPLFB_FALSE;
 	}
 
 	res = omapfb_set_update_mode(psDevInfo->psLINFBInfo, eUpdateMode);
-
-	if (res != 0)
-	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: set_update_mode (%s) failed (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, OMAPLFBUpdateModeToString(eUpdateMode), res));
-	}
 
 	return (res == 0);
 }
@@ -627,7 +574,6 @@ OMAPLFB_UPDATE_MODE OMAPLFBGetUpdateMode(OMAPLFB_DEVINFO *psDevInfo)
 
 	if (psDSSDrv == NULL)
 	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: No DSS device\n", __FUNCTION__, psDevInfo->uiFBDevID));
 		return OMAPLFB_UPDATE_MODE_UNDEFINED;
 	}
 
@@ -637,16 +583,10 @@ OMAPLFB_UPDATE_MODE OMAPLFBGetUpdateMode(OMAPLFB_DEVINFO *psDevInfo)
 		{
 			return OMAPLFB_UPDATE_MODE_AUTO;
 		}
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: No get_update_mode function\n", __FUNCTION__, psDevInfo->uiFBDevID));
 		return OMAPLFB_UPDATE_MODE_UNDEFINED;
 	}
 
 	eMode = psDSSDrv->get_update_mode(psDSSDev);
-
-	if (!OMAPLFBValidUpdateMode(eMode))
-	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Unknown update mode (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, (int)eMode));
-	}
 
 	return OMAPLFBFromUpdateMode(eMode);
 }
@@ -660,24 +600,17 @@ OMAPLFB_BOOL OMAPLFBSetUpdateMode(OMAPLFB_DEVINFO *psDevInfo, OMAPLFB_UPDATE_MOD
 
 	if (psDSSDrv == NULL || psDSSDrv->set_update_mode == NULL)
 	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Can't set update mode\n", __FUNCTION__, psDevInfo->uiFBDevID));
 		return OMAPLFB_FALSE;
 	}
 
 	if (!OMAPLFBValidateUpdateMode(eMode))
 	{
-			DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Unknown update mode (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, (int)eMode));
-			return OMAPLFB_FALSE;
+		return OMAPLFB_FALSE;
 	}
 
 	eUpdateMode = OMAPLFBToUpdateMode(eMode);
 
 	res = psDSSDrv->set_update_mode(psDSSDev, eUpdateMode);
-
-	if (res != 0)
-	{
-		DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: set_update_mode (%s) failed (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, OMAPLFBUpdateModeToString(eUpdateMode), res));
-	}
 
 	return (res == 0);
 }
@@ -704,7 +637,6 @@ OMAPLFB_BOOL OMAPLFBWaitForVSync(OMAPLFB_DEVINFO *psDevInfo)
 		int res = WAIT_FOR_VSYNC(psDSSMan)(psDSSMan);
 		if (res != 0)
 		{
-			DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Wait for vsync failed (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, res));
 			return OMAPLFB_FALSE;
 		}
 	}
@@ -780,24 +712,6 @@ static int OMAPLFBFrameBufferEvents(struct notifier_block *psNotif,
 	bBlanked = (*(IMG_INT *)psFBEvent->data != 0) ? OMAPLFB_TRUE: OMAPLFB_FALSE;
 
 	psDevInfo = OMAPLFBGetDevInfoPtr(psFBInfo->node);
-
-#if 0
-	if (psDevInfo != NULL)
-	{
-		if (bBlanked)
-		{
-			DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": %s: Device %u: Blank event received\n", __FUNCTION__, psDevInfo->uiFBDevID));
-		}
-		else
-		{
-			DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": %s: Device %u: Unblank event received\n", __FUNCTION__, psDevInfo->uiFBDevID));
-		}
-	}
-	else
-	{
-		DEBUG_PRINTK((KERN_INFO DRIVER_PREFIX ": %s: Device %u: Blank/Unblank event for unknown framebuffer\n", __FUNCTION__, psFBInfo->node));
-	}
-#endif
 
 	if (psDevInfo != NULL)
 	{
@@ -984,9 +898,6 @@ int PVR_DRM_MAKENAME(DISPLAY_CONTROLLER, _Ioctl)(struct drm_device unref__ *dev,
 		case PVR_DRM_DISP_CMD_ENTER_VT:
 		{
 			OMAPLFB_BOOL bLeaveVT = (uiCmd == PVR_DRM_DISP_CMD_LEAVE_VT);
-			DEBUG_PRINTK((KERN_WARNING DRIVER_PREFIX ": %s: PVR Device %u: %s\n",
-				__FUNCTION__, uiPVRDevID,
-				bLeaveVT ? "Leave VT" : "Enter VT"));
 
 			OMAPLFBCreateSwapChainLock(psDevInfo);
 			
@@ -1091,7 +1002,6 @@ struct sgx_omaplfb_config *GetFBPlatConfig(int fbix)
 {
 	if (fbix >= gplatdata->num_configs)
 	{
-		WARN(1, "Invalid FB device index");
 		return NULL;
 	}
 	return &gplatdata->configs[fbix];
@@ -1110,7 +1020,6 @@ static int omaplfb_probe(struct platform_device *pdev)
 
 	if (!gplatdata)
 	{
-		WARN(1, "Platform data is null");
 		return -ENODEV;
 	}
 
