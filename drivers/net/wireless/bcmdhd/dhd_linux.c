@@ -3886,6 +3886,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 #if defined(PASS_IPV4_SUSPEND)
 	dhd->pktfilter_count = 5;
 	dhd->pktfilter[4] = "104 0 0 0 0xFFFFFF 0x01005E";
+	dhd->pktfilter[4] = NULL;
 #endif
 #endif /* GAN_LITE_NAT_KEEPALIVE_FILTER */
 #ifdef PASS_ARP_PACKET
@@ -3941,9 +3942,6 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		DHD_ERROR(("Firmware version = %s\n", buf));
 
 		dhd_set_version_info(dhd, buf);
-
-		DHD_BLOG(buf, strlen(buf) + 1);
-		DHD_BLOG(dhd_version, strlen(dhd_version) + 1);
 
 		/* Check and adjust IOCTL response timeout for Manufactring firmware */
 		if (strstr(buf, MANUFACTRING_FW) != NULL) {
