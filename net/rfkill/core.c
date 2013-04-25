@@ -226,8 +226,6 @@ static bool __rfkill_set_hw_state(struct rfkill *rfkill,
 	unsigned long flags;
 	bool prev, any;
 
-	BUG_ON(!rfkill);
-
 	spin_lock_irqsave(&rfkill->lock, flags);
 	prev = !!(rfkill->state & RFKILL_BLOCK_HW);
 	if (blocked)
@@ -235,7 +233,7 @@ static bool __rfkill_set_hw_state(struct rfkill *rfkill,
 	else
 		rfkill->state &= ~RFKILL_BLOCK_HW;
 	*change = prev != blocked;
-	any = rfkill->state & RFKILL_BLOCK_ANY;
+	any = !!(rfkill->state & RFKILL_BLOCK_ANY); 
 	spin_unlock_irqrestore(&rfkill->lock, flags);
 
 	rfkill_led_trigger_event(rfkill);
@@ -255,6 +253,7 @@ static bool __rfkill_set_hw_state(struct rfkill *rfkill,
 static void rfkill_set_block(struct rfkill *rfkill, bool blocked)
 {
 	unsigned long flags;
+	bool prev, curr;
 	int err;
 
 	if (unlikely(rfkill->dev.power.power_state.event & PM_EVENT_SLEEP))
@@ -269,11 +268,14 @@ static void rfkill_set_block(struct rfkill *rfkill, bool blocked)
 		rfkill->ops->query(rfkill, rfkill->data);
 
 	spin_lock_irqsave(&rfkill->lock, flags);
+	
+	prev = rfkill->state & RFKILL_BLOCK_SW;
+	
 	if (rfkill->state & RFKILL_BLOCK_SW)
 		rfkill->state |= RFKILL_BLOCK_SW_PREV;
 	else
 		rfkill->state &= ~RFKILL_BLOCK_SW_PREV;
-
+	
 	if (blocked)
 		rfkill->state |= RFKILL_BLOCK_SW;
 	else
@@ -298,10 +300,14 @@ static void rfkill_set_block(struct rfkill *rfkill, bool blocked)
 	}
 	rfkill->state &= ~RFKILL_BLOCK_SW_SETCALL;
 	rfkill->state &= ~RFKILL_BLOCK_SW_PREV;
+	
+	curr = rfkill->state & RFKILL_BLOCK_SW; 
+	
 	spin_unlock_irqrestore(&rfkill->lock, flags);
 
 	rfkill_led_trigger_event(rfkill);
-	rfkill_event(rfkill);
+	if (prev != curr)
+	   rfkill_event(rfkill); 	
 }
 
 #ifdef CONFIG_RFKILL_INPUT
@@ -486,8 +492,6 @@ bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
 	unsigned long flags;
 	bool prev, hwblock;
 
-	BUG_ON(!rfkill);
-
 	spin_lock_irqsave(&rfkill->lock, flags);
 	prev = !!(rfkill->state & RFKILL_BLOCK_SW);
 	__rfkill_set_sw_state(rfkill, blocked);
@@ -511,9 +515,6 @@ void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
 {
 	unsigned long flags;
 
-	BUG_ON(!rfkill);
-	BUG_ON(rfkill->registered);
-
 	spin_lock_irqsave(&rfkill->lock, flags);
 	__rfkill_set_sw_state(rfkill, blocked);
 	rfkill->persistent = true;
@@ -525,8 +526,6 @@ void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
 {
 	unsigned long flags;
 	bool swprev, hwprev;
-
-	BUG_ON(!rfkill);
 
 	spin_lock_irqsave(&rfkill->lock, flags);
 
