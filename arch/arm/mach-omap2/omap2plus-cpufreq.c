@@ -854,16 +854,16 @@ struct freq_attr omap_cpufreq_attr_screen_off_freq = {
 
 #ifdef CONFIG_OMAP4430_TOP_GPU
 
-static ssize_t show_gpu_clock(struct cpufreq_policy *policy, char *buf) {
-  struct clk *clk = clk_get(NULL, "dpll_per_m7x2_ck");  
-  return sprintf(buf, "%lu Mhz\n", clk->rate/1000000);
+static ssize_t show_gpu_frequency(struct cpufreq_policy *policy, char *buf) {
+	unsigned int gpu_mhz[3] = {307,384,512};
+	return sprintf(buf, "%d MHz\n", gpu_mhz[gpu_top_speed]);
 }
  
 static struct freq_attr gpu_clock = {
     .attr = {.name = "gpu_frequency",
-       .mode=0644,
+       .mode=0444,
     },
-    .show = show_gpu_clock,
+    .show = show_gpu_frequency,
 }; 
 
 static ssize_t show_gpu_top_speed(struct cpufreq_policy *policy, char *buf)
@@ -896,7 +896,6 @@ static ssize_t store_gpu_top_speed(struct cpufreq_policy *policy, const char *bu
 	    dev = omap_hwmod_name_get_dev("gpu");
 		dummy1 = opp_disable(dev, gpu_freqs[prev_gpu_top_speed]);
 		dummy2 = opp_enable(dev, gpu_freqs[gpu_top_speed]);
-		pr_info("GPU_oc: frequency is now %lu Hz\n", gpu_freqs[gpu_top_speed]);
 	}
 
 	return size;
