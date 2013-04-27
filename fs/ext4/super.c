@@ -229,8 +229,6 @@ static handle_t *ext4_get_nojournal(void)
 	handle_t *handle = current->journal_info;
 	unsigned long ref_cnt = (unsigned long)handle;
 
-	BUG_ON(ref_cnt >= EXT4_NOJOURNAL_MAX_REF_COUNT);
-
 	ref_cnt++;
 	handle = (handle_t *)ref_cnt;
 
@@ -243,8 +241,6 @@ static handle_t *ext4_get_nojournal(void)
 static void ext4_put_nojournal(handle_t *handle)
 {
 	unsigned long ref_cnt = (unsigned long)handle;
-
-	BUG_ON(ref_cnt == 0);
 
 	ref_cnt--;
 	handle = (handle_t *)ref_cnt;
@@ -332,11 +328,6 @@ void ext4_journal_abort_handle(const char *caller, unsigned int line,
 {
 	char nbuf[16];
 	const char *errstr = ext4_decode_error(NULL, err, nbuf);
-
-	BUG_ON(!ext4_handle_valid(handle));
-
-	if (bh)
-		BUFFER_TRACE(bh, "abort");
 
 	if (!handle->h_err)
 		handle->h_err = err;
