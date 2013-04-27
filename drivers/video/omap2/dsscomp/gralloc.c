@@ -98,9 +98,6 @@ static void dsscomp_gralloc_cb(void *data, int status)
 		if (atomic_dec_and_test(&gsync->refs))
 			unpin_tiler_blocks(&gsync->slots);
 
-		log_event(0, 0, gsync, "--refs=%d on %s",
-				atomic_read(&gsync->refs),
-				(u32) log_status_str(status));
 	}
 
 	/* get completed list items in order, if any */
@@ -121,9 +118,6 @@ static void dsscomp_gralloc_cb(void *data, int status)
 
 	/* call back for completed composition with mutex unlocked */
 	list_for_each_entry_safe(gsync, gsync_, &done, q) {
-
-		log_event(0, 0, gsync, "calling %pf [%p]",
-				(u32) gsync->cb_fn, (u32) gsync->cb_arg);
 
 		if (gsync->cb_fn)
 			gsync->cb_fn(gsync->cb_arg, 1);
@@ -252,7 +246,7 @@ static void dsscomp_gralloc_do_clone(struct work_struct *work)
 	dsscomp_gralloc_transfer_dmabuf(wk->dma_cfg);
 #ifdef CONFIG_DEBUG_FS
 	ms2 = ktime_to_ms(ktime_get());
-	dev_info(DEV(cdev), "DMA latency(msec) = %lld\n", ms2-ms1);
+	dev_info(DEV(cdev), "DMA latency(msec) = %d\n", ms2-ms1);
 #endif
 
 	wk->comp->state = DSSCOMP_STATE_APPLYING;
@@ -301,9 +295,6 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 	u32 ovl_set_mask = 0;
 	struct tiler1d_slot *slot = NULL;
 	u32 slot_used = 0;
-#ifdef CONFIG_DEBUG_FS
-	u32 ms = ktime_to_ms(ktime_get());
-#endif
 	u32 channels[ARRAY_SIZE(d->mgrs)], ch;
 	int skip;
 	struct dsscomp_gralloc_t *gsync;
@@ -340,16 +331,9 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 	gsync->early_callback = early_callback;
 	INIT_LIST_HEAD(&gsync->slots);
 	list_add_tail(&gsync->q, &flip_queue);
-	if (debug & DEBUG_GRALLOC_PHASES)
-		dev_info(DEV(cdev), "[%p] queuing flip\n", gsync);
-
-	log_event(0, ms, gsync, "new in %pf (refs=1)",
-			(u32) dsscomp_gralloc_queue, 0);
 
 	/* ignore frames while we are blanked */
 	skip = blanked;
-	if (skip && (debug & DEBUG_PHASES))
-		dev_info(DEV(cdev), "[%p,%08x] ignored\n", gsync, d->sync_id);
 
 	/* mark blank frame by NULL tiler pa pointer */
 	if (!skip && pas == NULL)
@@ -374,17 +358,13 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 		if (d->mgrs[i].ix >= cdev->num_displays)
 			continue;
 		dev = cdev->displays[d->mgrs[i].ix];
-		if (!dev) {
-			dev_warn(DEV(cdev), "failed to get display%d\n",
-								d->mgrs[i].ix);
+		if (!dev)
 			continue;
-		}
+
 		mgr = dev->manager;
-		if (!mgr) {
-			dev_warn(DEV(cdev), "no manager for display%d\n",
-								d->mgrs[i].ix);
+		if (!mgr)
 			continue;
-		}
+		
 		channels[i] = ch = mgr->id;
 		mgr_set_mask |= 1 << ch;
 
@@ -403,8 +383,6 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 		comp[ch] = dsscomp_new(mgr);
 		if (IS_ERR(comp[ch])) {
 			comp[ch] = NULL;
-			dev_warn(DEV(cdev), "failed to get composition on %s\n",
-								mgr->name);
 			continue;
 		}
 
@@ -507,11 +485,9 @@ int dsscomp_gralloc_queue(struct dsscomp_setup_dispc_data *d,
 			goto skip_map1d;
 
 		if (!slot) {
-			if (down_timeout(&free_slots_sem,
-						msecs_to_jiffies(100))) {
-				dev_warn(DEV(cdev), "could not obtain tiler slot");
+			if (down_timeout(&free_slots_sem, msecs_to_jiffies(100)))
 				goto skip_buffer;
-			}
+			
 			mutex_lock(&mtx);
 			slot = list_first_entry(&free_slots, typeof(*slot), q);
 			list_move(&slot->q, &gsync->slots);
@@ -582,8 +558,6 @@ skip_map1d:
 		comp[ch]->extra_cb = dsscomp_gralloc_cb;
 		comp[ch]->extra_cb_data = gsync;
 		atomic_inc(&gsync->refs);
-		log_event(0, ms, gsync, "++refs=%d for [%p]",
-				atomic_read(&gsync->refs), (u32) comp[ch]);
 
 		if (ch == 1 && clone_wq && phys) {
 			/* start work-queue */
