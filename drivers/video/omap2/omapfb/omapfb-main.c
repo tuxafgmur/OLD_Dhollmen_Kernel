@@ -83,9 +83,6 @@ static int initialize_dev_fb_resolution(u16 display_ix,
 
 	pfb_opt = (struct fb_options *)&fb_opt[display_ix*ELEMENT_COUNT];
 
-	DBG("cmd line dev ix %d - W %d - H %d\n",
-		pfb_opt->ix, pfb_opt->width , pfb_opt->height);
-
 	if (pfb_opt->ix != -1) {
 		dssdev->panel.fb_xres = pfb_opt->width;
 		dssdev->panel.fb_yres = pfb_opt->height;
@@ -93,8 +90,6 @@ static int initialize_dev_fb_resolution(u16 display_ix,
 		dssdev->panel.fb_xres = dssdev->panel.timings.x_res;
 		dssdev->panel.fb_yres = dssdev->panel.timings.y_res;
 	}
-	DBG("init dev %s dev-%d:w-%d:h-%d\n", dssdev->name, display_ix,
-			dssdev->panel.fb_xres, dssdev->panel.fb_yres);
 	return 0;
 }
 
@@ -102,7 +97,6 @@ void get_fb_resolution(struct omap_dss_device *dssdev, u16 *xres, u16 *yres)
 {
 	*xres = dssdev->panel.fb_xres;
 	*yres = dssdev->panel.fb_yres;
-	DBG("%s %s %d x %d", __func__, dssdev->name, *xres, *yres);
 	return;
 }
 
@@ -466,7 +460,6 @@ static int check_fb_res_bounds(struct fb_var_screeninfo *var)
 static void shrink_height(unsigned long max_frame_size,
 		struct fb_var_screeninfo *var)
 {
-	DBG("can't fit FB into memory, reducing y\n");
 	var->yres_virtual = max_frame_size /
 		(var->xres_virtual * var->bits_per_pixel >> 3);
 
@@ -480,7 +473,6 @@ static void shrink_height(unsigned long max_frame_size,
 static void shrink_width(unsigned long max_frame_size,
 		struct fb_var_screeninfo *var)
 {
-	DBG("can't fit FB into memory, reducing x\n");
 	var->xres_virtual = max_frame_size / var->yres_virtual /
 		(var->bits_per_pixel >> 3);
 
@@ -515,14 +507,11 @@ static int check_fb_size(const struct omapfb_info *ofbi,
 				line_size, var);
 
 		if (check_vrfb_fb_size(max_frame_size, var)) {
-			DBG("cannot fit FB to memory\n");
 			return -EINVAL;
 		}
 
 		return 0;
 	}
-
-	DBG("max frame size %lu, line size %lu\n", max_frame_size, line_size);
 
 	if (line_size * var->yres_virtual > max_frame_size)
 		shrink_height(max_frame_size, var);
@@ -533,7 +522,6 @@ static int check_fb_size(const struct omapfb_info *ofbi,
 	}
 
 	if (line_size * var->yres_virtual > max_frame_size) {
-		DBG("cannot fit FB to memory\n");
 		return -EINVAL;
 	}
 
@@ -562,8 +550,6 @@ static int setup_vrfb_rotation(struct fb_info *fbi)
 
 	if (!rg->size || ofbi->rotation_type != OMAP_DSS_ROT_VRFB)
 		return 0;
-
-	DBG("setup_vrfb_rotation\n");
 
 	r = omapfb_mode_to_dss_mode(var, &mode);
 	if (r)
@@ -594,7 +580,6 @@ static int setup_vrfb_rotation(struct fb_info *fbi)
 		fix->smem_len = 0;
 		iounmap(vrfb->vaddr[0]);
 		vrfb->vaddr[0] = NULL;
-		DBG("setup_vrfb_rotation: reset fb\n");
 	}
 
 	if (vrfb->vaddr[0])
@@ -653,8 +638,6 @@ void set_fb_fix(struct fb_info *fbi)
 	struct fb_var_screeninfo *var = &fbi->var;
 	struct omapfb_info *ofbi = FB2OFB(fbi);
 	struct omapfb2_mem_region *rg = ofbi->region;
-
-	DBG("set_fb_fix\n");
 
 	/* used by open/write in fbmem.c */
 	fbi->screen_base = (char __iomem *)omapfb_get_region_vaddr(ofbi);
@@ -721,19 +704,13 @@ int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var)
 	int r;
 	u32 w = 0, h = 0;
 
-	DBG("check_fb_var %d\n", ofbi->id);
-
-	WARN_ON(!atomic_read(&ofbi->region->lock_count));
-
 	r = omapfb_mode_to_dss_mode(var, &mode);
 	if (r) {
-		DBG("cannot convert var to omap dss mode\n");
 		return r;
 	}
 
 	for (i = 0; i < ofbi->num_overlays; ++i) {
 		if ((ofbi->overlays[i]->supported_modes & mode) == 0) {
-			DBG("invalid mode\n");
 			return -EINVAL;
 		}
 	}
@@ -752,10 +729,6 @@ int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var)
 		var->xoffset = var->xres_virtual - var->xres;
 	if (var->yres + var->yoffset > var->yres_virtual)
 		var->yoffset = var->yres_virtual - var->yres;
-
-	DBG("xres = %d, yres = %d, vxres = %d, vyres = %d\n",
-			var->xres, var->yres,
-			var->xres_virtual, var->yres_virtual);
 
 	if (display)
 		omapdss_display_get_dimensions(display, &w, &h);
@@ -911,12 +884,6 @@ static void omapfb_calc_addr(const struct omapfb_info *ofbi,
 	data_start_p += offset;
 	data_start_v += offset;
 
-	if (offset)
-		DBG("offset %d, %d = %d\n",
-		    var->xoffset, var->yoffset, offset);
-
-	DBG("paddr %x, vaddr %p\n", data_start_p, data_start_v);
-
 	*paddr = data_start_p;
 	*vaddr = data_start_v;
 }
@@ -939,8 +906,6 @@ int omapfb_setup_overlay(struct fb_info *fbi, struct omap_overlay *ovl,
 	int rotation = var->rotate;
 	int i;
 
-	WARN_ON(!atomic_read(&ofbi->region->lock_count));
-
 	for (i = 0; i < ofbi->num_overlays; i++) {
 		if (ovl != ofbi->overlays[i])
 			continue;
@@ -948,9 +913,6 @@ int omapfb_setup_overlay(struct fb_info *fbi, struct omap_overlay *ovl,
 		rotation = (rotation + ofbi->rotation[i]) % 4;
 		break;
 	}
-
-	DBG("setup_overlay %d, posx %d, posy %d, outw %d, outh %d\n", ofbi->id,
-			posx, posy, outw, outh);
 
 	if (rotation == FB_ROTATE_CW || rotation == FB_ROTATE_CCW) {
 		xres = var->yres;
@@ -965,10 +927,8 @@ int omapfb_setup_overlay(struct fb_info *fbi, struct omap_overlay *ovl,
 				 &data_start_p, &data_start_v);
 
 	r = omapfb_mode_to_dss_mode(var, &mode);
-	if (r) {
-		DBG("omapfb_mode_to_dss_mode failed");
+	if (r)
 		goto err;
-	}
 
 	switch (var->nonstd) {
 	case OMAPFB_COLOR_YUV422:
@@ -1006,15 +966,12 @@ int omapfb_setup_overlay(struct fb_info *fbi, struct omap_overlay *ovl,
 	info.out_height = outh;
 
 	r = ovl->set_overlay_info(ovl, &info);
-	if (r) {
-		DBG("ovl->setup_overlay_info failed\n");
+	if (r) 
 		goto err;
-	}
 
 	return 0;
 
 err:
-	DBG("setup_overlay failed\n");
 	return r;
 }
 
@@ -1039,8 +996,6 @@ int omapfb_apply_changes(struct fb_info *fbi, int init)
 
 	for (i = 0; i < ofbi->num_overlays; i++) {
 		ovl = ofbi->overlays[i];
-
-		DBG("apply_changes, fb %d, ovl %d\n", ofbi->id, ovl->id);
 
 		if (ofbi->region->size == 0) {
 			/* the fb is not available. disable the overlay */
@@ -1102,7 +1057,6 @@ int omapfb_apply_changes(struct fb_info *fbi, int init)
 	}
 	return 0;
 err:
-	DBG("apply_changes failed\n");
 	return r;
 }
 
@@ -1112,8 +1066,6 @@ static int omapfb_check_var(struct fb_var_screeninfo *var, struct fb_info *fbi)
 {
 	struct omapfb_info *ofbi = FB2OFB(fbi);
 	int r;
-
-	DBG("check_var(%d)\n", FB2OFB(fbi)->id);
 
 	omapfb_get_mem_region(ofbi->region);
 
@@ -1165,8 +1117,6 @@ static int omapfb_set_par(struct fb_info *fbi)
 	struct omapfb_info *ofbi = FB2OFB(fbi);
 	int r;
 
-	DBG("set_par(%d)\n", FB2OFB(fbi)->id);
-
 	omapfb_get_mem_region(ofbi->region);
 
 	set_fb_fix(fbi);
@@ -1189,8 +1139,6 @@ static int omapfb_pan_display(struct fb_var_screeninfo *var,
 	struct omapfb_info *ofbi = FB2OFB(fbi);
 	struct fb_var_screeninfo new_var;
 	int r;
-
-	DBG("pan_display(%d)\n", FB2OFB(fbi)->id);
 
 	if (var->xoffset == fbi->var.xoffset &&
 	    var->yoffset == fbi->var.yoffset)
@@ -1260,8 +1208,6 @@ static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
 		goto error;
 
 	off += start;
-
-	DBG("user mmap region start %lx, len %d, off %lx\n", start, len, off);
 
 	vma->vm_pgoff = off >> PAGE_SHIFT;
 	vma->vm_flags |= VM_IO | VM_RESERVED;
@@ -1347,8 +1293,6 @@ static int _setcolreg(struct fb_info *fbi, u_int regno, u_int red, u_int green,
 static int omapfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
 		u_int transp, struct fb_info *info)
 {
-	DBG("setcolreg\n");
-
 	return _setcolreg(info, regno, red, green, blue, transp, 1);
 }
 
@@ -1357,8 +1301,6 @@ static int omapfb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
 	int count, index, r;
 	u16 *red, *green, *blue, *transp;
 	u16 trans = 0xffff;
-
-	DBG("setcmap\n");
 
 	red     = cmap->red;
 	green   = cmap->green;
@@ -1435,17 +1377,6 @@ exit:
 	return r;
 }
 
-#if 0
-/* XXX fb_read and fb_write are needed for VRFB */
-ssize_t omapfb_write(struct fb_info *info, const char __user *buf,
-		size_t count, loff_t *ppos)
-{
-	DBG("omapfb_write %d, %lu\n", count, (unsigned long)*ppos);
-	/* XXX needed for VRFB */
-	return count;
-}
-#endif
-
 static struct fb_ops omapfb_ops = {
 	.owner          = THIS_MODULE,
 	.fb_open        = omapfb_open,
@@ -1471,8 +1402,6 @@ static void omapfb_free_fbmem(struct fb_info *fbi)
 	struct omapfb2_mem_region *rg;
 
 	rg = ofbi->region;
-
-	WARN_ON(atomic_read(&rg->map_count));
 
 	if (rg->paddr)
 		if (omap_vram_free(rg->paddr, rg->size))
@@ -1507,8 +1436,6 @@ static int omapfb_free_all_fbmem(struct omapfb2_device *fbdev)
 {
 	int i;
 
-	DBG("free all fbmem\n");
-
 	for (i = 0; i < fbdev->num_fbs; i++) {
 		struct fb_info *fbi = fbdev->fbs[i];
 		omapfb_free_fbmem(fbi);
@@ -1540,11 +1467,8 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
 	size = PAGE_ALIGN(size);
 
 	if (!paddr) {
-		DBG("allocating %lu bytes for fb %d\n", size, ofbi->id);
 		r = omap_vram_alloc(OMAP_VRAM_MEMTYPE_SDRAM, size, &paddr);
 	} else {
-		DBG("reserving %lu bytes at %lx for fb %d\n", size, paddr,
-				ofbi->id);
 		r = omap_vram_reserve(paddr, size);
 	}
 
@@ -1562,7 +1486,6 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
 			return -ENOMEM;
 		}
 
-		DBG("allocated VRAM paddr %lx, vaddr %p\n", paddr, vaddr);
 	} else {
 		r = omap_vrfb_request_ctx(&rg->vrfb);
 		if (r) {
@@ -1615,8 +1538,6 @@ static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
 			size = max(omap_vrfb_min_phys_size(w, h, bytespp),
 					omap_vrfb_min_phys_size(h, w, bytespp));
 
-			DBG("adjusting fb mem size for VRFB, %u -> %lu\n",
-					w * h * bytespp, size);
 		} else {
 			size = w * h * bytespp;
 		}
@@ -1788,12 +1709,6 @@ static int omapfb_allocate_all_fbs(struct omapfb2_device *fbdev)
 		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[i]);
 		struct omapfb2_mem_region *rg;
 		rg = ofbi->region;
-
-		DBG("region%d phys %08x virt %p size=%lu\n",
-				i,
-				rg->paddr,
-				rg->vaddr,
-				rg->size);
 	}
 
 	return 0;
@@ -1844,17 +1759,12 @@ int omapfb_realloc_fbmem(struct fb_info *fbi, unsigned long size, int type)
 		return 0;
 
 	if (old_size == 0) {
-		DBG("initializing fb %d\n", ofbi->id);
 		r = omapfb_fb_init(fbdev, fbi);
-		if (r) {
-			DBG("omapfb_fb_init failed\n");
+		if (r)
 			goto err;
-		}
 		r = omapfb_apply_changes(fbi, 1);
-		if (r) {
-			DBG("omapfb_apply_changes failed\n");
+		if (r)
 			goto err;
-		}
 	} else {
 		struct fb_var_screeninfo new_var;
 		memcpy(&new_var, &fbi->var, sizeof(new_var));
@@ -1949,7 +1859,7 @@ static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi)
 				var->bits_per_pixel = 32;
 				break;
 			default:
-				dev_err(fbdev->dev, "illegal display "
+				dev_err(fbdev->dev, "illegal display " 
 						"bpp\n");
 				return -EINVAL;
 			}
@@ -1991,8 +1901,6 @@ static void omapfb_free_resources(struct omapfb2_device *fbdev)
 {
 	int i;
 
-	DBG("free_resources\n");
-
 	if (fbdev == NULL)
 		return;
 
@@ -2023,8 +1931,6 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
 	int r, i;
 
 	fbdev->num_fbs = 0;
-
-	DBG("create %d framebuffers\n",	CONFIG_FB_OMAP2_NUM_FBS);
 
 	/* allocate fb_infos */
 	for (i = 0; i < CONFIG_FB_OMAP2_NUM_FBS; i++) {
@@ -2060,8 +1966,6 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
 		fbdev->num_fbs++;
 	}
 
-	DBG("fb_infos allocated\n");
-
 	/* assign overlays for the fbs */
 	for (i = 0; i < min(fbdev->num_fbs, fbdev->num_overlays); i++) {
 		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[i]);
@@ -2076,8 +1980,6 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
 		dev_err(fbdev->dev, "failed to allocate fbmem\n");
 		return r;
 	}
-
-	DBG("fbmems allocated\n");
 
 	/* setup fb_infos */
 	for (i = 0; i < fbdev->num_fbs; i++) {
@@ -2094,18 +1996,13 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
 		}
 	}
 
-	DBG("fb_infos initialized\n");
-
 	for (i = 0; i < fbdev->num_fbs; i++) {
 		r = register_framebuffer(fbdev->fbs[i]);
 		if (r != 0) {
-			dev_err(fbdev->dev,
-				"registering framebuffer %d failed\n", i);
+			dev_err(fbdev->dev, "registering framebuffer %d failed\n", i);
 			return r;
 		}
 	}
-
-	DBG("framebuffers registered\n");
 
 	for (i = 0; i < fbdev->num_fbs; i++) {
 		struct fb_info *fbi = fbdev->fbs[i];
@@ -2131,14 +2028,11 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
 			r = omapfb_overlay_enable(ovl, 1);
 
 			if (r) {
-				dev_err(fbdev->dev,
-						"failed to enable overlay\n");
+				dev_err(fbdev->dev,	"failed to enable overlay\n");
 				return r;
 			}
 		}
 	}
-
-	DBG("create_framebuffers done\n");
 
 	return 0;
 }
@@ -2268,8 +2162,6 @@ static int omapfb_get_recommended_bpp(struct omapfb2_device *fbdev,
 		struct omap_dss_device *dssdev)
 {
 	int i;
-
-	BUG_ON(dssdev->driver->get_recommended_bpp == NULL);
 
 	for (i = 0; i < fbdev->num_bpp_overrides; ++i) {
 		if (dssdev == fbdev->bpp_overrides[i].dssdev)
@@ -2445,8 +2337,6 @@ static int omapfb_probe(struct platform_device *pdev)
 	struct omap_dss_device *dssdev;
 	u16 fb_ov_start_ix = 0;
 
-	DBG("omapfb_probe\n");
-
 	if (pdev->num_resources != 0) {
 		dev_err(&pdev->dev, "probed for an unknown device\n");
 		r = -ENODEV;
@@ -2549,7 +2439,6 @@ static int omapfb_probe(struct platform_device *pdev)
 
 	sec_getlog_supply_fbinfo(fbdev->fbs[0]);
 
-	DBG("create sysfs for fbs\n");
 	r = omapfb_create_sysfs(fbdev);
 	if (r) {
 		dev_err(fbdev->dev, "failed to create sysfs entries\n");
@@ -2599,8 +2488,6 @@ static struct platform_driver omapfb_driver = {
 
 static int __init omapfb_init(void)
 {
-	DBG("omapfb_init\n");
-
 	if (platform_driver_register(&omapfb_driver)) {
 		printk(KERN_ERR "failed to register omapfb driver\n");
 		return -ENODEV;
@@ -2611,7 +2498,6 @@ static int __init omapfb_init(void)
 
 static void __exit omapfb_exit(void)
 {
-	DBG("omapfb_exit\n");
 	platform_driver_unregister(&omapfb_driver);
 }
 
