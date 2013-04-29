@@ -18,6 +18,7 @@
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+
 #include <linux/module.h>
 #include <linux/opp.h>
 #include <linux/clk.h>
@@ -64,6 +65,8 @@
  *  25  | IVA_RBB_SB |                 | If trimmed RBB can be   | OMAP4470
  *      |            |                 | enabled at OPPSB on IVA |
  */
+
+
 #define OMAP4460_MPU_OPP_DPLL_TRIM			BIT(18)
 #define OMAP4460_MPU_OPP_DPLL_TURBO_RBB		BIT(20)
 #define OMAP4460_IVA_OPP_DPLL_TURBO_RBB		BIT(21)
@@ -92,20 +95,21 @@ struct omap4_ldo_abb_trim_data {
 /*
  * Structures containing OMAP4430 voltage supported and various
  * voltage dependent data for each VDD.
+ * 
+ * tuxafgmur: this seems, for now, the minimun values we can use
  */
-
-#define OMAP4430_VDD_MPU_OPP50_UV			1025000
-#define OMAP4430_VDD_MPU_OPP100_UV			1200000
-#define OMAP4430_VDD_MPU_OPPTURBO_UV		1313000
-#define OMAP4430_VDD_MPU_OPPNITRO_UV		1374000
+#define OMAP4430_VDD_MPU_OPP50_UV			 975000		/*  300 */
+#define OMAP4430_VDD_MPU_OPP100_UV			1150000		/*  600 */
+#define OMAP4430_VDD_MPU_OPPTURBO_UV		1265000		/*  800 */
+#define OMAP4430_VDD_MPU_OPPNITRO_UV		1325000		/* 1080 */
 #ifdef CONFIG_OMAP4430_TOP_CPU
-#define OMAP4430_VDD_MPU_OPPNITRO2_UV		1375000
-#define OMAP4430_VDD_MPU_OPPNITROSB_UV		1385000
-#define OMAP4430_VDD_MPU_OPPNITROSB2_UV		1395000
-#define OMAP4430_VDD_MPU_OPPSUPERSB_UV		1405000
-#define OMAP4430_VDD_MPU_OPPSUPERSB2_UV		1415000
+#define OMAP4430_VDD_MPU_OPPNITRO2_UV		1325000		/* 1200 */
+#define OMAP4430_VDD_MPU_OPPNITROSB_UV		1335000		/* 1350 */
+#define OMAP4430_VDD_MPU_OPPNITROSB2_UV		1385000		/* 1420 */
+#define OMAP4430_VDD_MPU_OPPSUPERSB_UV		1415000		/* 1480 */
+#define OMAP4430_VDD_MPU_OPPSUPERSB2_UV		1455000		/* 1520 */
 #else
-#define OMAP4430_VDD_MPU_OPPNITROSB_UV		1375000
+#define OMAP4430_VDD_MPU_OPPNITROSB_UV		1325000
 #endif
 
 struct omap_volt_data omap443x_vdd_mpu_volt_data[] = {
@@ -145,9 +149,12 @@ struct omap_volt_data omap443x_vdd_mpu_volt_data[] = {
 	VOLT_DATA_DEFINE(0, 0, 0, 0, 0, 0),
 };
 
-#define OMAP4430_VDD_IVA_OPP50_UV			1013000
-#define OMAP4430_VDD_IVA_OPP100_UV			1188000
-#define OMAP4430_VDD_IVA_OPPTURBO_UV		1300000
+/*
+ * tuxafgmur: this seems, for now, the minimun values we can use
+ */
+#define OMAP4430_VDD_IVA_OPP50_UV			 990000
+#define OMAP4430_VDD_IVA_OPP100_UV			1165000
+#define OMAP4430_VDD_IVA_OPPTURBO_UV		1275000
 
 struct omap_volt_data omap443x_vdd_iva_volt_data[] = {
 	VOLT_DATA_DEFINE(OMAP4430_VDD_IVA_OPP50_UV, 0,
@@ -162,10 +169,13 @@ struct omap_volt_data omap443x_vdd_iva_volt_data[] = {
 	VOLT_DATA_DEFINE(0, 0, 0, 0, 0, 0),
 };
 
-#define OMAP4430_VDD_CORE_OPP50_UV			1025000
-#define OMAP4430_VDD_CORE_OPP100_UV			1200000
+/*
+ * tuxafgmur: this seems, for now, the minimun values we can use
+ */
+#define OMAP4430_VDD_CORE_OPP50_UV			1000000
+#define OMAP4430_VDD_CORE_OPP100_UV			1175000
 #if defined(CONFIG_OMAP4430_TOP_CPU) || defined(CONFIG_OMAP4430_TOP_GPU)
-#define OMAP4430_VDD_CORE_OPP100_OV_UV		1250000
+#define OMAP4430_VDD_CORE_OPP100_OV_UV		1225000
 #endif
 
 struct omap_volt_data omap443x_vdd_core_volt_data[] = {
@@ -185,14 +195,14 @@ struct omap_volt_data omap443x_vdd_core_volt_data[] = {
 
 /* Dependency of domains are as follows for OMAP4430 (OPP based):
  *
- *	MPU	IVA	CORE
- *	50	50	50+
- *	50	100+	100
- *	100+	50	100
+ *	 MPU	IVA	   CORE
+ *	 50	     50	     50+
+ *	 50	    100+    100
+ *	100+	 50	    100
  *	100+	100+	100
+ * 
+ * OMAP 4430 MPU Core VDD dependency table
  */
-
-/* OMAP 4430 MPU Core VDD dependency table */
 static struct omap_vdd_dep_volt omap443x_vdd_mpu_core_dep_data[] = {
 	{.main_vdd_volt = OMAP4430_VDD_MPU_OPP50_UV,
 			.dep_vdd_volt = OMAP4430_VDD_CORE_OPP50_UV},
@@ -341,6 +351,8 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 			196608000, OMAP4430_VDD_IVA_OPP100_UV),
 #endif
 };
+
+
 
 #define OMAP4460_VDD_MPU_OPP50_UV			1025000
 #define OMAP4460_VDD_MPU_OPP100_UV			1203000
@@ -846,7 +858,6 @@ static struct omap_opp_def __initdata omap447x_opp_high_def_list[] = {
         OPP_INITIALIZER("bb2d", "dpll_per_m6x2_ck", "core", true, 
 			384000000, OMAP4470_VDD_CORE_OPP100_OV_UV),
 
-
 	/* FDIF OPP1 - OPP25 */
 	OPP_INITIALIZER("fdif", "fdif_fck", "core", true,
 			32000000, OMAP4470_VDD_CORE_OPP50_UV),
@@ -922,7 +933,7 @@ static void __init omap4_abb_update(struct omap_volt_data *vtable,
 		vtable++;
 	}
 	/* WARN noticably to get the developer to fix */
-	WARN(1, "%s: voltage %ld could not be set to ABB %d\n",
+	WARN(1, "%s: Voltage %ld could not be set to ABB %d\n",
 	     __func__, voltage, abb_type);
 }
 
