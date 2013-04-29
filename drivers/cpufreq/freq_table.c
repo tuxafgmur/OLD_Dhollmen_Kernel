@@ -28,13 +28,9 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
 
 	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
 		unsigned int freq = table[i].frequency;
-		if (freq == CPUFREQ_ENTRY_INVALID) {
-			pr_debug("table entry %u is invalid, skipping\n", i);
-
+		if (freq == CPUFREQ_ENTRY_INVALID)
 			continue;
-		}
-		pr_debug("table entry %u: %u kHz, %u index\n",
-					i, freq, table[i].index);
+		
 		if (freq < min_freq)
 			min_freq = freq;
 		if (freq > max_freq)
@@ -59,9 +55,6 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
 	unsigned int i;
 	unsigned int count = 0;
 
-	pr_debug("request for verification of policy (%u - %u kHz) for cpu %u\n",
-					policy->min, policy->max, policy->cpu);
-
 	if (!cpu_online(policy->cpu))
 		return -EINVAL;
 
@@ -84,9 +77,6 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
 	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
 				     policy->cpuinfo.max_freq);
 
-	pr_debug("verification lead to (%u - %u kHz) for cpu %u\n",
-				policy->min, policy->max, policy->cpu);
-
 	return 0;
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_verify);
@@ -107,9 +97,6 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
 		.frequency = 0,
 	};
 	unsigned int i;
-
-	pr_debug("request for target %u kHz (relation: %u) for cpu %u\n",
-					target_freq, relation, policy->cpu);
 
 	switch (relation) {
 	case CPUFREQ_RELATION_H:
@@ -165,9 +152,6 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
 	} else
 		*index = optimal.index;
 
-	pr_debug("target is %u (%u kHz, %u)\n", *index, table[*index].frequency,
-		table[*index].index);
-
 	return 0;
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
@@ -180,8 +164,7 @@ int cpufreq_frequency_table_next_lowest(struct cpufreq_policy *policy,
 	int optimal_index = -1;
 	int i = 0;
 
-	if (!policy || IS_ERR(policy) || !table || IS_ERR(table) ||
-			!index || IS_ERR(index))
+	if (!policy || IS_ERR(policy) || !table || IS_ERR(table) || !index || IS_ERR(index))
 		return -ENOMEM;
 
 	cur_freq = policy->cur;
@@ -193,15 +176,12 @@ int cpufreq_frequency_table_next_lowest(struct cpufreq_policy *policy,
 
 	/* walk the list, find closest freq to cur_freq that is below it */
 	while(table[i].frequency != CPUFREQ_TABLE_END) {
-		if (table[i].frequency < cur_freq &&
-				table[i].frequency >= next_lowest_freq) {
+		if (table[i].frequency < cur_freq && table[i].frequency >= next_lowest_freq) {
 			next_lowest_freq = table[i].frequency;
 			optimal_index = table[i].index;
 		}
-
 		i++;
 	}
-
 	*index = optimal_index;
 
 	return 0;
@@ -216,8 +196,7 @@ int cpufreq_frequency_table_next_highest(struct cpufreq_policy *policy,
 	int optimal_index = -1;
 	int i = 0;
 
-	if (!policy || IS_ERR(policy) || !table || IS_ERR(table) ||
-			!index || IS_ERR(index))
+	if (!policy || IS_ERR(policy) || !table || IS_ERR(table) || !index || IS_ERR(index))
 		return -ENOMEM;
 
 	cur_freq = policy->cur;
@@ -229,12 +208,10 @@ int cpufreq_frequency_table_next_highest(struct cpufreq_policy *policy,
 
 	/* walk the list, find closest freq to cur_freq that is above it */
 	while(table[i].frequency != CPUFREQ_TABLE_END) {
-		if (table[i].frequency > cur_freq &&
-				table[i].frequency <= next_higher_freq) {
+		if (table[i].frequency > cur_freq && table[i].frequency <= next_higher_freq) {
 			next_higher_freq = table[i].frequency;
 			optimal_index = table[i].index;
 		}
-
 		i++;
 	}
 
@@ -244,7 +221,9 @@ int cpufreq_frequency_table_next_highest(struct cpufreq_policy *policy,
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_next_highest);
 
+
 static DEFINE_PER_CPU(struct cpufreq_frequency_table *, cpufreq_show_table);
+
 /**
  * show_available_freqs - show available frequencies for the specified CPU
  */
@@ -279,6 +258,7 @@ struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
 };
 EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_available_freqs);
 
+
 /*
  * if you use these, you must assure that the frequency table is valid
  * all the time between get_attr and put_attr!
@@ -286,14 +266,12 @@ EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_available_freqs);
 void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
 				      unsigned int cpu)
 {
-	pr_debug("setting show_table for cpu %u to %p\n", cpu, table);
 	per_cpu(cpufreq_show_table, cpu) = table;
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_get_attr);
 
 void cpufreq_frequency_table_put_attr(unsigned int cpu)
 {
-	pr_debug("clearing show_table for cpu %u\n", cpu);
 	per_cpu(cpufreq_show_table, cpu) = NULL;
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
