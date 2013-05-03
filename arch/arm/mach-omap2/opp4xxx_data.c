@@ -99,15 +99,14 @@ struct omap4_ldo_abb_trim_data {
  * tuxafgmur: this seems, for now, the minimun values we can use
  */
 #define OMAP4430_VDD_MPU_OPP50_UV			 975000		/*  300 */
-#define OMAP4430_VDD_MPU_OPP100_UV			1150000		/*  600 */
+#define OMAP4430_VDD_MPU_OPP100_UV			1145000		/*  600 */
 #define OMAP4430_VDD_MPU_OPPTURBO_UV		1265000		/*  800 */
 #define OMAP4430_VDD_MPU_OPPNITRO_UV		1325000		/* 1080 */
 #ifdef CONFIG_OMAP4430_TOP_CPU
 #define OMAP4430_VDD_MPU_OPPNITRO2_UV		1325000		/* 1200 */
-#define OMAP4430_VDD_MPU_OPPNITROSB_UV		1335000		/* 1350 */
-#define OMAP4430_VDD_MPU_OPPNITROSB2_UV		1385000		/* 1420 */
+#define OMAP4430_VDD_MPU_OPPNITROSB_UV		1345000		/* 1350 */
+#define OMAP4430_VDD_MPU_OPPNITROSB2_UV		1395000		/* 1420 */
 #define OMAP4430_VDD_MPU_OPPSUPERSB_UV		1415000		/* 1480 */
-#define OMAP4430_VDD_MPU_OPPSUPERSB2_UV		1455000		/* 1520 */
 #else
 #define OMAP4430_VDD_MPU_OPPNITROSB_UV		1325000
 #endif
@@ -136,9 +135,6 @@ struct omap_volt_data omap443x_vdd_mpu_volt_data[] = {
 			OMAP44XX_CONTROL_FUSE_MPU_OPPNITROSB,
 			0xfa, 0x27, OMAP_ABB_FAST_OPP),
 	VOLT_DATA_DEFINE(OMAP4430_VDD_MPU_OPPSUPERSB_UV, 0,
-			OMAP44XX_CONTROL_FUSE_MPU_OPPSUPERSB,
-			0xfa, 0x27, OMAP_ABB_FAST_OPP),
-	VOLT_DATA_DEFINE(OMAP4430_VDD_MPU_OPPSUPERSB2_UV, 0,
 			OMAP44XX_CONTROL_FUSE_MPU_OPPSUPERSB,
 			0xfa, 0x27, OMAP_ABB_FAST_OPP),
 #else
@@ -221,8 +217,6 @@ static struct omap_vdd_dep_volt omap443x_vdd_mpu_core_dep_data[] = {
 			.dep_vdd_volt = OMAP4430_VDD_CORE_OPP100_UV},
 	{.main_vdd_volt = OMAP4430_VDD_MPU_OPPSUPERSB_UV,
 			.dep_vdd_volt = OMAP4430_VDD_CORE_OPP100_OV_UV},
-	{.main_vdd_volt = OMAP4430_VDD_MPU_OPPSUPERSB2_UV,
-			.dep_vdd_volt = OMAP4430_VDD_CORE_OPP100_OV_UV},
 #else
 	{.main_vdd_volt = OMAP4430_VDD_MPU_OPPNITROSB_UV,
 			.dep_vdd_volt = OMAP4430_VDD_CORE_OPP100_UV},
@@ -283,9 +277,6 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 	/* MPU OPP7 - OPP-SUPERSB */
 	OPP_INITIALIZER("mpu", "dpll_mpu_ck", "mpu", false,
 			1480000000, OMAP4430_VDD_MPU_OPPSUPERSB_UV),
-	/* MPU OPP8 - OPP-SUPERSB2 */
-	OPP_INITIALIZER("mpu", "dpll_mpu_ck", "mpu", false,
-			1520000000, OMAP4430_VDD_MPU_OPPSUPERSB2_UV),
 #else
 	/* MPU OPP4 - OPP-NITROSB */
 	OPP_INITIALIZER("mpu", "dpll_mpu_ck", "mpu", false,
