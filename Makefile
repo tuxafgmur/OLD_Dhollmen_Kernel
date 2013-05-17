@@ -347,13 +347,12 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   = -DMODULE -pipe -mcpu=cortex-a9 -mfpu=neon -funswitch-loops -fpredictive-commoning -fgcse-after-reload -fipa-cp-clone -fsingle-precision-constant -ftree-vectorize 
+CFLAGS_MODULE   = -DMODULE -pipe -mcpu=cortex-a9 -mfpu=neon -funswitch-loops -fpredictive-commoning -fgcse-after-reload -fipa-cp-clone -fsingle-precision-constant -ftree-vectorize -fno-pic
 AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
 CFLAGS_KERNEL	= -O2 -pipe -mtune=cortex-a9 -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3 -ftree-vectorize
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
-
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
@@ -364,9 +363,9 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := $(CFLAGS_KERNEL) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS   := $(CFLAGS_KERNEL) -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration \
-		   -Wno-format-security -fno-delete-null-pointer-checks
+		   -Wno-format-security -fno-delete-null-pointer-checks -funswitch-loops -O3 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS         := -D__ASSEMBLY__
