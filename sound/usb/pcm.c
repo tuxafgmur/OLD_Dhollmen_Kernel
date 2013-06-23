@@ -299,15 +299,6 @@ static int set_format(struct snd_usb_substream *subs, struct audioformat *fmt)
 
 	snd_usb_set_format_quirk(subs, fmt);
 
-#if 0
-	printk(KERN_DEBUG
-	       "setting done: format = %d, rate = %d..%d, channels = %d\n",
-	       fmt->format, fmt->rate_min, fmt->rate_max, fmt->channels);
-	printk(KERN_DEBUG
-	       "  datapipe = 0x%0x, syncpipe = 0x%0x\n",
-	       subs->datapipe, subs->syncpipe);
-#endif
-
 	return 0;
 }
 
@@ -339,8 +330,6 @@ static int snd_usb_hw_params(struct snd_pcm_substream *substream,
 	channels = params_channels(hw_params);
 	fmt = find_format(subs, format, rate, channels);
 	if (!fmt) {
-		snd_printd(KERN_DEBUG "cannot set format: format = %#x, rate = %d, channels = %d\n",
-			   format, rate, channels);
 		return -EINVAL;
 	}
 
@@ -454,28 +443,23 @@ static int hw_check_valid_format(struct snd_usb_substream *subs,
 	check_fmts.bits[1] = (u32)(fp->formats >> 32);
 	snd_mask_intersect(&check_fmts, fmts);
 	if (snd_mask_empty(&check_fmts)) {
-		hwc_debug("   > check: no supported format %d\n", fp->format);
 		return 0;
 	}
 	/* check the channels */
 	if (fp->channels < ct->min || fp->channels > ct->max) {
-		hwc_debug("   > check: no valid channels %d (%d/%d)\n", fp->channels, ct->min, ct->max);
 		return 0;
 	}
 	/* check the rate is within the range */
 	if (fp->rate_min > it->max || (fp->rate_min == it->max && it->openmax)) {
-		hwc_debug("   > check: rate_min %d > max %d\n", fp->rate_min, it->max);
 		return 0;
 	}
 	if (fp->rate_max < it->min || (fp->rate_max == it->min && it->openmin)) {
-		hwc_debug("   > check: rate_max %d < min %d\n", fp->rate_max, it->min);
 		return 0;
 	}
 	/* check whether the period time is >= the data packet interval */
 	if (snd_usb_get_speed(subs->dev) != USB_SPEED_FULL) {
 		ptime = 125 * (1 << fp->datainterval);
 		if (ptime > pt->max || (ptime == pt->max && pt->openmax)) {
-			hwc_debug("   > check: ptime %u > max %u\n", ptime, pt->max);
 			return 0;
 		}
 	}
@@ -491,7 +475,6 @@ static int hw_rule_rate(struct snd_pcm_hw_params *params,
 	unsigned int rmin, rmax;
 	int changed;
 
-	hwc_debug("hw_rule_rate: (%d,%d)\n", it->min, it->max);
 	changed = 0;
 	rmin = rmax = 0;
 	list_for_each(p, &subs->fmt_list) {
@@ -511,7 +494,6 @@ static int hw_rule_rate(struct snd_pcm_hw_params *params,
 	}
 
 	if (!changed) {
-		hwc_debug("  --> get empty\n");
 		it->empty = 1;
 		return -EINVAL;
 	}
@@ -531,7 +513,6 @@ static int hw_rule_rate(struct snd_pcm_hw_params *params,
 		it->empty = 1;
 		return -EINVAL;
 	}
-	hwc_debug("  --> (%d, %d) (changed = %d)\n", it->min, it->max, changed);
 	return changed;
 }
 
@@ -545,7 +526,6 @@ static int hw_rule_channels(struct snd_pcm_hw_params *params,
 	unsigned int rmin, rmax;
 	int changed;
 
-	hwc_debug("hw_rule_channels: (%d,%d)\n", it->min, it->max);
 	changed = 0;
 	rmin = rmax = 0;
 	list_for_each(p, &subs->fmt_list) {
@@ -565,7 +545,6 @@ static int hw_rule_channels(struct snd_pcm_hw_params *params,
 	}
 
 	if (!changed) {
-		hwc_debug("  --> get empty\n");
 		it->empty = 1;
 		return -EINVAL;
 	}
@@ -585,7 +564,6 @@ static int hw_rule_channels(struct snd_pcm_hw_params *params,
 		it->empty = 1;
 		return -EINVAL;
 	}
-	hwc_debug("  --> (%d, %d) (changed = %d)\n", it->min, it->max, changed);
 	return changed;
 }
 
@@ -599,7 +577,6 @@ static int hw_rule_format(struct snd_pcm_hw_params *params,
 	u32 oldbits[2];
 	int changed;
 
-	hwc_debug("hw_rule_format: %x:%x\n", fmt->bits[0], fmt->bits[1]);
 	fbits = 0;
 	list_for_each(p, &subs->fmt_list) {
 		struct audioformat *fp;
@@ -614,11 +591,9 @@ static int hw_rule_format(struct snd_pcm_hw_params *params,
 	fmt->bits[0] &= (u32)fbits;
 	fmt->bits[1] &= (u32)(fbits >> 32);
 	if (!fmt->bits[0] && !fmt->bits[1]) {
-		hwc_debug("  --> get empty\n");
 		return -EINVAL;
 	}
 	changed = (oldbits[0] != fmt->bits[0] || oldbits[1] != fmt->bits[1]);
-	hwc_debug("  --> %x:%x (changed = %d)\n", fmt->bits[0], fmt->bits[1], changed);
 	return changed;
 }
 
@@ -633,7 +608,6 @@ static int hw_rule_period_time(struct snd_pcm_hw_params *params,
 	int changed;
 
 	it = hw_param_interval(params, SNDRV_PCM_HW_PARAM_PERIOD_TIME);
-	hwc_debug("hw_rule_period_time: (%u,%u)\n", it->min, it->max);
 	min_datainterval = 0xff;
 	list_for_each_entry(fp, &subs->fmt_list, list) {
 		if (!hw_check_valid_format(subs, params, fp))
@@ -641,7 +615,6 @@ static int hw_rule_period_time(struct snd_pcm_hw_params *params,
 		min_datainterval = min(min_datainterval, fp->datainterval);
 	}
 	if (min_datainterval == 0xff) {
-		hwc_debug("  --> get empty\n");
 		it->empty = 1;
 		return -EINVAL;
 	}
@@ -656,7 +629,6 @@ static int hw_rule_period_time(struct snd_pcm_hw_params *params,
 		it->empty = 1;
 		return -EINVAL;
 	}
-	hwc_debug("  --> (%u,%u) (changed = %d)\n", it->min, it->max, changed);
 	return changed;
 }
 

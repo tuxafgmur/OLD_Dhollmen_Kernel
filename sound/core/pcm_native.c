@@ -188,14 +188,7 @@ int snd_pcm_hw_refine(struct snd_pcm_substream *substream,
 			return -EINVAL;
 		if (!(params->rmask & (1 << k)))
 			continue;
-#ifdef RULES_DEBUG
-		printk(KERN_DEBUG "%s = ", snd_pcm_hw_param_names[k]);
-		printk("%04x%04x%04x%04x -> ", m->bits[3], m->bits[2], m->bits[1], m->bits[0]);
-#endif
 		changed = snd_mask_refine(m, constrs_mask(constrs, k));
-#ifdef RULES_DEBUG
-		printk("%04x%04x%04x%04x\n", m->bits[3], m->bits[2], m->bits[1], m->bits[0]);
-#endif
 		if (changed)
 			params->cmask |= 1 << k;
 		if (changed < 0)
@@ -208,25 +201,7 @@ int snd_pcm_hw_refine(struct snd_pcm_substream *substream,
 			return -EINVAL;
 		if (!(params->rmask & (1 << k)))
 			continue;
-#ifdef RULES_DEBUG
-		printk(KERN_DEBUG "%s = ", snd_pcm_hw_param_names[k]);
-		if (i->empty)
-			printk("empty");
-		else
-			printk("%c%u %u%c", 
-			       i->openmin ? '(' : '[', i->min,
-			       i->max, i->openmax ? ')' : ']');
-		printk(" -> ");
-#endif
 		changed = snd_interval_refine(i, constrs_interval(constrs, k));
-#ifdef RULES_DEBUG
-		if (i->empty)
-			printk("empty\n");
-		else 
-			printk("%c%u %u%c\n", 
-			       i->openmin ? '(' : '[', i->min,
-			       i->max, i->openmax ? ')' : ']');
-#endif
 		if (changed)
 			params->cmask |= 1 << k;
 		if (changed < 0)
@@ -253,41 +228,7 @@ int snd_pcm_hw_refine(struct snd_pcm_substream *substream,
 			}
 			if (!doit)
 				continue;
-#ifdef RULES_DEBUG
-			printk(KERN_DEBUG "Rule %d [%p]: ", k, r->func);
-			if (r->var >= 0) {
-				printk("%s = ", snd_pcm_hw_param_names[r->var]);
-				if (hw_is_mask(r->var)) {
-					m = hw_param_mask(params, r->var);
-					printk("%x", *m->bits);
-				} else {
-					i = hw_param_interval(params, r->var);
-					if (i->empty)
-						printk("empty");
-					else
-						printk("%c%u %u%c", 
-						       i->openmin ? '(' : '[', i->min,
-						       i->max, i->openmax ? ')' : ']');
-				}
-			}
-#endif
 			changed = r->func(params, r);
-#ifdef RULES_DEBUG
-			if (r->var >= 0) {
-				printk(" -> ");
-				if (hw_is_mask(r->var))
-					printk("%x", *m->bits);
-				else {
-					if (i->empty)
-						printk("empty");
-					else
-						printk("%c%u %u%c", 
-						       i->openmin ? '(' : '[', i->min,
-						       i->max, i->openmax ? ')' : ']');
-				}
-			}
-			printk("\n");
-#endif
 			rstamps[k] = stamp;
 			if (changed && r->var >= 0) {
 				params->cmask |= (1 << r->var);
@@ -1506,7 +1447,6 @@ static int snd_pcm_drain(struct snd_pcm_substream *substream,
 			if (substream->runtime->status->state == SNDRV_PCM_STATE_SUSPENDED)
 				result = -ESTRPIPE;
 			else {
-				snd_printd("playback drain error (DMA or IRQ trouble?)\n");
 				snd_pcm_stop(substream, SNDRV_PCM_STATE_SETUP);
 				result = -EIO;
 			}
@@ -2034,12 +1974,10 @@ int snd_pcm_open_substream(struct snd_pcm *pcm, int stream,
 
 	err = snd_pcm_hw_constraints_init(substream);
 	if (err < 0) {
-		snd_printd("snd_pcm_hw_constraints_init failed\n");
 		goto error;
 	}
 
 	if (substream->ops == NULL) {
-		snd_printd("cannot open back end PCMs directly\n");
 		err = -ENODEV;
 		goto error;
 	}
@@ -2051,7 +1989,6 @@ int snd_pcm_open_substream(struct snd_pcm *pcm, int stream,
 
 	err = snd_pcm_hw_constraints_complete(substream);
 	if (err < 0) {
-		snd_printd("snd_pcm_hw_constraints_complete failed\n");
 		goto error;
 	}
 
@@ -2577,7 +2514,6 @@ static int snd_pcm_common_ioctl1(struct file *file,
 		return res;
 	}
 	}
-	snd_printd("unknown ioctl = 0x%x\n", cmd);
 	return -ENOTTY;
 }
 

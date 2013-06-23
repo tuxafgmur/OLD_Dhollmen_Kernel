@@ -195,7 +195,6 @@ int snd_rawmidi_drain_output(struct snd_rawmidi_substream *substream)
 	if (signal_pending(current))
 		err = -ERESTARTSYS;
 	if (runtime->avail < runtime->buffer_size && !timeout) {
-		snd_printk(KERN_WARNING "rawmidi drain error (avail = %li, buffer_size = %li)\n", (long)runtime->avail, (long)runtime->buffer_size);
 		err = -EIO;
 	}
 	runtime->drain = 0;
@@ -882,7 +881,6 @@ int snd_rawmidi_receive(struct snd_rawmidi_substream *substream,
 	if (!substream->opened)
 		return -EBADFD;
 	if (runtime->buffer == NULL) {
-		snd_printd("snd_rawmidi_receive: input is not active!!!\n");
 		return -EINVAL;
 	}
 	spin_lock_irqsave(&runtime->lock, flags);
@@ -1039,7 +1037,6 @@ int snd_rawmidi_transmit_empty(struct snd_rawmidi_substream *substream)
 	unsigned long flags;
 
 	if (runtime->buffer == NULL) {
-		snd_printd("snd_rawmidi_transmit_empty: output is not active!!!\n");
 		return 1;
 	}
 	spin_lock_irqsave(&runtime->lock, flags);
@@ -1070,7 +1067,6 @@ int snd_rawmidi_transmit_peek(struct snd_rawmidi_substream *substream,
 	struct snd_rawmidi_runtime *runtime = substream->runtime;
 
 	if (runtime->buffer == NULL) {
-		snd_printd("snd_rawmidi_transmit_peek: output is not active!!!\n");
 		return -EINVAL;
 	}
 	result = 0;
@@ -1120,7 +1116,6 @@ int snd_rawmidi_transmit_ack(struct snd_rawmidi_substream *substream, int count)
 	struct snd_rawmidi_runtime *runtime = substream->runtime;
 
 	if (runtime->buffer == NULL) {
-		snd_printd("snd_rawmidi_transmit_ack: output is not active!!!\n");
 		return -EINVAL;
 	}
 	spin_lock_irqsave(&runtime->lock, flags);

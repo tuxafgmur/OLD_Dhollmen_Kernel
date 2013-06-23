@@ -425,9 +425,7 @@ int snd_usb_mixer_set_ctl_value(struct usb_mixer_elem_info *cval,
 		/* audio class v2 controls are always 2 bytes in size */
 		val_len = sizeof(__u16);
 
-		/* FIXME */
 		if (request != UAC_SET_CUR) {
-			snd_printdd(KERN_WARNING "RANGE setting not yet supported\n");
 			return -EINVAL;
 		}
 
@@ -469,8 +467,6 @@ static int set_cur_mix_value(struct usb_mixer_elem_info *cval, int channel,
 		cval->ch_readonly & (1 << (channel - 1));
 
 	if (read_only) {
-		snd_printdd(KERN_INFO "%s(): channel %d of control %d is read_only\n",
-			    __func__, channel, cval->control);
 		return 0;
 	}
 
@@ -782,16 +778,12 @@ static void volume_control_quirks(struct usb_mixer_elem_info *cval,
 	 */
 		if (!strcmp(kctl->id.name, "PCM Playback Volume") &&
 		    cval->min == -15616) {
-			snd_printk(KERN_INFO
-				 "set volume quirk for UDA1321/N101 chip\n");
 			cval->max = -256;
 		}
 		break;
 
 	case USB_ID(0x046d, 0x09a4):
 		if (!strcmp(kctl->id.name, "Mic Capture Volume")) {
-			snd_printk(KERN_INFO
-				"set volume quirk for QuickCam E3500\n");
 			cval->min = 6080;
 			cval->max = 8768;
 			cval->res = 192;
@@ -806,8 +798,6 @@ static void volume_control_quirks(struct usb_mixer_elem_info *cval,
 	 * Proboly there is some logitech magic behind this number --fishor
 	 */
 		if (!strcmp(kctl->id.name, "Mic Capture Volume")) {
-			snd_printk(KERN_INFO
-				"set resolution quirk: cval->res = 384\n");
 			cval->res = 384;
 		}
 		break;
@@ -1178,18 +1168,6 @@ static void build_feature_ctl(struct mixer_build *state, void *raw_desc,
 	 * to be sure. 384 is a resolution magic number found on Logitech
 	 * devices. It will definitively catch all buggy Logitech devices.
 	 */
-	if (range > 384) {
-		snd_printk(KERN_WARNING "usb_audio: Warning! Unlikely big "
-			   "volume range (=%u), cval->res is probably wrong.",
-			   range);
-		snd_printk(KERN_WARNING "usb_audio: [%d] FU [%s] ch = %d, "
-			   "val = %d/%d/%d", cval->id,
-			   kctl->id.name, cval->channels,
-			   cval->min, cval->max, cval->res);
-	}
-
-	snd_printdd(KERN_INFO "[%d] FU [%s] ch = %d, val = %d/%d/%d\n",
-		    cval->id, kctl->id.name, cval->channels, cval->min, cval->max, cval->res);
 	snd_usb_mixer_add_control(state->mixer, kctl);
 }
 
@@ -1243,8 +1221,6 @@ static int parse_audio_feature_unit(struct mixer_build *state, int unitid, void 
 	/* master configuration quirks */
 	switch (state->chip->usb_id) {
 	case USB_ID(0x08bb, 0x2702):
-		snd_printk(KERN_INFO
-			   "usbmixer: master volume quirk for PCM2702 chip\n");
 		/* disable non-functional volume control */
 		master_bits &= ~UAC_CONTROL_BIT(UAC_FU_VOLUME);
 		break;
@@ -1358,8 +1334,6 @@ static void build_mixer_unit_ctl(struct mixer_build *state,
 		len = sprintf(kctl->id.name, "Mixer Source %d", in_ch + 1);
 	append_ctl_name(kctl, " Volume");
 
-	snd_printdd(KERN_INFO "[%d] MU [%s] ch = %d, val = %d/%d\n",
-		    cval->id, kctl->id.name, cval->channels, cval->min, cval->max);
 	snd_usb_mixer_add_control(state->mixer, kctl);
 }
 
@@ -1380,7 +1354,6 @@ static int parse_audio_mixer_unit(struct mixer_build *state, int unitid, void *r
 	}
 	/* no bmControls field (e.g. Maya44) -> ignore */
 	if (desc->bLength <= 10 + input_pins) {
-		snd_printdd(KERN_INFO "MU %d has no bmControls field\n", unitid);
 		return 0;
 	}
 
@@ -1659,8 +1632,6 @@ static int build_audio_procunit(struct mixer_build *state, int unitid, void *raw
 		append_ctl_name(kctl, " ");
 		append_ctl_name(kctl, valinfo->suffix);
 
-		snd_printdd(KERN_INFO "[%d] PU [%s] ch = %d, val = %d/%d\n",
-			    cval->id, kctl->id.name, cval->channels, cval->min, cval->max);
 		if ((err = snd_usb_mixer_add_control(state->mixer, kctl)) < 0)
 			return err;
 	}
@@ -1876,8 +1847,6 @@ static int parse_audio_selector_unit(struct mixer_build *state, int unitid, void
 			append_ctl_name(kctl, " Playback Source");
 	}
 
-	snd_printdd(KERN_INFO "[%d] SU [%s] items = %d\n",
-		    cval->id, kctl->id.name, desc->bNrInPins);
 	if ((err = snd_usb_mixer_add_control(state->mixer, kctl)) < 0)
 		return err;
 
@@ -2074,8 +2043,6 @@ static void snd_usb_mixer_interrupt_v2(struct usb_mixer_interface *mixer,
 	__u8 channel = value & 0xff;
 
 	if (channel >= MAX_CHANNELS) {
-		snd_printk(KERN_DEBUG "%s(): bogus channel number %d\n",
-				__func__, channel);
 		return;
 	}
 
@@ -2104,8 +2071,6 @@ static void snd_usb_mixer_interrupt_v2(struct usb_mixer_interface *mixer,
 			break;
 
 		default:
-			snd_printk(KERN_DEBUG "unknown attribute %d in interrupt\n",
-						attribute);
 			break;
 		} /* switch */
 	}
@@ -2126,10 +2091,6 @@ static void snd_usb_mixer_interrupt(struct urb *urb)
 		for (status = urb->transfer_buffer;
 		     len >= sizeof(*status);
 		     len -= sizeof(*status), status++) {
-			snd_printd(KERN_DEBUG "status interrupt: %02x %02x\n",
-						status->bStatusType,
-						status->bOriginator);
-
 			/* ignore any notifications not from the control interface */
 			if ((status->bStatusType & UAC1_STATUS_TYPE_ORIG_MASK) !=
 				UAC1_STATUS_TYPE_ORIG_AUDIO_CONTROL_IF)

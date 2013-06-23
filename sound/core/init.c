@@ -109,11 +109,9 @@ static inline int init_info_for_card(struct snd_card *card)
 	struct snd_info_entry *entry;
 
 	if ((err = snd_info_card_register(card)) < 0) {
-		snd_printd("unable to create card info\n");
 		return err;
 	}
 	if ((entry = snd_info_create_card_entry(card, "id", card->proc_root)) == NULL) {
-		snd_printd("unable to create card entry\n");
 		return err;
 	}
 	entry->c.text.read = snd_card_id_read;
