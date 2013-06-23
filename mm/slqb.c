@@ -29,7 +29,7 @@
 struct slqb_page {
 	union {
 		struct {
-				unsigned long	flags;		/* mandatory */
+			unsigned long	flags;			/* mandatory */
 			atomic_t	_count;				/* mandatory */
 			unsigned int	inuse;			/* Nr of objects */
 			struct kmem_cache_list *list;	/* Pointer to list */
@@ -169,8 +169,7 @@ static inline struct slqb_page *virt_to_head_slqb_page(const void *addr)
 	return (struct slqb_page *)p;
 }
 
-static inline void __free_slqb_pages(struct slqb_page *page, unsigned int order,
-					int pages)
+static inline void __free_slqb_pages(struct slqb_page *page, unsigned int order, int pages)
 {
 	struct page *p = &page->page;
 
@@ -211,7 +210,6 @@ static inline int slab_poison(struct kmem_cache *s)
 
 #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
 				SLAB_POISON | SLAB_STORE_USER)
-
 /* Internal SLQB flags */
 #define __OBJECT_POISON		0x80000000 /* Poison object */
 
@@ -292,7 +290,6 @@ static inline int check_valid_pointer(struct kmem_cache *s,
 		(object - base) % s->size) {
 		return 0;
 	}
-
 	return 1;
 }
 
@@ -462,9 +459,6 @@ static void print_trailer(struct kmem_cache *s, struct slqb_page *page, u8 *p)
 
 	print_page_info(page);
 
-	printk(KERN_ERR "INFO: Object 0x%p @offset=%tu fp=0x%p\n\n",
-			p, p - addr, get_freepointer(s, p));
-
 	if (p > addr + 16)
 		print_section("Bytes b4", p - 16, 16);
 
@@ -552,7 +546,6 @@ static int check_bytes_and_report(struct kmem_cache *s, struct slqb_page *page,
 	end = start + bytes;
 	while (end > fault && end[-1] == value)
 		end--;
-
 	slab_bug(s, "%s overwritten", what);
 	printk(KERN_ERR "INFO: 0x%p-0x%p. First byte 0x%x instead of 0x%x\n",
 					fault, end - 1, fault[0], value);
@@ -679,7 +672,6 @@ static int check_object(struct kmem_cache *s, struct slqb_page *page,
 					p + s->objsize - 1, POISON_END, 1))
 				return 0;
 		}
-
 		/*
 		 * check_pad_bytes cleans up on its own.
 		 */
@@ -1055,7 +1047,6 @@ static void free_slab(struct kmem_cache *s, struct slqb_page *page)
 
 /*
  * Return an object to its slab.
- *
  * Caller must be the owner CPU in the case of per-CPU list, or hold the node's
  * list_lock in the case of per-node list.
  */
@@ -1267,7 +1258,6 @@ static __always_inline void *__cache_list_get_object(struct kmem_cache *s,
 		VM_BUG_ON(l->freelist.nr);
 	}
 #endif
-
 	return NULL;
 }
 
@@ -1416,7 +1406,6 @@ static noinline int alternate_nid(struct kmem_cache *s,
 /*
  * Allocate an object from a remote node. Return NULL if none could be found
  * (in which case, caller should allocate a new slab)
- *
  * Must be called with interrupts disabled.
  */
 static void *__remote_slab_alloc_node(struct kmem_cache *s,
@@ -1476,7 +1465,6 @@ static noinline void *__remote_slab_alloc(struct kmem_cache *s,
 
 /*
  * Main allocation path. Return an object, or NULL on allocation failure.
- *
  * Must be called with interrupts disabled.
  */
 static __always_inline void *__slab_alloc(struct kmem_cache *s,
@@ -1500,7 +1488,6 @@ try_remote:
 	if (unlikely(!object)) {
 #ifdef CONFIG_NUMA
 		int thisnode = numa_node_id();
-
 		/*
 		 * If the local node is memoryless, try remote alloc before
 		 * trying the page allocator. Otherwise, what happens is
@@ -1511,7 +1498,6 @@ try_remote:
 		if (unlikely(!node_state(thisnode, N_HIGH_MEMORY)))
 			object = __remote_slab_alloc(s, gfpflags, thisnode);
 #endif
-
 		if (!object) {
 			object = cache_list_get_page(s, l);
 			if (unlikely(!object)) {
@@ -1683,7 +1669,6 @@ static void flush_remote_free_cache(struct kmem_cache *s,
 
 /*
  * Free an object to this CPU's remote free list.
- *
  * Must be called with interrupts disabled.
  */
 static noinline void slab_free_to_remote(struct kmem_cache *s,
@@ -1691,7 +1676,6 @@ static noinline void slab_free_to_remote(struct kmem_cache *s,
 				struct kmem_cache_cpu *c)
 {
 	struct kmlist *r;
-
 	/*
 	 * Our remote free list corresponds to a different list. Must
 	 * flush it and switch.
@@ -2431,6 +2415,31 @@ void kmem_cache_destroy(struct kmem_cache *s)
 }
 EXPORT_SYMBOL(kmem_cache_destroy);
 
+#if defined(CONFIG_SAMSUNG_EXFAT)
+static void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
+{
+	void *ret = (void *) __get_free_pages(flags | __GFP_COMP, order);
+	kmemleak_alloc(ret, size, 1, flags);
+	return ret;
+}
+
+void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order)
+{
+	void *ret = kmalloc_order(size, flags, order);
+	trace_kmalloc(_RET_IP_, ret, size, PAGE_SIZE << order, flags);
+	return ret;
+}
+EXPORT_SYMBOL(kmalloc_order_trace);
+
+void *kmem_cache_alloc_trace(struct kmem_cache *s, gfp_t gfpflags, size_t size)
+{
+	void *ret = __kmem_cache_alloc(s, gfpflags, _RET_IP_);
+	trace_kmalloc(_RET_IP_, ret, size, s->size, gfpflags);
+	return ret;
+}
+EXPORT_SYMBOL(kmem_cache_alloc_trace);
+#endif
+
 /********************************************************************
  *		Kmalloc subsystem
  *******************************************************************/
@@ -2763,8 +2772,7 @@ static void __cpuinit start_cpu_timer(int cpu)
 	 */
 	if (keventd_up() && cache_trim_work->work.func == NULL) {
 		INIT_DELAYED_WORK(cache_trim_work, cache_trim_worker);
-		schedule_delayed_work_on(cpu, cache_trim_work,
-					__round_jiffies_relative(HZ, cpu));
+		schedule_delayed_work_on(cpu, cache_trim_work,	__round_jiffies_relative(HZ, cpu));
 	}
 }
 
@@ -2934,7 +2942,7 @@ void __init kmem_cache_init(void)
 
 	/* Caches that are not of the two-to-the-power-of size */
 	if (L1_CACHE_BYTES < 64 && KMALLOC_MIN_SIZE <= 64) {
-		open_kmalloc_cache(&kmalloc_caches[1],
+		open_kmalloc_cache(&kmalloc_caches[1], 
 				"kmalloc-96", 96, GFP_KERNEL);
 #ifdef CONFIG_ZONE_DMA
 		open_kmalloc_cache(&kmalloc_caches_dma[1],
@@ -3120,7 +3128,11 @@ static int __cpuinit slab_cpuup_callback(struct notifier_block *nfb,
 
 	case CPU_DOWN_PREPARE:
 	case CPU_DOWN_PREPARE_FROZEN:
-		cancel_delayed_work_sync(&per_cpu(slqb_cache_trim_work,cpu)); 
+#if defined(CONFIG_SAMSUNG_EXFAT) 	
+		cancel_rearming_delayed_work(&per_cpu(slqb_cache_trim_work, cpu));
+#else		
+		cancel_delayed_work_sync(&per_cpu(slqb_cache_trim_work,cpu));
+#endif		
 		per_cpu(slqb_cache_trim_work, cpu).work.func = NULL;
 		break;
 
