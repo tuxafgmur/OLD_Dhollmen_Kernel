@@ -172,8 +172,6 @@ static int __init obsolete_checksetup(char *line)
 				if (line[n] == '\0' || line[n] == '=')
 					had_early_param = 1;
 			} else if (!p->setup_func) {
-				printk(KERN_WARNING "Parameter %s is obsolete,"
-				       " ignored\n", p->str);
 				return 1;
 			} else if (p->setup_func(line + n))
 				return 1;
@@ -524,8 +522,6 @@ asmlinkage void __init start_kernel(void)
 	 */
 	preempt_disable();
 	if (!irqs_disabled()) {
-		printk(KERN_WARNING "start_kernel(): bug: interrupts were "
-				"enabled *very* early, fixing it\n");
 		local_irq_disable();
 	}
 	idr_init_cache();
@@ -651,14 +647,11 @@ static int __init_or_module do_one_initcall_debug(initcall_t fn)
 	unsigned long long duration;
 	int ret;
 
-	printk(KERN_DEBUG "calling  %pF @ %i\n", fn, task_pid_nr(current));
 	calltime = ktime_get();
 	ret = fn();
 	rettime = ktime_get();
 	delta = ktime_sub(rettime, calltime);
 	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
-	printk(KERN_DEBUG "initcall %pF returned %d after %lld usecs\n", fn,
-		ret, duration);
 
 	return ret;
 }
@@ -746,13 +739,10 @@ void do_deferred_initcalls(void)
 	static int already_run;
 
 	if (already_run) {
-		pr_warn("%s() has already run\n", __func__);
 		return;
 	}
 
 	already_run = 1;
-
-	pr_info("%s()is running\n", __func__);
 
 	for (call = __deferred_initcall_start;
 			call < __deferred_initcall_end; call++)
@@ -764,11 +754,11 @@ void do_deferred_initcalls(void)
 }
 #endif /* CONFIG_DEFERRED_INITCALLS */
 
-/* This is a non __init function. Force it to be noinline otherwise gcc
- * makes it inline to init() and it becomes part of init.text section
- */
-static noinline int init_post(void)
+static void __init kernel_init_freeable(void);
+
+static int __ref kernel_init(void *unused)
 {
+	  kernel_init_freeable(); 
 	/* need to finish all async __init code before freeing the memory */
 	async_synchronize_full();
 #if !defined(CONFIG_DEFERRED_INITCALLS)
@@ -778,36 +768,21 @@ static noinline int init_post(void)
 	system_state = SYSTEM_RUNNING;
 	numa_default_policy();
 
-
 	current->signal->flags |= SIGNAL_UNKILLABLE;
 
 	if (ramdisk_execute_command) {
 		run_init_process(ramdisk_execute_command);
-		printk(KERN_WARNING "Failed to execute %s\n",
-				ramdisk_execute_command);
+		printk(KERN_WARNING "Failed to execute %s\n", ramdisk_execute_command);
 	}
 
-	/*
-	 * We try each of these until one succeeds.
-	 *
-	 * The Bourne shell can be used instead of init if we are
-	 * trying to recover a really broken machine.
-	 */
 	if (execute_command) {
 		run_init_process(execute_command);
-		printk(KERN_WARNING "Failed to execute %s.  Attempting "
-					"defaults...\n", execute_command);
 	}
 	run_init_process("/sbin/init");
-	run_init_process("/etc/init");
-	run_init_process("/bin/init");
-	run_init_process("/bin/sh");
-
-	panic("No init found.  Try passing init= option to kernel. "
-	      "See Linux Documentation/init.txt for guidance.");
+	panic("No init found.  Try passing init= option to kernel. ");
 }
 
-static int __init kernel_init(void * unused)
+static void __init kernel_init_freeable(void) 
 {
 	int dummyz ;
 	/*
@@ -855,11 +830,6 @@ static int __init kernel_init(void * unused)
 	}
 
 	/*
-	 * Ok, we have completed the initial bootup, and
-	 * we're essentially up and running. Get rid of the
-	 * initmem segments and start the user-mode stuff..
+	 * Ok, we have completed the initial bootup, 
 	 */
-
-	init_post();
-	return 0;
 }

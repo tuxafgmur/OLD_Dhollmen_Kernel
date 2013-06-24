@@ -1194,7 +1194,10 @@ int __break_lease(struct inode *inode, unsigned int mode)
 	int want_write = (mode & O_ACCMODE) != O_RDONLY;
 
 	new_fl = lease_alloc(NULL, want_write ? F_WRLCK : F_RDLCK);
-
+	
+	if (IS_ERR(new_fl))
+	   return PTR_ERR(new_fl); 
+	
 	lock_flocks();
 
 	time_out_leases(inode);
@@ -1218,12 +1221,6 @@ int __break_lease(struct inode *inode, unsigned int mode)
 		future = F_RDLCK | F_INPROGRESS;
 	} else {
 		/* the existing lease was read-only, so we can read too. */
-		goto out;
-	}
-
-	if (IS_ERR(new_fl) && !i_have_this_lease
-			&& ((mode & O_NONBLOCK) == 0)) {
-		error = PTR_ERR(new_fl);
 		goto out;
 	}
 
@@ -1275,8 +1272,7 @@ restart:
 
 out:
 	unlock_flocks();
-	if (!IS_ERR(new_fl))
-		locks_free_lock(new_fl);
+	locks_free_lock(new_fl);
 	return error;
 }
 
