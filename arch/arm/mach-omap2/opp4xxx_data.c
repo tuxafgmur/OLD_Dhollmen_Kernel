@@ -98,12 +98,12 @@ struct omap4_ldo_abb_trim_data {
  * 
  * tuxafgmur: this seems, for now, the minimun values we can use
  */
-#define OMAP4430_VDD_MPU_OPP50_UV			 975000		/*  300 */
-#define OMAP4430_VDD_MPU_OPP100_UV			1145000		/*  600 */
-#define OMAP4430_VDD_MPU_OPPTURBO_UV		1265000		/*  800 */
-#define OMAP4430_VDD_MPU_OPPNITRO_UV		1325000		/* 1080 */
+#define OMAP4430_VDD_MPU_OPP50_UV			 960000		/*  300 */
+#define OMAP4430_VDD_MPU_OPP100_UV			1125000		/*  600 */  
+#define OMAP4430_VDD_MPU_OPPTURBO_UV		1245000		/*  800 */
+#define OMAP4430_VDD_MPU_OPPNITRO_UV		1305000		/* 1080 */
 #ifdef CONFIG_OMAP4430_TOP_CPU
-#define OMAP4430_VDD_MPU_OPPNITRO2_UV		1325000		/* 1200 */
+#define OMAP4430_VDD_MPU_OPPNITRO2_UV		1305000		/* 1200 */ 
 #define OMAP4430_VDD_MPU_OPPNITROSB_UV		1345000		/* 1350 */
 #define OMAP4430_VDD_MPU_OPPNITROSB2_UV		1395000		/* 1420 */
 #define OMAP4430_VDD_MPU_OPPSUPERSB_UV		1415000		/* 1480 */
@@ -169,7 +169,7 @@ struct omap_volt_data omap443x_vdd_iva_volt_data[] = {
  * tuxafgmur: this seems, for now, the minimun values we can use
  */
 #define OMAP4430_VDD_CORE_OPP50_UV			1000000
-#define OMAP4430_VDD_CORE_OPP100_UV			1175000
+#define OMAP4430_VDD_CORE_OPP100_UV			1150000
 #if defined(CONFIG_OMAP4430_TOP_CPU) || defined(CONFIG_OMAP4430_TOP_GPU)
 #define OMAP4430_VDD_CORE_OPP100_OV_UV		1225000
 #endif
