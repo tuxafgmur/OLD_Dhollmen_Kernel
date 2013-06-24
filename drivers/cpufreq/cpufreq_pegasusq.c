@@ -88,7 +88,6 @@ static int __init init_rq_avg(void)
 {
 	rq_data = kzalloc(sizeof(struct runqueue_data), GFP_KERNEL);
 	if (rq_data == NULL) {
-		pr_err("%s cannot allocate memory\n", __func__);
 		return -ENOMEM;
 	}
 	spin_lock_init(&rq_data->lock);
@@ -168,8 +167,8 @@ static unsigned int get_nr_run_avg(void)
 
 #define DEF_MAX_CPU_LOCK				(0)
 #define DEF_MIN_CPU_LOCK				(0)
-#define DEF_CPU_UP_FREQ					(500000)
-#define DEF_CPU_DOWN_FREQ				(200000)
+#define DEF_CPU_UP_FREQ					(600000)
+#define DEF_CPU_DOWN_FREQ				(300000)
 #define DEF_UP_NR_CPUS					(1)
 #define DEF_CPU_UP_RATE					(10)
 #define DEF_CPU_DOWN_RATE				(20)
@@ -180,7 +179,7 @@ static unsigned int get_nr_run_avg(void)
 #define DEF_START_DELAY					(0)
 
 #define UP_THRESHOLD_AT_MIN_FREQ		(40)
-#define FREQ_FOR_RESPONSIVENESS			(200000)
+#define FREQ_FOR_RESPONSIVENESS			(300000)
 /* for fast decrease */
 #define FREQ_FOR_FAST_DOWN				(1200000)
 #define UP_THRESHOLD_AT_FAST_DOWN		(95)
@@ -188,29 +187,16 @@ static unsigned int get_nr_run_avg(void)
 #define HOTPLUG_DOWN_INDEX				(0)
 #define HOTPLUG_UP_INDEX				(1)
 
-#ifdef CONFIG_MACH_MIDAS
 static int hotplug_rq[4][2] = {
-	{0, 100}, {100, 200}, {200, 300}, {300, 0}
+	{0, 200}, {150, 250}, {300, 350}, {400, 0}
 };
 
 static int hotplug_freq[4][2] = {
-	{0, 500000},
-	{200000, 500000},
-	{200000, 500000},
-	{200000, 0}
+	{0,       600000},
+	{400000,  800000},
+	{600000, 1000008},
+	{800000, 0}
 };
-#else
-static int hotplug_rq[4][2] = {
-	{0, 100}, {100, 200}, {200, 300}, {300, 0}
-};
-
-static int hotplug_freq[4][2] = {
-	{0, 500000},
-	{200000, 500000},
-	{200000, 500000},
-	{200000, 0}
-};
-#endif
 
 static unsigned int min_sampling_rate;
 
@@ -290,6 +276,7 @@ static struct dbs_tuners {
 	.sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
 	.down_differential = DEF_FREQUENCY_DOWN_DIFFERENTIAL,
 	.ignore_nice = 0,
+	.io_is_busy = 1,
 	.freq_step = DEF_FREQ_STEP,
 	.cpu_up_rate = DEF_CPU_UP_RATE,
 	.cpu_down_rate = DEF_CPU_DOWN_RATE,
@@ -310,7 +297,6 @@ static struct dbs_tuners {
 /*
  * CPU hotplug lock interface
  */
-
 static atomic_t g_hotplug_count = ATOMIC_INIT(0);
 static atomic_t g_hotplug_lock = ATOMIC_INIT(0);
 
@@ -331,9 +317,6 @@ static void apply_hotplug_lock(void)
 		return;
 
 	work = flag > 0 ? &dbs_info->up_work : &dbs_info->down_work;
-
-	pr_debug("%s online %d possible %d lock %d flag %d %d\n",
-		 __func__, online, possible, lock, flag, (int)abs(flag));
 
 	queue_work_on(dbs_info->cpu, dvfs_workqueue, work);
 }
@@ -531,57 +514,45 @@ static ssize_t store_##file_name##_##num_core##_##up_down		\
 
 show_hotplug_param(hotplug_freq, 1, 1);
 show_hotplug_param(hotplug_freq, 2, 0);
-#ifndef CONFIG_CPU_EXYNOS4210
 show_hotplug_param(hotplug_freq, 2, 1);
 show_hotplug_param(hotplug_freq, 3, 0);
 show_hotplug_param(hotplug_freq, 3, 1);
 show_hotplug_param(hotplug_freq, 4, 0);
-#endif
 
 show_hotplug_param(hotplug_rq, 1, 1);
 show_hotplug_param(hotplug_rq, 2, 0);
-#ifndef CONFIG_CPU_EXYNOS4210
 show_hotplug_param(hotplug_rq, 2, 1);
 show_hotplug_param(hotplug_rq, 3, 0);
 show_hotplug_param(hotplug_rq, 3, 1);
 show_hotplug_param(hotplug_rq, 4, 0);
-#endif
 
 store_hotplug_param(hotplug_freq, 1, 1);
 store_hotplug_param(hotplug_freq, 2, 0);
-#ifndef CONFIG_CPU_EXYNOS4210
 store_hotplug_param(hotplug_freq, 2, 1);
 store_hotplug_param(hotplug_freq, 3, 0);
 store_hotplug_param(hotplug_freq, 3, 1);
 store_hotplug_param(hotplug_freq, 4, 0);
-#endif
 
 store_hotplug_param(hotplug_rq, 1, 1);
 store_hotplug_param(hotplug_rq, 2, 0);
-#ifndef CONFIG_CPU_EXYNOS4210
 store_hotplug_param(hotplug_rq, 2, 1);
 store_hotplug_param(hotplug_rq, 3, 0);
 store_hotplug_param(hotplug_rq, 3, 1);
 store_hotplug_param(hotplug_rq, 4, 0);
-#endif
 
 define_one_global_rw(hotplug_freq_1_1);
 define_one_global_rw(hotplug_freq_2_0);
-#ifndef CONFIG_CPU_EXYNOS4210
 define_one_global_rw(hotplug_freq_2_1);
 define_one_global_rw(hotplug_freq_3_0);
 define_one_global_rw(hotplug_freq_3_1);
 define_one_global_rw(hotplug_freq_4_0);
-#endif
 
 define_one_global_rw(hotplug_rq_1_1);
 define_one_global_rw(hotplug_rq_2_0);
-#ifndef CONFIG_CPU_EXYNOS4210
 define_one_global_rw(hotplug_rq_2_1);
 define_one_global_rw(hotplug_rq_3_0);
 define_one_global_rw(hotplug_rq_3_1);
 define_one_global_rw(hotplug_rq_4_0);
-#endif
 
 static ssize_t store_sampling_rate(struct kobject *a, struct attribute *b,
 				   const char *buf, size_t count)
@@ -901,20 +872,16 @@ static struct attribute *dbs_attributes[] = {
 	&dvfs_debug.attr,
 	&hotplug_freq_1_1.attr,
 	&hotplug_freq_2_0.attr,
-#ifndef CONFIG_CPU_EXYNOS4210
 	&hotplug_freq_2_1.attr,
 	&hotplug_freq_3_0.attr,
 	&hotplug_freq_3_1.attr,
 	&hotplug_freq_4_0.attr,
-#endif
 	&hotplug_rq_1_1.attr,
 	&hotplug_rq_2_0.attr,
-#ifndef CONFIG_CPU_EXYNOS4210
 	&hotplug_rq_2_1.attr,
 	&hotplug_rq_3_0.attr,
 	&hotplug_rq_3_1.attr,
 	&hotplug_rq_4_0.attr,
-#endif
 	&up_threshold_at_min_freq.attr,
 	&freq_for_responsiveness.attr,
 	NULL
@@ -943,7 +910,6 @@ static void cpu_up_work(struct work_struct *work)
 		nr_up = max(nr_up, min_cpu_lock - online);
 
 	if (online == 1) {
-		printk(KERN_ERR "CPU_UP 3\n");
 		cpu_up(num_possible_cpus() - 1);
 		nr_up -= 1;
 	}
@@ -953,7 +919,6 @@ static void cpu_up_work(struct work_struct *work)
 			break;
 		if (cpu == 0)
 			continue;
-		printk(KERN_ERR "CPU_UP %d\n", cpu);
 		cpu_up(cpu);
 	}
 }
@@ -971,7 +936,6 @@ static void cpu_down_work(struct work_struct *work)
 	for_each_online_cpu(cpu) {
 		if (cpu == 0)
 			continue;
-		printk(KERN_ERR "CPU_DOWN %d\n", cpu);
 		cpu_down(cpu);
 		if (--nr_down == 0)
 			break;
@@ -1276,11 +1240,9 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	}
 
 	/* Check for frequency decrease */
-#ifndef CONFIG_ARCH_EXYNOS4
 	/* if we cannot reduce the frequency anymore, break out early */
 	if (policy->cur == policy->min)
 		return;
-#endif
 
 	/*
 	 * The optimal frequency is the frequency that is the lowest that
@@ -1375,7 +1337,6 @@ static int pm_notifier_call(struct notifier_block *this,
 		prev_hotplug_lock = atomic_read(&g_hotplug_lock);
 		atomic_set(&g_hotplug_lock, 1);
 		apply_hotplug_lock();
-		pr_debug("%s enter suspend\n", __func__);
 		return NOTIFY_OK;
 	case PM_POST_RESTORE:
 	case PM_POST_SUSPEND:
@@ -1383,7 +1344,6 @@ static int pm_notifier_call(struct notifier_block *this,
 		if (prev_hotplug_lock)
 			apply_hotplug_lock();
 		prev_hotplug_lock = 0;
-		pr_debug("%s exit suspend\n", __func__);
 		return NOTIFY_OK;
 	}
 	return NOTIFY_DONE;
@@ -1562,14 +1522,12 @@ static int __init cpufreq_gov_dbs_init(void)
 
 	hotplug_history = kzalloc(sizeof(struct cpu_usage_history), GFP_KERNEL);
 	if (!hotplug_history) {
-		pr_err("%s cannot create hotplug history array\n", __func__);
 		ret = -ENOMEM;
 		goto err_hist;
 	}
 
 	dvfs_workqueue = create_workqueue("kpegasusq");
 	if (!dvfs_workqueue) {
-		pr_err("%s cannot create workqueue\n", __func__);
 		ret = -ENOMEM;
 		goto err_queue;
 	}
