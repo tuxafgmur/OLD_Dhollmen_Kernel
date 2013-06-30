@@ -1,10 +1,10 @@
-DhollmenCM kernel for Samsung Tab 2 - CyanogenMod 10.1 compatible
+DhollmenCM kernel for Samsung Tab 2 - CyanogenMod 10.1.0 compatible
 
-Version 3.0.31
+Version 3.0.39
 
-Lastly synchronized with CyanogenMod / android_kernel_samsung_espresso10
+Lastly synchronized with CyanogenMod / android_kernel_samsung (_espresso10 & _espresso)
 
-Credits to Kernel Team, Google, Samsung and anyone else with merit not listed here.
+Credits to Kernel Team, Google, CyanogenMod, Samsung and anyone else with merit not listed here.
 
 *** HOW TO COMPILE ***
 
@@ -33,20 +33,14 @@ git clone git://git.omapzoom.org/device/ti/proprietary-open.git \
 cd $KERNELDIR
 git clone https://github.com/Dhollmen/DhollmenCM_kernel.git
 
-# Copy config file to comile
-cp  ./arch/arm/configs/<file_name_config>  .config
-
-	NOTE: 'file_name_config' can be one of:
-	
-	dhollmen_P51XX_defconfig	   Samsung P-51xx device
-	
-	dhollmen_P31XX_defconfig	   Samsung P-31xx device
+# Copy config file for your tablet model 
+cp ./arch/arm/configs/dhollmen_P51XX_defconfig .config
+# or
+cp ./arch/arm/configs/dhollmen_P31XX_defconfig .config
 
 # Compile
-make ARCH=arm -j<n>
+make ARCH=arm -j<n>      ##  n = CPU cores + 1
 	
-	NOTE: 'n' may be the number of CPU cores + 1
-
 # Copy kernel image and modules
 rm -fr $DIRE/Modules/*
 cp ./arch/arm/boot/zImage $DIRE/Zimage/
