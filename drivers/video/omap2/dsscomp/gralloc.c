@@ -246,7 +246,6 @@ static void dsscomp_gralloc_do_clone(struct work_struct *work)
 	dsscomp_gralloc_transfer_dmabuf(wk->dma_cfg);
 #ifdef CONFIG_DEBUG_FS
 	ms2 = ktime_to_ms(ktime_get());
-	dev_info(DEV(cdev), "DMA latency(msec) = %d\n", ms2-ms1);
 #endif
 
 	wk->comp->state = DSSCOMP_STATE_APPLYING;

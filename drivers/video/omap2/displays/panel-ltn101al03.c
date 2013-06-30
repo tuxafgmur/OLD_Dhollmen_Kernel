@@ -334,7 +334,6 @@ static int ltn101al03_panel_probe(struct omap_dss_device *dssdev)
 		.max_brightness = 255,
 		.type = BACKLIGHT_RAW,
 	};
-	dev_dbg(&dssdev->dev, "ltn101al03_probe\n");
 
 	lcd = kzalloc(sizeof(*lcd), GFP_KERNEL);
 	if (!lcd)

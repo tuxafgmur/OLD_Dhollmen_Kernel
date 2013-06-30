@@ -4548,8 +4548,6 @@ static int omap_dispchw_probe(struct platform_device *pdev)
 	_omap_dispc_initialize_irq();
 
 	rev = dispc_read_reg(DISPC_REVISION);
-	dev_dbg(&pdev->dev, "OMAP DISPC rev %d.%d\n",
-	       FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
 #ifndef CONFIG_FB_OMAP_BOOTLOADER_INIT
 	dispc_runtime_put();
 #endif
