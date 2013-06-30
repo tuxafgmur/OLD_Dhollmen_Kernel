@@ -103,10 +103,6 @@ source "sound/firewire/Kconfig"
 # here assuming PCMCIA is defined before ALSA
 source "sound/pcmcia/Kconfig"
 
-source "sound/sparc/Kconfig"
-
-source "sound/parisc/Kconfig"
-
 source "sound/soc/Kconfig"
 
 endif # SND
