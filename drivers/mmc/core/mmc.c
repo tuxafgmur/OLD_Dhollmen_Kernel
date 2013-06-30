@@ -434,9 +434,6 @@ static int mmc_read_ext_csd(struct mmc_card *card, u8 *ext_csd)
 		card->cid.movi_pnm == 0x47344741 ||
 		card->cid.movi_pnm == 0x47344741 ||
 		card->cid.movi_pnm == 0x47384741) {
-			printk(KERN_DEBUG "%s : moviNAND VHX 4.41 "
-				"DISCARD feature is enabled\n",
-				mmc_hostname(card->host));
 			card->ext_csd.feature_support |= MMC_DISCARD_FEATURE;
 		}
 	card->ext_csd.raw_erased_mem_count = ext_csd[EXT_CSD_ERASED_MEM_CONT];
@@ -467,8 +464,7 @@ static int mmc_compare_ext_csds(struct mmc_card *card, unsigned bus_width)
 	err = mmc_get_ext_csd(card, &bw_ext_csd);
 
 	if (err || bw_ext_csd == NULL) {
-		if (bus_width != MMC_BUS_WIDTH_1)
-			err = -EINVAL;
+		err = -EINVAL;
 		goto out;
 	}
 
@@ -1013,9 +1009,6 @@ static int mmc_sleep(struct mmc_host *host)
 
 	if (card && card->ext_csd.rev >= 3) {
 		err = mmc_card_sleepawake(host, 1);
-		if (err < 0)
-			pr_debug("%s: Error %d while putting card into sleep",
-				 mmc_hostname(host), err);
 	}
 
 	return err;
@@ -1028,9 +1021,6 @@ static int mmc_awake(struct mmc_host *host)
 
 	if (card && card->ext_csd.rev >= 3) {
 		err = mmc_card_sleepawake(host, 0);
-		if (err < 0)
-			pr_debug("%s: Error %d while awaking sleeping card",
-				 mmc_hostname(host), err);
 	}
 
 	return err;
@@ -1100,9 +1090,6 @@ int mmc_attach_mmc(struct mmc_host *host)
 	 * support.
 	 */
 	if (ocr & 0x7F) {
-		printk(KERN_WARNING "%s: card claims to support voltages "
-		       "below the defined range. These will be ignored.\n",
-		       mmc_hostname(host));
 		ocr &= ~0x7F;
 	}
 
