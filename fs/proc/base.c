@@ -1045,6 +1045,7 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
 			atomic_dec(&task->mm->oom_disable_count);
 	}
 
+#if 0
 	/*
 	 * Warn that /proc/pid/oom_adj is deprecated, see
 	 * Documentation/feature-removal-schedule.txt.
@@ -1053,6 +1054,8 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
 			"please use /proc/%d/oom_score_adj instead.\n",
 			current->comm, task_pid_nr(current),
 			task_pid_nr(task), task_pid_nr(task));
+#endif
+			
 	task->signal->oom_adj = oom_adjust;
 	/*
 	 * Scale /proc/pid/oom_score_adj appropriately ensuring that a maximum
