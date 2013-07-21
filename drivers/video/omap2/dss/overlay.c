@@ -592,13 +592,11 @@ int dss_check_overlay(struct omap_overlay *ovl, struct omap_dss_device *dssdev)
 	}
 
 	if ((ovl->supported_modes & info->color_mode) == 0) {
-		DSSERR("overlay doesn't support mode %d\n", info->color_mode);
 		return -EINVAL;
 	}
 
 	if ((info->zorder < OMAP_DSS_OVL_ZORDER_0) ||
 			(info->zorder > OMAP_DSS_OVL_ZORDER_3)) {
-		DSSERR("overlay doesn't support zorder %d\n", info->zorder);
 		return -EINVAL;
 	}
 
