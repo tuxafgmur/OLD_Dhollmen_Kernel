@@ -84,8 +84,6 @@ static int stmpe811_i2c_read(struct i2c_client *client, u8 reg, u8 *data,
 	int ret;
 
 	ret = i2c_smbus_read_i2c_block_data(client, (u8)reg, length, data);
-	if (ret < 0)
-		pr_err("Failed to stmpe811 read, reg: %d\n", reg);
 
 	return ret;
 }
@@ -99,8 +97,6 @@ static int stmpe811_i2c_write(struct i2c_client *client, u8 reg, u8 *data,
 	value = (*(data + 1)) | (*(data) << 8) ;
 
 	ret = i2c_smbus_write_word_data(client, (u8)reg, swab16(value));
-	if (ret < 0)
-		pr_err("Failed to stmpe811 write, reg: %d\n", reg);
 
 	return ret;
 }

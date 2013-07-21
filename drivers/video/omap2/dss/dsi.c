@@ -531,7 +531,6 @@ static void print_irq_status(u32 status)
 	if ((status & ~DSI_IRQ_CHANNEL_MASK) == 0)
 		return;
 #endif
-	printk(KERN_DEBUG "DSI IRQ: 0x%x: ", status);
 
 #define PIS(x) \
 	if (status & DSI_IRQ_##x) \
@@ -569,7 +568,6 @@ static void print_irq_status_vc(int channel, u32 status)
 	if ((status & ~DSI_VC_IRQ_PACKET_SENT) == 0)
 		return;
 #endif
-	printk(KERN_DEBUG "DSI VC(%d) IRQ 0x%x: ", channel, status);
 
 #define PIS(x) \
 	if (status & DSI_VC_IRQ_##x) \
@@ -593,8 +591,6 @@ static void print_irq_status_cio(u32 status)
 {
 	if (status == 0)
 		return;
-
-	printk(KERN_DEBUG "DSI CIO IRQ 0x%x: ", status);
 
 #define PIS(x) \
 	if (status & DSI_CIO_IRQ_##x) \
@@ -1156,8 +1152,6 @@ static void _dsi_print_reset_status(struct platform_device *dsidev)
 	 * required after DSIPHY reset to complete the reset of the DSI complex
 	 * I/O. */
 	l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
-
-	printk(KERN_DEBUG "DSI resets: ");
 
 	l = dsi_read_reg(dsidev, DSI_PLL_STATUS);
 	printk("PLL (%d) ", FLD_GET(l, 0, 0));

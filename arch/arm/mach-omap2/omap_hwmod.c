@@ -1770,9 +1770,6 @@ static int __init _populate_mpu_rt_base(struct omap_hwmod *oh, void *data)
 		return 0;
 
 	oh->_mpu_rt_va = _find_mpu_rt_base(oh, oh->_mpu_port_index);
-	if (!oh->_mpu_rt_va)
-		pr_warning("omap_hwmod: %s found no _mpu_rt_va for %s\n",
-				__func__, oh->name);
 
 	return 0;
 }
@@ -1790,8 +1787,6 @@ int __init omap_hwmod_setup_one(const char *oh_name)
 {
 	struct omap_hwmod *oh;
 	int r;
-
-	pr_debug("omap_hwmod: %s: %s\n", oh_name, __func__);
 
 	if (!mpu_oh) {
 		pr_err("omap_hwmod: %s: cannot setup_one: MPU initiator hwmod %s not yet registered\n",

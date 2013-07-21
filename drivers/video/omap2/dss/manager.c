@@ -803,8 +803,6 @@ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
 		 * 3 - dirty = false, shadow_dirty = true
 		 * 4 - shadow_dirty = false */
 		if (i++ == 3) {
-			DSSERR("mgr(%d)->wait_for_go() not finishing\n",
-					mgr->id);
 			r = 0;
 			break;
 		}
@@ -816,7 +814,6 @@ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
 			break;
 
 		if (r) {
-			DSSERR("mgr(%d)->wait_for_go() timeout\n", mgr->id);
 			break;
 		}
 	}
@@ -884,8 +881,6 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
 		 * 3 - dirty = false, shadow_dirty = true
 		 * 4 - shadow_dirty = false */
 		if (i++ == 3) {
-			DSSERR("ovl(%d)->wait_for_go() not finishing\n",
-					ovl->id);
 			r = 0;
 			break;
 		}
@@ -895,7 +890,6 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
 			break;
 
 		if (r) {
-			DSSERR("ovl(%d)->wait_for_go() timeout\n", ovl->id);
 			break;
 		}
 	}
@@ -1762,8 +1756,6 @@ static int omap_dss_mgr_blank(struct omap_overlay_manager *mgr,
 	int r, r_get, i;
 	bool update = false;
 
-	DSSDBG("omap_dss_mgr_blank(%s,wait=%d)\n", mgr->name, wait_for_go);
-
 	r_get = r = dispc_runtime_get();
 	/* still clear cache even if failed to get clocks, just don't config */
 
@@ -1829,8 +1821,6 @@ static int omap_dss_mgr_blank(struct omap_overlay_manager *mgr,
 
 	if (!r_get) {
 		r = configure_dispc();
-		if (r)
-			pr_info("mgr_blank while GO is set");
 	}
 
 	if (r_get || !wait_for_go) {
