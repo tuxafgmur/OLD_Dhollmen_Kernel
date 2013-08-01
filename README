@@ -12,7 +12,7 @@ Credits to Kernel Team, Google, CyanogenMod, Samsung and anyone else with merit 
 export DIRE=$PWD/DhollmenCM
 export KERNELDIR=$DIRE/DhollmenCM_kernel
 export ARCH=arm
-export CROSS_DIR=/opt/toolchains/arm-eabi-linaro-4.7.20130613/bin
+export CROSS_DIR=/opt/toolchains/arm-eabi-linaro-4.7.20130721/bin
 export CROSS_COMPILE=$CROSS_DIR/arm-linux-androideabi-
 
 # Create directories
