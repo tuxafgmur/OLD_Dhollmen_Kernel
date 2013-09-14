@@ -193,7 +193,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
 export KBUILD_BUILDHOST := $(SUBARCH)
 ARCH		?= $(SUBARCH)
-CROSS_COMPILE	?= /opt/toolchains/arm-2010q1/bin/arm-none-linux-gnueabi-
+CROSS_COMPILE	?= $(ARM_CROSS_COMPILE)
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
@@ -345,29 +345,26 @@ KALLSYMS	= scripts/kallsyms
 PERL		= perl
 CHECK		= sparse
 
-CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
-		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   = -DMODULE -pipe -mcpu=cortex-a9 -mfpu=neon -funswitch-loops -fpredictive-commoning -fgcse-after-reload -fipa-cp-clone -fsingle-precision-constant -ftree-vectorize -fno-pic
+CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise -Wno-return-void $(CF)
+CFLAGS_MODULE   = -DMODULE -pipe -mcpu=cortex-a9 -mfpu=neon -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-vectorize -fipa-cp-clone -fsingle-precision-constant
+CFLAGS_KERNEL	= -O2 -pipe -mtune=cortex-a9 -march=armv7-a -mfpu=vfpv3 -mfloat-abi=softfp -ftree-vectorize
 AFLAGS_MODULE   =
-LDFLAGS_MODULE  =
-CFLAGS_KERNEL	= -O2 -pipe -mtune=cortex-a9 -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3 -ftree-vectorize
 AFLAGS_KERNEL	=
+LDFLAGS_MODULE  =
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
-# Needed to be compatible with the O= option
 LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
                    -Iarch/$(hdr-arch)/include/generated -Iinclude \
                    $(if $(KBUILD_SRC), -I$(srctree)/include) \
                    -include include/generated/autoconf.h
-
-KBUILD_CPPFLAGS := -D__KERNEL__
-
-KBUILD_CFLAGS   := $(CFLAGS_KERNEL) -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		   -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration \
-		   -Wno-format-security -fno-delete-null-pointer-checks -funswitch-loops -O3 
-KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL :=
+                   
+KBUILD_CPPFLAGS       := -D__KERNEL__
+KBUILD_CFLAGS         := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -Wno-format-security \
+                         -fno-strict-aliasing -fno-common -fno-delete-null-pointer-checks \
+                         -Werror-implicit-function-declaration $(CFLAGS_KERNEL)		   
+KBUILD_AFLAGS_KERNEL  :=
+KBUILD_CFLAGS_KERNEL  :=
 KBUILD_AFLAGS         := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
