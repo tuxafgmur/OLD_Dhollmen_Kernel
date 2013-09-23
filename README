@@ -10,16 +10,17 @@ Credits to Kernel Team, Google, CyanogenMod, Samsung and anyone else with merit 
 
 # Sets environment
 export DIRE=$PWD/DhollmenCM
-export KERNELDIR=$DIRE/DhollmenCM_kernel
+export KERNELDIR=$DIRE/DhollmenCM
 export ARCH=arm
-export CROSS_DIR=/opt/toolchains/arm-eabi-linaro-4.7.20130721/bin
-export CROSS_COMPILE=$CROSS_DIR/arm-linux-androideabi-
+export CROSS_DIR=/opt/toolchains/arm-eabi-linaro-4.7/bin
+export CROSS_COMPILE=$CROSS_DIR/arm-eabi-
+export KERNEL_CROSS_COMPILE=arm-eabi-
+export ARM_CROSS_COMPILE=$CROSS_COMPILE
 
 # Create directories
 mkdir -p $DIRE
 mkdir -p $DIRE/Modules
 mkdir -p $DIRE/Zimage 
-mkdir -p $KERNELDIR 
 mkdir -p $DIRE/PowerVRSGX
 
 # Get omaplfb sources
@@ -30,8 +31,7 @@ git clone git://git.omapzoom.org/device/ti/proprietary-open.git \
 	-b d-jb-mr1-release --depth 1 
 
 # Get kernel sources
-cd $KERNELDIR
-git clone https://github.com/Dhollmen/DhollmenCM_kernel.git
+git clone https://github.com/Dhollmen/Dhollmen_Kernel $KERNELDIR 
 
 # Copy config file for your tablet model 
 cp ./arch/arm/configs/dhollmen_P51XX_defconfig .config
