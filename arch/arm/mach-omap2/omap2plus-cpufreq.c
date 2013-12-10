@@ -903,7 +903,7 @@ static ssize_t store_gpu_top_speed(struct cpufreq_policy *policy, const char *bu
 
 static struct freq_attr omap_cpufreq_attr_gpu_top_speed = {
 	.attr = { .name = "gpu_oc",
-	.mode = 0644,
+	.mode = 0664,
 	},
 	.show = show_gpu_top_speed,
 	.store = store_gpu_top_speed,
