@@ -410,7 +410,6 @@ static MANAGER_ATTR(cpr_coef, S_IRUGO|S_IWUSR,
 		manager_cpr_coef_show,
 		manager_cpr_coef_store);
 
-
 static struct attribute *manager_sysfs_attrs[] = {
 	&manager_attr_name.attr,
 	&manager_attr_display.attr,
@@ -692,6 +691,9 @@ static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
 	unsigned long timeout = msecs_to_jiffies(500);
 	u32 irq = 0; /* For non-supported panels will cause a timeout */
 	int r;
+	r = dispc_runtime_get();
+	if (r)
+		return r;
 
 	switch (mgr->device->type) {
 	case OMAP_DISPLAY_TYPE_VENC:
@@ -745,6 +747,7 @@ static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
 	if (!r)
 		mgr->device->first_vsync = true;
 
+	dispc_runtime_put();
 	return r;
 }
 
@@ -759,6 +762,9 @@ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
 
 	if (!dssdev || dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
 		return 0;
+	r = dispc_runtime_get();
+	if (r)
+		return r;
 
 	if (dssdev->type == OMAP_DISPLAY_TYPE_VENC
 			|| dssdev->type == OMAP_DISPLAY_TYPE_HDMI) {
@@ -803,6 +809,8 @@ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
 		 * 3 - dirty = false, shadow_dirty = true
 		 * 4 - shadow_dirty = false */
 		if (i++ == 3) {
+			DSSERR("mgr(%d)->wait_for_go() not finishing\n",
+					mgr->id);
 			r = 0;
 			break;
 		}
@@ -814,10 +822,11 @@ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
 			break;
 
 		if (r) {
+			DSSERR("mgr(%d)->wait_for_go() timeout\n", mgr->id);
 			break;
 		}
 	}
-
+	dispc_runtime_put();
 	return r;
 }
 
@@ -837,7 +846,9 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
 
 	if (!dssdev || dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
 		return 0;
-
+	r = dispc_runtime_get();
+	if (r)
+		return r;
 	if (dssdev->type == OMAP_DISPLAY_TYPE_VENC
 			|| dssdev->type == OMAP_DISPLAY_TYPE_HDMI) {
 		irq = DISPC_IRQ_EVSYNC_ODD | DISPC_IRQ_EVSYNC_EVEN
@@ -881,6 +892,8 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
 		 * 3 - dirty = false, shadow_dirty = true
 		 * 4 - shadow_dirty = false */
 		if (i++ == 3) {
+			DSSERR("ovl(%d)->wait_for_go() not finishing\n",
+					ovl->id);
 			r = 0;
 			break;
 		}
@@ -890,10 +903,11 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
 			break;
 
 		if (r) {
+			DSSERR("ovl(%d)->wait_for_go() timeout\n", ovl->id);
 			break;
 		}
 	}
-
+	dispc_runtime_put();
 	return r;
 }
 
@@ -1779,7 +1793,6 @@ static int omap_dss_mgr_blank(struct omap_overlay_manager *mgr,
 
 		oc = &dss_cache.overlay_cache[ovl->id];
 
-
 		/* complete unconfigured info in cache */
 		if (ovl->info_dirty)
 			dss_ovl_cb(&ovl->info.cb, i,
@@ -1894,6 +1907,8 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
 	r = dispc_runtime_get();
 	if (r)
 		return r;
+
+	omap_dss_overlay_ensure_bw();
 
 	spin_lock_irqsave(&dss_cache.lock, flags);
 
@@ -2214,7 +2229,6 @@ int omap_dss_wb_apply(struct omap_overlay_manager *mgr,
 	else
 		r = configure_dispc();
 
-
 	spin_unlock_irqrestore(&dss_cache.lock, flags);
 	return r;
 }
@@ -2319,7 +2333,6 @@ int omap_dss_ovl_set_info(struct omap_overlay *ovl,
 
 	return 0;
 }
-
 
 static int omap_dss_mgr_set_info(struct omap_overlay_manager *mgr,
 		struct omap_overlay_manager_info *info)
@@ -2513,4 +2526,3 @@ struct omap_overlay_manager *omap_dss_get_overlay_manager(int num)
 	return NULL;
 }
 EXPORT_SYMBOL(omap_dss_get_overlay_manager);
-

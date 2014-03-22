@@ -5,7 +5,7 @@
  * lock for data where the reader wants a consistent set of information
  * and is willing to retry if the information changes.  Readers never
  * block but they may have to retry if a writer is in
- * progress. Writers do not wait for readers. 
+ * progress. Writers do not wait for readers.
  *
  * This is not as cache friendly as brlock. Also, this will not work
  * for data that contains pointers, because any writer could
@@ -22,7 +22,7 @@
  * to increment the sequence variables because an interrupt routine could
  * change the state of the data.
  *
- * Based on x86_64 vsyscall gettimeofday 
+ * Based on x86_64 vsyscall gettimeofday
  * by Keith Owens and Andrea Arcangeli
  */
 
@@ -107,7 +107,6 @@ static __always_inline int read_seqretry(const seqlock_t *sl, unsigned start)
 
 	return unlikely(sl->sequence != start);
 }
-
 
 /*
  * Version using sequence counter only.
@@ -200,7 +199,6 @@ static inline int read_seqcount_retry(const seqcount_t *s, unsigned start)
 
 	return __read_seqcount_retry(s, start);
 }
-
 
 /*
  * Sequence counter only version assumes that callers are using their

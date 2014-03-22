@@ -181,7 +181,6 @@ static void hdcp_wq_check_r0(void)
 	}
 }
 
-
 /*-----------------------------------------------------------------------------
  * Function: hdcp_wq_step2_authentication
  *-----------------------------------------------------------------------------
@@ -448,7 +447,6 @@ static void hdcp_cancel_work(struct delayed_work **work)
 	}
 }
 
-
 /******************************************************************************
  * HDCP callbacks
  *****************************************************************************/
@@ -568,7 +566,6 @@ static void hdcp_irq_cb(int status)
  * HDCP control from ioctl
  *****************************************************************************/
 
-
 /*-----------------------------------------------------------------------------
  * Function: hdcp_enable_ctl
  *-----------------------------------------------------------------------------
@@ -602,7 +599,6 @@ static long hdcp_enable_ctl(void __user *argp)
 	/* Post event to workqueue */
 	if (hdcp_submit_work(HDCP_ENABLE_CTL, 0) == 0)
 		return -EFAULT;
-
 
 	return 0;
 }
@@ -821,7 +817,6 @@ long hdcp_ioctl(struct file *fd, unsigned int cmd, unsigned long arg)
 		return -ENOTTY;
 	} /* End switch */
 }
-
 
 /******************************************************************************
  * HDCP driver init/exit

@@ -385,7 +385,6 @@ static int __ext4_check_blockref(const char *function, unsigned int line,
 	return 0;
 }
 
-
 #define ext4_check_indirect_blockref(inode, bh)                         \
 	__ext4_check_blockref(__func__, __LINE__, inode,		\
 			      (__le32 *)(bh)->b_data,			\
@@ -1483,7 +1482,7 @@ struct buffer_head *ext4_getblk(handle_t *handle, struct inode *inode,
 		err = ext4_handle_dirty_metadata(handle, inode, bh);
 		if (!fatal)
 			fatal = err;
-	} 
+	}
 	if (fatal) {
 		*errp = fatal;
 		brelse(bh);
@@ -1789,7 +1788,6 @@ static int ext4_ordered_write_end(struct file *file,
 		if (inode->i_nlink)
 			ext4_orphan_del(NULL, inode);
 	}
-
 
 	return ret ? ret : copied;
 }
@@ -2895,7 +2893,6 @@ out:
 	cond_resched();
 	return ret;
 }
-
 
 static int ext4_da_writepages(struct address_space *mapping,
 			      struct writeback_control *wbc)
@@ -5451,7 +5448,7 @@ int ext4_getattr(struct vfsmount *mnt, struct dentry *dentry,
 		 struct kstat *stat)
 {
 	struct inode *inode;
-	unsigned long delalloc_blocks;
+	unsigned long long delalloc_blocks;
 
 	inode = dentry->d_inode;
 	generic_fillattr(inode, stat);
@@ -5468,7 +5465,7 @@ int ext4_getattr(struct vfsmount *mnt, struct dentry *dentry,
 	 */
 	delalloc_blocks = EXT4_I(inode)->i_reserved_data_blocks;
 
-	stat->blocks += (delalloc_blocks << inode->i_sb->s_blocksize_bits)>>9;
+	stat->blocks += delalloc_blocks << (inode->i_sb->s_blocksize_bits-9);
 	return 0;
 }
 

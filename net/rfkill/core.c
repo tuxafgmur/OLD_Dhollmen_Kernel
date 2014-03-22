@@ -90,12 +90,10 @@ struct rfkill_data {
 	bool			input_handler;
 };
 
-
 MODULE_AUTHOR("Ivo van Doorn <IvDoorn@gmail.com>");
 MODULE_AUTHOR("Johannes Berg <johannes@sipsolutions.net>");
 MODULE_DESCRIPTION("RF switch support");
 MODULE_LICENSE("GPL");
-
 
 /*
  * The locking here should be made much smarter, we currently have
@@ -122,7 +120,6 @@ static struct {
 } rfkill_global_states[NUM_RFKILL_TYPES];
 
 static bool rfkill_epo_lock_active;
-
 
 #ifdef CONFIG_RFKILL_LEDS
 static void rfkill_led_trigger_event(struct rfkill *rfkill)
@@ -233,7 +230,7 @@ static bool __rfkill_set_hw_state(struct rfkill *rfkill,
 	else
 		rfkill->state &= ~RFKILL_BLOCK_HW;
 	*change = prev != blocked;
-	any = !!(rfkill->state & RFKILL_BLOCK_ANY); 
+	any = rfkill->state & RFKILL_BLOCK_ANY;
 	spin_unlock_irqrestore(&rfkill->lock, flags);
 
 	rfkill_led_trigger_event(rfkill);
@@ -253,7 +250,6 @@ static bool __rfkill_set_hw_state(struct rfkill *rfkill,
 static void rfkill_set_block(struct rfkill *rfkill, bool blocked)
 {
 	unsigned long flags;
-	bool prev, curr;
 	int err;
 
 	if (unlikely(rfkill->dev.power.power_state.event & PM_EVENT_SLEEP))
@@ -268,14 +264,11 @@ static void rfkill_set_block(struct rfkill *rfkill, bool blocked)
 		rfkill->ops->query(rfkill, rfkill->data);
 
 	spin_lock_irqsave(&rfkill->lock, flags);
-	
-	prev = rfkill->state & RFKILL_BLOCK_SW;
-	
 	if (rfkill->state & RFKILL_BLOCK_SW)
 		rfkill->state |= RFKILL_BLOCK_SW_PREV;
 	else
 		rfkill->state &= ~RFKILL_BLOCK_SW_PREV;
-	
+
 	if (blocked)
 		rfkill->state |= RFKILL_BLOCK_SW;
 	else
@@ -300,14 +293,10 @@ static void rfkill_set_block(struct rfkill *rfkill, bool blocked)
 	}
 	rfkill->state &= ~RFKILL_BLOCK_SW_SETCALL;
 	rfkill->state &= ~RFKILL_BLOCK_SW_PREV;
-	
-	curr = rfkill->state & RFKILL_BLOCK_SW; 
-	
 	spin_unlock_irqrestore(&rfkill->lock, flags);
 
 	rfkill_led_trigger_event(rfkill);
-	if (prev != curr)
-	   rfkill_event(rfkill); 	
+	rfkill_event(rfkill);
 }
 
 #ifdef CONFIG_RFKILL_INPUT
@@ -455,7 +444,6 @@ bool rfkill_get_global_sw_state(const enum rfkill_type type)
 	return rfkill_global_states[type].cur;
 }
 #endif
-
 
 bool rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
 {
@@ -721,7 +709,7 @@ static struct device_attribute rfkill_dev_attrs[] = {
 	__ATTR(type, S_IRUGO, rfkill_type_show, NULL),
 	__ATTR(index, S_IRUGO, rfkill_idx_show, NULL),
 	__ATTR(persistent, S_IRUGO, rfkill_persistent_show, NULL),
-	__ATTR(state, S_IRUGO|S_IWUSR|S_IWGRP, rfkill_state_show, rfkill_state_store),
+	__ATTR(state, S_IRUGO|S_IWUSR, rfkill_state_show, rfkill_state_store),
 	__ATTR(claim, S_IRUGO|S_IWUSR, rfkill_claim_show, rfkill_claim_store),
 	__ATTR(soft, S_IRUGO|S_IWUSR, rfkill_soft_show, rfkill_soft_store),
 	__ATTR(hard, S_IRUGO, rfkill_hard_show, NULL),
@@ -828,7 +816,6 @@ bool rfkill_blocked(struct rfkill *rfkill)
 	return !!(state & RFKILL_BLOCK_ANY);
 }
 EXPORT_SYMBOL(rfkill_blocked);
-
 
 struct rfkill * __must_check rfkill_alloc(const char *name,
 					  struct device *parent,

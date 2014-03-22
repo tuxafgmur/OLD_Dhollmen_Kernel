@@ -1696,9 +1696,6 @@ static int soc_probe_codec(struct snd_soc_card *card,
 	if (driver->probe) {
 		ret = driver->probe(codec);
 		if (ret < 0) {
-			dev_err(codec->dev,
-				"asoc: failed to probe CODEC %s: %d\n",
-				codec->name, ret);
 			goto err_probe;
 		}
 	}
@@ -1818,9 +1815,6 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num, int order)
 	struct snd_soc_platform *platform = rtd->platform;
 	struct snd_soc_dai *codec_dai = rtd->codec_dai, *cpu_dai = rtd->cpu_dai;
 	int ret;
-
-	dev_dbg(card->dev, "probe %s dai link %d late %d\n",
-			card->name, num, order);
 
 	/* config components */
 	codec_dai->codec = codec;

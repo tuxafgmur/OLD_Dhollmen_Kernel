@@ -2203,7 +2203,6 @@ static void blk_finish_request(struct request *req, int error)
 	if (req->cmd_flags & REQ_DONTPREP)
 		blk_unprep_request(req);
 
-
 	blk_account_io_done(req);
 
 	if (req->end_io)

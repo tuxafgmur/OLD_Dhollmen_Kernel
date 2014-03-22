@@ -1,6 +1,6 @@
 /*
 ** frandom.c
-**      Fast pseudo-random generator 
+**      Fast pseudo-random generator
 **      (c) Copyright 2003-2011 Eli Billauer
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -15,10 +15,10 @@
 
 #include <linux/kernel.h>
 #include <linux/init.h>
-#include <linux/slab.h> 
-#include <linux/fs.h> 
+#include <linux/slab.h>
+#include <linux/fs.h>
 #include <linux/errno.h>
-#include <linux/types.h> 
+#include <linux/types.h>
 #include <linux/random.h>
 
 #include <asm/uaccess.h>
@@ -30,8 +30,8 @@
 #define EXTERNAL_SEED 1
 
 #define FRANDOM_MAJOR 235
-#define FRANDOM_MINOR 11 
-#define ERANDOM_MINOR 12 
+#define FRANDOM_MINOR 11
+#define ERANDOM_MINOR 12
 
 static struct file_operations frandom_fops; /* Values assigned below */
 
@@ -69,7 +69,7 @@ struct frandom_state
 	struct semaphore sem; /* Semaphore on the state structure */
 
 	u8 S[256]; /* The state array */
-	u8 i;        
+	u8 i;
 	u8 j;
 
 	char *buf;
@@ -79,10 +79,10 @@ static struct frandom_state *erandom_state;
 
 static inline void swap_byte(u8 *a, u8 *b)
 {
-	u8 swapByte; 
-  
-	swapByte = *a; 
-	*a = *b;      
+	u8 swapByte;
+
+	swapByte = *a;
+	*a = *b;
 	*b = swapByte;
 }
 
@@ -96,7 +96,7 @@ void erandom_get_random_bytes(char *buf, size_t count)
 	unsigned int i;
 	unsigned int j;
 	u8 *S;
-  
+
 	/* If we fail to get the semaphore, we revert to external random data.
 	   Since semaphore blocking is expected to be very rare, and interrupts
 	   during these rare and very short periods of time even less frequent,
@@ -113,16 +113,16 @@ void erandom_get_random_bytes(char *buf, size_t count)
 	/* We seed erandom as late as possible, hoping that the kernel's main RNG
 	 * is already restored in the boot sequence (not critical, but better)
 	 */
-	
+
 	if (!erandom_seeded) {
 		erandom_seeded = 1;
 		init_rand_state(state, EXTERNAL_SEED);
 		printk(KERN_INFO "frandom: Seeded global generator now (used by erandom)\n");
 	}
 
-	i = state->i;     
+	i = state->i;
 	j = state->j;
-	S = state->S;  
+	S = state->S;
 
 	for (k=0; k<count; k++) {
 		i = (i + 1) & 0xff;
@@ -130,8 +130,8 @@ void erandom_get_random_bytes(char *buf, size_t count)
 		swap_byte(&S[i], &S[j]);
 		*buf++ = S[(S[i] + S[j]) & 0xff];
 	}
- 
-	state->i = i;     
+
+	state->i = i;
 	state->j = j;
 
 	up(&state->sem);
@@ -174,7 +174,7 @@ static void init_rand_state(struct frandom_state *state, int seedflag)
 
 static int frandom_open(struct inode *inode, struct file *filp)
 {
-  
+
 	struct frandom_state *state;
 
 	int num = iminor(inode);
@@ -183,7 +183,7 @@ static int frandom_open(struct inode *inode, struct file *filp)
 	 * explicitly
 	 */
 	if ((num != frandom_minor) && (num != erandom_minor)) return -ENODEV;
-  
+
 	state = kmalloc(sizeof(struct frandom_state), GFP_KERNEL);
 	if (!state)
 		return -ENOMEM;
@@ -213,7 +213,7 @@ static int frandom_release(struct inode *inode, struct file *filp)
 
 	kfree(state->buf);
 	kfree(state);
-  
+
 	return 0;
 }
 
@@ -228,18 +228,18 @@ static ssize_t frandom_read(struct file *filp, char *buf, size_t count,
 	unsigned int i;
 	unsigned int j;
 	u8 *S;
-  
+
 	if (down_interruptible(&state->sem))
 		return -ERESTARTSYS;
-  
+
 	if ((frandom_chunklimit > 0) && (count > frandom_chunklimit))
 		count = frandom_chunklimit;
 
 	ret = count; /* It's either everything or an error... */
-  
-	i = state->i;     
+
+	i = state->i;
 	j = state->j;
-	S = state->S;  
+	S = state->S;
 
 	while (count) {
 		if (count > frandom_bufsize)
@@ -255,7 +255,7 @@ static ssize_t frandom_read(struct file *filp, char *buf, size_t count,
 			swap_byte(&S[i], &S[j]);
 			*localbuf++ = S[(S[i] + S[j]) & 0xff];
 		}
- 
+
 		if (copy_to_user(buf, state->buf, dobytes)) {
 			ret = -EFAULT;
 			goto out;
@@ -266,7 +266,7 @@ static ssize_t frandom_read(struct file *filp, char *buf, size_t count,
 	}
 
  out:
-	state->i = i;     
+	state->i = i;
 	state->j = j;
 
 	up(&state->sem);
@@ -299,7 +299,7 @@ static int frandom_init_module(void)
 
 	/* The buffer size MUST be at least 256 bytes, because we assume that
 	   minimal length in init_rand_state().
-	*/       
+	*/
 	if (frandom_bufsize < 256) {
 		printk(KERN_ERR "frandom: Refused to load with frandom_bufsize=%d < 256\n",frandom_bufsize);
 		return -EINVAL;
@@ -330,7 +330,7 @@ static int frandom_init_module(void)
 		printk(KERN_WARNING "frandom: Failed to register class fastrng\n");
 		goto error0;
 	}
-	
+
 	/*
 	 * Register your major, and accept a dynamic number. This is the
 	 * first thing to do, in order to avoid releasing other module's
@@ -396,7 +396,7 @@ static int frandom_init_module(void)
 	kfree(erandom_state->buf);
 	kfree(erandom_state);
 
-	return result;	
+	return result;
 }
 
 module_init(frandom_init_module);

@@ -1168,26 +1168,8 @@ static struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
 static struct page *shmem_swapin(swp_entry_t entry, gfp_t gfp,
 			struct shmem_inode_info *info, unsigned long idx)
 {
-	struct mempolicy mpol, *spol;
 	struct vm_area_struct pvma;
 	struct page *page;
-
-	spol = mpol_cond_copy(&mpol,
-				mpol_shared_policy_lookup(&info->policy, idx));
-
-	/* Create a pseudo vma that just contains the policy */
-	pvma.vm_start = 0;
-	pvma.vm_pgoff = idx;
-	pvma.vm_ops = NULL;
-	pvma.vm_policy = spol;
-	page = swapin_readahead(entry, gfp, &pvma, 0);
-	return page;
-}
-
-static struct page *shmem_alloc_page(gfp_t gfp,
-			struct shmem_inode_info *info, unsigned long idx)
-{
-	struct vm_area_struct pvma;
 
 	/* Create a pseudo vma that just contains the policy */
 	pvma.vm_start = 0;
@@ -1195,10 +1177,32 @@ static struct page *shmem_alloc_page(gfp_t gfp,
 	pvma.vm_ops = NULL;
 	pvma.vm_policy = mpol_shared_policy_lookup(&info->policy, idx);
 
-	/*
-	 * alloc_page_vma() will drop the shared policy reference
-	 */
-	return alloc_page_vma(gfp, &pvma, 0);
+	page = swapin_readahead(entry, gfp, &pvma, 0);
+
+	/* Drop reference taken by mpol_shared_policy_lookup() */
+	mpol_cond_put(pvma.vm_policy);
+
+	return page;
+}
+
+static struct page *shmem_alloc_page(gfp_t gfp,
+			struct shmem_inode_info *info, unsigned long idx)
+{
+	struct vm_area_struct pvma;
+	struct page *page;
+
+	/* Create a pseudo vma that just contains the policy */
+	pvma.vm_start = 0;
+	pvma.vm_pgoff = idx;
+	pvma.vm_ops = NULL;
+	pvma.vm_policy = mpol_shared_policy_lookup(&info->policy, idx);
+
+	page = alloc_page_vma(gfp, &pvma, 0);
+
+	/* Drop reference taken by mpol_shared_policy_lookup() */
+	mpol_cond_put(pvma.vm_policy);
+
+	return page;
 }
 #else /* !CONFIG_NUMA */
 #ifdef CONFIG_TMPFS
@@ -1216,7 +1220,11 @@ static inline struct page *shmem_swapin(swp_entry_t entry, gfp_t gfp,
 static inline struct page *shmem_alloc_page(gfp_t gfp,
 			struct shmem_inode_info *info, unsigned long idx)
 {
+#ifdef CONFIG_CMA
+	return alloc_page(gfp & ~__GFP_MOVABLE);
+#else
 	return alloc_page(gfp);
+#endif
 }
 #endif /* CONFIG_NUMA */
 
@@ -2177,7 +2185,6 @@ out:
 	return err;
 }
 
-
 static const struct xattr_handler *shmem_xattr_handlers[] = {
 #ifdef CONFIG_TMPFS_POSIX_ACL
 	&generic_acl_access_handler,
@@ -2348,11 +2355,13 @@ static struct dentry *shmem_fh_to_dentry(struct super_block *sb,
 {
 	struct inode *inode;
 	struct dentry *dentry = NULL;
-	u64 inum = fid->raw[2];
-	inum = (inum << 32) | fid->raw[1];
+	u64 inum;
 
 	if (fh_len < 3)
 		return NULL;
+
+	inum = fid->raw[2];
+	inum = (inum << 32) | fid->raw[1];
 
 	inode = ilookup5(sb, (unsigned long)(inum + fid->raw[0]),
 			shmem_match, fid->raw);
@@ -2406,7 +2415,7 @@ static int shmem_parse_options(char *options, struct shmem_sb_info *sbinfo,
 			       bool remount)
 {
 	char *this_char, *value, *rest;
-	struct mempolicy *mpol = NULL; 
+	struct mempolicy *mpol = NULL;
 
 	while (options != NULL) {
 		this_char = options;
@@ -2430,8 +2439,7 @@ static int shmem_parse_options(char *options, struct shmem_sb_info *sbinfo,
 		if ((value = strchr(this_char,'=')) != NULL) {
 			*value++ = 0;
 		} else {
-			printk(KERN_ERR
-			    "tmpfs: No value for mount option '%s'\n", this_char);
+			printk(KERN_ERR "tmpfs: No value for mount option '%s'\n", this_char);
 			goto error;
 		}
 
@@ -2475,11 +2483,11 @@ static int shmem_parse_options(char *options, struct shmem_sb_info *sbinfo,
 			if (*rest)
 				goto bad_val;
 		} else if (!strcmp(this_char,"mpol")) {
-			    mpol_put(mpol);
-			    if (mpol_parse_str(value, &mpol, 1)) {
-				    mpol = NULL;
-				    goto bad_val;
-				} 				
+			mpol_put(mpol);
+			if (mpol_parse_str(value, &mpol, 1)) {
+				mpol = NULL;
+				goto bad_val;
+			}
 		} else {
 			printk(KERN_ERR "tmpfs: Bad mount option %s\n", this_char);
 			goto error;
@@ -2490,8 +2498,10 @@ static int shmem_parse_options(char *options, struct shmem_sb_info *sbinfo,
 
 bad_val:
 	printk(KERN_ERR "tmpfs: Bad value '%s' for mount option '%s'\n", value, this_char);
+
 error:
-	mpol_put(mpol); 	
+	mpol_put(mpol);
+
 	return 1;
 
 }
@@ -2503,6 +2513,7 @@ static int shmem_remount_fs(struct super_block *sb, int *flags, char *data)
 	unsigned long inodes;
 	int error = -EINVAL;
 
+	config.mpol = NULL;
 	if (shmem_parse_options(data, &config, true))
 		return error;
 
@@ -2528,8 +2539,13 @@ static int shmem_remount_fs(struct super_block *sb, int *flags, char *data)
 	sbinfo->max_inodes  = config.max_inodes;
 	sbinfo->free_inodes = config.max_inodes - inodes;
 
-	mpol_put(sbinfo->mpol);
-	sbinfo->mpol        = config.mpol;	/* transfers initial ref */
+	/*
+	 * Preserve previous mempolicy unless mpol remount option was specified.
+	 */
+	if (config.mpol) {
+		mpol_put(sbinfo->mpol);
+		sbinfo->mpol = config.mpol;	/* transfers initial ref */
+	}
 out:
 	spin_unlock(&sbinfo->stat_lock);
 	return error;
@@ -2783,7 +2799,6 @@ static const struct vm_operations_struct shmem_vm_ops = {
 	.get_policy     = shmem_get_policy,
 #endif
 };
-
 
 static struct dentry *shmem_mount(struct file_system_type *fs_type,
 	int flags, const char *dev_name, void *data)

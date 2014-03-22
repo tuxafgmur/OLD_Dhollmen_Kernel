@@ -94,7 +94,7 @@ unsigned int dirty_writeback_interval = 5 * 100; /* centiseconds */
 /*
  * The longest time for which data is allowed to remain dirty
  */
-unsigned int dirty_expire_interval = 20 * 100; /* centiseconds */
+unsigned int dirty_expire_interval = 30 * 100; /* centiseconds */
 
 /*
  * Flag that makes the machine dump writes/reads and block dirtyings.
@@ -110,7 +110,6 @@ int laptop_mode;
 EXPORT_SYMBOL(laptop_mode);
 
 /* End of sysctl-exported parameters */
-
 
 /*
  * Scale the writeback cache size proportional to the relative writeout speeds.
@@ -196,7 +195,6 @@ int dirty_ratio_handler(struct ctl_table *table, int write,
 	}
 	return ret;
 }
-
 
 int dirty_bytes_handler(struct ctl_table *table, int write,
 		void __user *buffer, size_t *lenp,

@@ -127,7 +127,7 @@
 #define ADMA_ERR		(1 << 25)
 #define ADMA_XFER_INT		(1 << 3)
 
-#define DMA_TABLE_NUM_ENTRIES	1024
+#define DMA_TABLE_NUM_ENTRIES	2048
 #define ADMA_TABLE_SZ	\
 	(DMA_TABLE_NUM_ENTRIES * sizeof(struct adma_desc_table))
 
@@ -240,6 +240,7 @@ struct omap_hsmmc_host {
 	int			gpio_for_ldo;
 	struct	timer_list	sw_timer;
 	struct	omap_mmc_platform_data	*pdata;
+	struct wake_lock	wake_lock;
 };
 
 static void omap_hsmmc_status_notify_cb(int card_present, void *dev_id)
@@ -593,6 +594,7 @@ static int omap_hsmmc_reg_get(struct omap_hsmmc_host *host)
 				regulator_disable(reg);
 			}
 		}
+		mdelay(50);
 	}
 
 	return 0;
@@ -1199,7 +1201,7 @@ static void omap_hsmmc_report_irq(struct omap_hsmmc_host *host, u32 status)
 static inline void omap_hsmmc_reset_controller_fsm(struct omap_hsmmc_host *host,
 						   unsigned long bit)
 {
-	unsigned long i = 0;
+	unsigned long i = 0, j = 0;
 #ifdef CONFIG_WIWLAN_SDIO
 	unsigned long limit = (loops_per_jiffy *
 				msecs_to_jiffies(MMC_TIMEOUT_MS));
@@ -1226,19 +1228,19 @@ static inline void omap_hsmmc_reset_controller_fsm(struct omap_hsmmc_host *host,
 #else
 	if (mmc_slot(host).features & HSMMC_HAS_UPDATED_RESET) {
 		while ((!(OMAP_HSMMC_READ(host, SYSCTL) & bit))
-						&& (i++ < 50))
-			udelay(100);
+						&& (i++ < 200))
+			udelay(10);
 	}
 	i = 0;
 	while ((OMAP_HSMMC_READ(host, SYSCTL) & bit) &&
-		(i++ < 50))
-		udelay(100);
+		(i++ < 200))
+		udelay(10);
 #endif
 
 	if (OMAP_HSMMC_READ(host->base, SYSCTL) & bit)
 		dev_err(mmc_dev(host->mmc),
-			"Timeout waiting on controller reset in %s\n",
-			__func__);
+		"Timeout waiting on controller reset in %s, I = %lu, J = %lu\n",
+		__func__, i, j);
 }
 
 static void omap_hsmmc_do_irq(struct omap_hsmmc_host *host, int status)
@@ -1272,10 +1274,11 @@ static void omap_hsmmc_do_irq(struct omap_hsmmc_host *host, int status)
 #endif
 
 	if (status & ERR) {
-		
-#ifdef CONFIG_MMC_DEBUG
+
 		dev_warn(mmc_dev(host->mmc), "Status=%x cmd =%d\n",
 		status, (OMAP_HSMMC_READ(host->base, CMD) & 0x3F000000)>>24);
+
+#ifdef CONFIG_MMC_DEBUG
 		omap_hsmmc_report_irq(host, status);
 #endif
 		if ((status & CMD_TIMEOUT) ||
@@ -1538,6 +1541,8 @@ static irqreturn_t omap_hsmmc_cd_handler(int irq, void *dev_id)
 
 	if (host->suspended)
 		return IRQ_HANDLED;
+
+	wake_lock_timeout(&host->wake_lock, 1 * HZ);
 	schedule_work(&host->mmc_carddetect_work);
 
 	return IRQ_HANDLED;
@@ -2422,7 +2427,6 @@ static int omap_hsmmc_regs_show(struct seq_file *s, void *data)
 	struct mmc_host *mmc = s->private;
 	struct omap_hsmmc_host *host = mmc_priv(mmc);
 
-
 	seq_printf(s, "mmc%d:\n"
 			" enabled:\t%d\n"
 			" dpm_state:\t%d\n"
@@ -2572,6 +2576,8 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
 
 	spin_lock_init(&host->irq_lock);
 
+	wake_lock_init(&host->wake_lock, WAKE_LOCK_SUSPEND, "omaphsmmc_wake_lock");
+
 #ifdef CONFIG_MMC_SOFTWARE_TIMEOUT
 	init_timer(&host->sw_timer);
 	host->sw_timer.function = omap_hsmmc_timeout_irq;
@@ -2629,7 +2635,6 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
 	}
 
 	/* ADMA is not used if packed cmd is enabled*/
-	if (!(mmc_slot(host).caps2 & MMC_CAP2_PACKED_CMD)) {
 		ctrlr_caps = OMAP_HSMMC_READ(host->base, CAPA);
 
 		if (ctrlr_caps & CAPA_ADMA_SUPPORT) {
@@ -2641,7 +2646,6 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
 			if (host->adma_table != NULL)
 				host->dma_type = ADMA_XFER;
 			}
-		}
 
 	dev_dbg(mmc_dev(host->mmc), "DMA Mode=%d\n", host->dma_type);
 
@@ -2675,11 +2679,7 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
 	mmc->max_seg_size = mmc->max_req_size;
 
 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED |
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO) || defined(CONFIG_MACH_SAMSUNG_ESPRESSO10)
-		     MMC_CAP_WAIT_WHILE_BUSY | MMC_CAP_CMD23;
-#else
- 		     MMC_CAP_WAIT_WHILE_BUSY | MMC_CAP_ERASE | MMC_CAP_CMD23;
-#endif
+		     MMC_CAP_WAIT_WHILE_BUSY | MMC_CAP_ERASE | MMC_CAP_CMD23;
 
 	mmc->caps |= mmc_slot(host).caps;
 	if (mmc->caps & MMC_CAP_8_BIT_DATA)
@@ -3008,7 +3008,6 @@ static int omap_hsmmc_runtime_resume(struct device *dev)
 
 	return 0;
 }
-
 
 static struct dev_pm_ops omap_hsmmc_dev_pm_ops = {
 	.suspend	= omap_hsmmc_suspend,

@@ -1,10 +1,6 @@
 /*
- * wm8994.c  --  WM8994 ALSA SoC Audio driver
- *
  * Copyright 2009 Wolfson Microelectronics plc
- *
  * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
- *
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -159,7 +155,6 @@ static void wm8958_micd_set_rate(struct snd_soc_codec *codec)
 
 static int wm8994_readable(struct snd_soc_codec *codec, unsigned int reg)
 {
-	struct wm8994_priv *wm8994 = snd_soc_codec_get_drvdata(codec);
 	struct wm8994 *control = codec->control_data;
 
 	switch (reg) {
@@ -1204,7 +1199,6 @@ static int aif2clk_ev(struct snd_soc_dapm_widget *w,
 		else
 			adc = WM8994_AIF2ADCL_ENA | WM8994_AIF2ADCR_ENA;
 
-
 		val = snd_soc_read(codec, WM8994_AIF2_CONTROL_2);
 		if ((val & WM8994_AIF2DACL_SRC) &&
 		    (val & WM8994_AIF2DACR_SRC))
@@ -1424,7 +1418,6 @@ SOC_DAPM_SINGLE("DAC1 Switch", WM8994_SPEAKER_MIXER, 0, 1, 0),
 static int post_ev(struct snd_soc_dapm_widget *w,
 	    struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_codec *codec = w->codec;
 	return 0;
 }
 
@@ -2062,8 +2055,6 @@ static int wm8994_get_fll_config(struct fll_div *fll,
 	u64 Kpart;
 	unsigned int K, Ndiv, Nmod;
 
-	pr_debug("FLL input=%dHz, output=%dHz\n", freq_in, freq_out);
-
 	/* Scale the input frequency down to <= 13.5MHz */
 	fll->clk_ref_div = 0;
 	while (freq_in > 13500000) {
@@ -2073,8 +2064,6 @@ static int wm8994_get_fll_config(struct fll_div *fll,
 		if (fll->clk_ref_div > 3)
 			return -EINVAL;
 	}
-	pr_debug("CLK_REF_DIV=%d, Fref=%dHz\n", fll->clk_ref_div, freq_in);
-
 	/* Scale the output to give 90MHz<=Fvco<=100MHz */
 	fll->outdiv = 3;
 	while (freq_out * (fll->outdiv + 1) < 90000000) {
@@ -2083,7 +2072,6 @@ static int wm8994_get_fll_config(struct fll_div *fll,
 			return -EINVAL;
 	}
 	freq_out *= fll->outdiv + 1;
-	pr_debug("OUTDIV=%d, Fvco=%dHz\n", fll->outdiv, freq_out);
 
 	if (freq_in > 1000000) {
 		fll->fll_fratio = 0;
@@ -2100,14 +2088,12 @@ static int wm8994_get_fll_config(struct fll_div *fll,
 		fll->fll_fratio = 4;
 		freq_in *= 16;
 	}
-	pr_debug("FLL_FRATIO=%d, Fref=%dHz\n", fll->fll_fratio, freq_in);
 
 	/* Now, calculate N.K */
 	Ndiv = freq_out / freq_in;
 
 	fll->n = Ndiv;
 	Nmod = freq_out % freq_in;
-	pr_debug("Nmod=%d\n", Nmod);
 
 	/* Calculate fractional part - scale up so we can round. */
 	Kpart = FIXED_FLL_SIZE * (long long)Nmod;
@@ -2121,8 +2107,6 @@ static int wm8994_get_fll_config(struct fll_div *fll,
 
 	/* Move down to proper range now rounding is done */
 	fll->k = K / 10;
-
-	pr_debug("N=%x K=%x\n", fll->n, fll->k);
 
 	return 0;
 }
@@ -2204,7 +2188,6 @@ static int _wm8994_set_fll(struct snd_soc_codec *codec, int id, int src,
 		return -EBUSY;
 	}
 
-
 	/* We always need to disable the FLL while reconfiguring */
 	snd_soc_update_bits(codec, WM8994_FLL1_CONTROL_1 + reg_offset,
 			    WM8994_FLL1_ENA, 0);
@@ -2269,9 +2252,6 @@ static int _wm8994_set_fll(struct snd_soc_codec *codec, int id, int src,
 		if (wm8994->fll_locked_irq) {
 			timeout = wait_for_completion_timeout(&wm8994->fll_locked[id],
 							      msecs_to_jiffies(10));
-			if (timeout == 0)
-				dev_warn(codec->dev,
-					 "Timed out waiting for FLL lock\n");
 		} else {
 			msleep(5);
 		}
@@ -2857,6 +2837,7 @@ static int wm8994_aif3_hw_params(struct snd_pcm_substream *substream,
 		default:
 			return 0;
 		}
+		break;
 	default:
 		return 0;
 	}
@@ -3147,7 +3128,6 @@ static int wm8994_codec_resume(struct snd_soc_codec *codec)
 
 static void wm8994_handle_retune_mobile_pdata(struct wm8994_priv *wm8994)
 {
-	struct snd_soc_codec *codec = wm8994->codec;
 	struct wm8994_pdata *pdata = wm8994->pdata;
 	struct snd_kcontrol_new controls[] = {
 		SOC_ENUM_EXT("AIF1.1 EQ Mode",
@@ -3407,7 +3387,6 @@ static void wm8958_default_micdet(u16 status, void *data)
 		snd_soc_jack_report(wm8994->micdet[0].jack, SND_JACK_HEADSET,
 				    SND_JACK_HEADSET);
 	}
-
 
 	if (wm8994->mic_detecting && status & 0x4) {
 		wm8994->mic_detecting = false;
@@ -3699,7 +3678,6 @@ static irqreturn_t wm8994_fifo_error(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-
 static irqreturn_t wm8994_temp_warn(int irq, void *data)
 {
 	struct snd_soc_codec *codec = data;
@@ -3919,7 +3897,7 @@ static int wm8994_codec_probe(struct snd_soc_codec *codec)
 						 wm8994);
 			if (ret == 0) {
 				wm8994->jackdet = true;
-			} 
+			}
 		}
 		break;
 	default:
@@ -4077,7 +4055,6 @@ static int wm8994_codec_probe(struct snd_soc_codec *codec)
 					  ARRAY_SIZE(wm8994_dac_widgets));
 		break;
 	}
-
 
 	wm_hubs_add_analogue_routes(codec, 0, 0);
 	snd_soc_dapm_add_routes(dapm, intercon, ARRAY_SIZE(intercon));
@@ -4283,7 +4260,6 @@ static __exit void wm8994_exit(void)
 	platform_driver_unregister(&wm8994_codec_driver);
 }
 module_exit(wm8994_exit);
-
 
 MODULE_DESCRIPTION("ASoC WM8994 driver");
 MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");

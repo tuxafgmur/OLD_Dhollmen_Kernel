@@ -168,6 +168,7 @@ static void destroy_serial(struct kref *kref)
 		}
 	}
 
+	usb_put_intf(serial->interface);
 	usb_put_dev(serial->dev);
 	kfree(serial);
 }
@@ -624,7 +625,7 @@ static struct usb_serial *create_serial(struct usb_device *dev,
 	}
 	serial->dev = usb_get_dev(dev);
 	serial->type = driver;
-	serial->interface = interface;
+	serial->interface = usb_get_intf(interface);
 	kref_init(&serial->kref);
 	mutex_init(&serial->disc_mutex);
 	serial->minor = SERIAL_TTY_NO_MINOR;
@@ -691,7 +692,7 @@ static int serial_carrier_raised(struct tty_port *port)
 	if (drv->carrier_raised)
 		return drv->carrier_raised(p);
 	/* No carrier control - don't block */
-	return 1;	
+	return 1;
 }
 
 static void serial_dtr_rts(struct tty_port *port, int on)
@@ -764,7 +765,7 @@ int usb_serial_probe(struct usb_interface *interface,
 
 		if (retval) {
 			dbg("sub driver rejected device");
-			kfree(serial);
+			usb_serial_put(serial);
 			module_put(type->driver.owner);
 			return retval;
 		}
@@ -836,7 +837,7 @@ int usb_serial_probe(struct usb_interface *interface,
 		 */
 		if (num_bulk_in == 0 || num_bulk_out == 0) {
 			dev_info(&interface->dev, "PL-2303 hack: descriptors matched but endpoints did not\n");
-			kfree(serial);
+			usb_serial_put(serial);
 			module_put(type->driver.owner);
 			return -ENODEV;
 		}
@@ -850,7 +851,7 @@ int usb_serial_probe(struct usb_interface *interface,
 		if (num_ports == 0) {
 			dev_err(&interface->dev,
 			    "Generic device with no bulk out, not allowed.\n");
-			kfree(serial);
+			usb_serial_put(serial);
 			module_put(type->driver.owner);
 			return -EIO;
 		}
@@ -1222,7 +1223,6 @@ static const struct tty_operations serial_ops = {
 	.proc_fops =		&serial_proc_fops,
 };
 
-
 struct tty_driver *usb_serial_tty_driver;
 
 static int __init usb_serial_init(void)
@@ -1303,7 +1303,6 @@ exit_bus:
 	return result;
 }
 
-
 static void __exit usb_serial_exit(void)
 {
 	usb_serial_console_exit();
@@ -1315,7 +1314,6 @@ static void __exit usb_serial_exit(void)
 	put_tty_driver(usb_serial_tty_driver);
 	bus_unregister(&usb_serial_bus_type);
 }
-
 
 module_init(usb_serial_init);
 module_exit(usb_serial_exit);
@@ -1380,7 +1378,6 @@ int usb_serial_register(struct usb_serial_driver *driver)
 	return retval;
 }
 EXPORT_SYMBOL_GPL(usb_serial_register);
-
 
 void usb_serial_deregister(struct usb_serial_driver *device)
 {

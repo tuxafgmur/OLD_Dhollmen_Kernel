@@ -641,14 +641,13 @@ void dsscomp_kdump(void)
 		.size = sizeof(dump_buf) - 1,
 	};
 	int i;
-	
+
 #ifdef CONFIG_DSSCOMP_DEBUG_LOG
 	dsscomp_dbg_events(&s);
-#endif	
+#endif
 	dsscomp_dbg_comps(&s);
 	dsscomp_dbg_gralloc(&s);
 
-	
 	for (i = 0; i < s.count; i += DUMP_CHUNK) {
 		if ((s.count - i) > DUMP_CHUNK) {
 			char c = s.buf[i + DUMP_CHUNK];

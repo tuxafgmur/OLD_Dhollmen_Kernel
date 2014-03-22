@@ -26,4 +26,3 @@ unsigned int ext4_count_free(char *bitmap, unsigned int numchars)
 }
 
 #endif  /*  EXT4FS_DEBUG  */
-

@@ -100,7 +100,6 @@ void gic_cpu_disable(void)
 	__raw_writel(0, gic_cpu_base + GIC_CPU_CTRL);
 }
 
-
 bool gic_dist_disabled(void)
 {
 	return !(__raw_readl(gic_dist_base_addr + GIC_DIST_CTRL) & 0x1);
@@ -224,7 +223,6 @@ static int __init omap_l2_cache_init(void)
 				por_ctrl, 0, 0, 0);
 	else if (omap_rev() >= OMAP4430_REV_ES2_2)
 		omap_smc1(0x113, por_ctrl);
-
 
 	/*
 	 * FIXME: Temporary WA for OMAP4460 stability issue.

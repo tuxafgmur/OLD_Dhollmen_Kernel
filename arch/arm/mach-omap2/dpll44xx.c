@@ -159,7 +159,6 @@ int omap4_core_dpll_m2_set_rate(struct clk *clk, unsigned long rate)
 	return 0;
 }
 
-
 /**
  * omap4_prcm_freq_update - set freq_update bit
  *
@@ -724,6 +723,4 @@ void omap4_dpll_abe_reconfigure(void)
 
 	if (i >= MAX_DPLL_WAIT_TRIES)
 		pr_err("Warm Reset WA: failed to lock the ABE DPLL\n");
-	else
-		pr_info("Warm Reset WA: succeeded to reconfigure the ABE DPLL\n");
 }

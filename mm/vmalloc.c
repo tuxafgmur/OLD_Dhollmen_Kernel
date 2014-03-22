@@ -242,7 +242,6 @@ unsigned long vmalloc_to_pfn(const void *vmalloc_addr)
 }
 EXPORT_SYMBOL(vmalloc_to_pfn);
 
-
 /*** Global kva allocator ***/
 
 #define VM_LAZY_FREE	0x01
@@ -707,7 +706,6 @@ static void free_unmap_vmap_area_addr(unsigned long addr)
 	BUG_ON(!va);
 	free_unmap_vmap_area(va);
 }
-
 
 /*** Per cpu kva allocator ***/
 
@@ -2150,7 +2148,6 @@ void  __attribute__((weak)) vmalloc_sync_all(void)
 {
 }
 
-
 static int f(pte_t *pte, pgtable_t table, unsigned long addr, void *data)
 {
 	/* apply_to_page_range() does all the hard work. */
@@ -2618,4 +2615,3 @@ static int __init proc_vmalloc_init(void)
 }
 module_init(proc_vmalloc_init);
 #endif
-

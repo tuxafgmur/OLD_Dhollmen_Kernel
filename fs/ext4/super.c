@@ -96,7 +96,6 @@ static struct file_system_type ext2_fs_type = {
 #define IS_EXT2_SB(sb) (0)
 #endif
 
-
 #if !defined(CONFIG_EXT3_FS) && !defined(CONFIG_EXT3_FS_MODULE) && defined(CONFIG_EXT4_USE_FOR_EXT23)
 static struct file_system_type ext3_fs_type = {
 	.owner		= THIS_MODULE,
@@ -222,7 +221,6 @@ void ext4_itable_unused_set(struct super_block *sb,
 		bg->bg_itable_unused_hi = cpu_to_le16(count >> 16);
 }
 
-
 /* Just increment the non-pointer handle value */
 static handle_t *ext4_get_nojournal(void)
 {
@@ -235,7 +233,6 @@ static handle_t *ext4_get_nojournal(void)
 	current->journal_info = handle;
 	return handle;
 }
-
 
 /* Decrement the non-pointer handle value */
 static void ext4_put_nojournal(handle_t *handle)
@@ -374,7 +371,6 @@ static void save_error_info(struct super_block *sb, const char *func,
 	__save_error_info(sb, func, line);
 	ext4_commit_super(sb, 1);
 }
-
 
 /* Deal with the reporting of failure conditions on a filesystem such as
  * inconsistencies detected or read IO failures.
@@ -1983,8 +1979,8 @@ static int ext4_fill_flex_info(struct super_block *sb)
 		flex_group = ext4_flex_group(sbi, i);
 		atomic_add(ext4_free_inodes_count(sb, gdp),
 			   &sbi->s_flex_groups[flex_group].free_inodes);
-		atomic_add(ext4_free_blks_count(sb, gdp),
-			   &sbi->s_flex_groups[flex_group].free_blocks);
+		atomic64_add(ext4_free_blks_count(sb, gdp),
+			     &sbi->s_flex_groups[flex_group].free_blocks);
 		atomic_add(ext4_used_dirs_count(sb, gdp),
 			   &sbi->s_flex_groups[flex_group].used_dirs);
 	}

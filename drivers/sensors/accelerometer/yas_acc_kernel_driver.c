@@ -210,7 +210,6 @@ static int read_accel_raw_xyz(struct yas_vector *acc)
 	return 0;
 }
 
-
 static int accel_open_calibration(void)
 {
 	struct file *cal_filp = NULL;
@@ -257,8 +256,6 @@ static int accel_open_calibration(void)
 
 	return err;
 }
-
-
 
 static int accel_do_calibrate(int enable)
 {
@@ -318,7 +315,6 @@ static int accel_do_calibrate(int enable)
 
 	old_fs = get_fs();
 	set_fs(KERNEL_DS);
-
 
 	cal_filp = filp_open(data->acc_pdata->cal_path,
 			O_CREAT | O_TRUNC | O_WRONLY,
@@ -1293,7 +1289,6 @@ static void yas_acc_work_func(struct work_struct *work)
 	schedule_delayed_work(&data->work, delay);
 }
 
-
 static ssize_t acc_data_read(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -1314,7 +1309,7 @@ static ssize_t acc_data_read(struct device *dev,
 	y = (accel.xyz.v[1] - data->cal_data.v[1]);
 	z = (accel.xyz.v[2] - data->cal_data.v[2]);
 
-	return sprintf(buf, "%d, %d, %d\n", -x, -y, -z);
+	return sprintf(buf, "%d, %d, %d\n", x, y, z);
 #else
 	x = (accel.xyz.v[0] - data->cal_data.v[0]) * 4;
 	y = (accel.xyz.v[1] - data->cal_data.v[1]) * 4;

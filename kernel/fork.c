@@ -941,7 +941,6 @@ void __cleanup_sighand(struct sighand_struct *sighand)
 	}
 }
 
-
 /*
  * Initialize POSIX timer handling for a thread group.
  */

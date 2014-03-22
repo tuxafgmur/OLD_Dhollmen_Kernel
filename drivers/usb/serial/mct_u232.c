@@ -113,7 +113,6 @@ static int  mct_u232_get_icount(struct tty_struct *tty,
 static void mct_u232_throttle(struct tty_struct *tty);
 static void mct_u232_unthrottle(struct tty_struct *tty);
 
-
 /*
  * All of the device info needed for the MCT USB-RS232 converter.
  */
@@ -466,7 +465,6 @@ static int mct_u232_startup(struct usb_serial *serial)
 	return 0;
 } /* mct_u232_startup */
 
-
 static void mct_u232_release(struct usb_serial *serial)
 {
 	struct mct_u232_private *priv;
@@ -577,14 +575,15 @@ static void mct_u232_close(struct usb_serial_port *port)
 {
 	dbg("%s port %d", __func__, port->number);
 
-	if (port->serial->dev) {
-		/* shutdown our urbs */
-		usb_kill_urb(port->write_urb);
-		usb_kill_urb(port->read_urb);
-		usb_kill_urb(port->interrupt_in_urb);
-	}
-} /* mct_u232_close */
+	/*
+	 * Must kill the read urb as it is actually an interrupt urb, which
+	 * generic close thus fails to kill.
+	 */
+	usb_kill_urb(port->read_urb);
+	usb_kill_urb(port->interrupt_in_urb);
 
+	usb_serial_generic_close(port);
+} /* mct_u232_close */
 
 static void mct_u232_read_int_callback(struct urb *urb)
 {
@@ -792,7 +791,6 @@ static void mct_u232_break_ctl(struct tty_struct *tty, int break_state)
 	mct_u232_set_line_ctrl(serial, lcr);
 } /* mct_u232_break_ctl */
 
-
 static int mct_u232_tiocmget(struct tty_struct *tty)
 {
 	struct usb_serial_port *port = tty->driver_data;
@@ -970,7 +968,6 @@ failed_usb_register:
 failed_usb_serial_register:
 	return retval;
 }
-
 
 static void __exit mct_u232_exit(void)
 {

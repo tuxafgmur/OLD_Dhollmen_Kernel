@@ -1603,7 +1603,6 @@ static void update_raising_data(struct bfq_data *bfqd, struct bfq_queue *bfqq)
 	}
 }
 
-
 /*
  * Dispatch one request from bfqq, moving it to the request queue
  * dispatch list.

@@ -1128,7 +1128,6 @@ static int __init espresso_save_init_switch_param(char *str)
 }
 __setup("switch_sel=", espresso_save_init_switch_param);
 
-
 #ifdef CONFIG_USB_HOST_NOTIFY
 static void espresso_booster(int enable)
 {

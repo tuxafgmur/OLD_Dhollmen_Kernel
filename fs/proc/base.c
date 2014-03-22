@@ -237,10 +237,10 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
 		goto out_mm;	/* Shh! No looking before we're done */
 
  	len = mm->arg_end - mm->arg_start;
- 
+
 	if (len > PAGE_SIZE)
 		len = PAGE_SIZE;
- 
+
 	res = access_process_vm(task, mm->arg_start, buffer, len, 0);
 
 	// If the nul at the end of args has been overwritten, then
@@ -280,7 +280,6 @@ static int proc_pid_auxv(struct task_struct *task, char *buffer)
 	}
 	return res;
 }
-
 
 #ifdef CONFIG_KALLSYMS
 /*
@@ -854,7 +853,7 @@ static ssize_t mem_read(struct file *file, char __user *buf,
 	return mem_rw(file, buf, count, ppos, 0);
 }
 
-#define mem_write NULL 
+#define mem_write NULL
 
 #ifndef mem_write
 /* This is a security hazard */
@@ -913,7 +912,6 @@ static ssize_t environ_read(struct file *file, char __user *buf,
 	page = (char *)__get_free_page(GFP_TEMPORARY);
 	if (!page)
 		goto out;
-
 
 	mm = mm_for_maps(task);
 	ret = PTR_ERR(mm);
@@ -1045,7 +1043,6 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
 			atomic_dec(&task->mm->oom_disable_count);
 	}
 
-#if 0
 	/*
 	 * Warn that /proc/pid/oom_adj is deprecated, see
 	 * Documentation/feature-removal-schedule.txt.
@@ -1054,8 +1051,6 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
 			"please use /proc/%d/oom_score_adj instead.\n",
 			current->comm, task_pid_nr(current),
 			task_pid_nr(task), task_pid_nr(task));
-#endif
-			
 	task->signal->oom_adj = oom_adjust;
 	/*
 	 * Scale /proc/pid/oom_score_adj appropriately ensuring that a maximum
@@ -1091,7 +1086,7 @@ static int oom_adjust_permission(struct inode *inode, int mask,
 	}
 
 	/*
-	 * System Server (uid == 1000) is granted access to oom_adj of all 
+	 * System Server (uid == 1000) is granted access to oom_adj of all
 	 * android applications (uid > 10000) as and services (uid >= 1000)
 	 */
 	if (p && (current_fsuid() == 1000) && (uid >= 1000)) {
@@ -1361,7 +1356,6 @@ static const struct file_operations proc_fault_inject_operations = {
 	.llseek		= generic_file_llseek,
 };
 #endif
-
 
 #ifdef CONFIG_SCHED_DEBUG
 /*
@@ -1638,7 +1632,6 @@ static const struct inode_operations proc_pid_link_inode_operations = {
 	.follow_link	= proc_pid_follow_link,
 	.setattr	= proc_setattr,
 };
-
 
 /* building an inode */
 
@@ -2213,7 +2206,6 @@ static const struct inode_operations proc_fdinfo_inode_operations = {
 	.setattr	= proc_setattr,
 };
 
-
 static struct dentry *proc_pident_instantiate(struct inode *dir,
 	struct dentry *dentry, struct task_struct *task, const void *ptr)
 {
@@ -2244,7 +2236,7 @@ out:
 	return error;
 }
 
-static struct dentry *proc_pident_lookup(struct inode *dir, 
+static struct dentry *proc_pident_lookup(struct inode *dir,
 					 struct dentry *dentry,
 					 const struct pid_entry *ents,
 					 unsigned int nents)

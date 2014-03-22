@@ -518,7 +518,6 @@ static void rh_inc(struct dm_region_hash *rh, region_t region)
 	} else
 		spin_unlock_irq(&rh->region_lock);
 
-
 	read_unlock(&rh->hash_lock);
 }
 

@@ -310,20 +310,31 @@ void irq_enter(void)
 	__irq_enter();
 }
 
+#ifdef __ARCH_IRQ_EXIT_IRQS_DISABLED
 static inline void invoke_softirq(void)
 {
-    if (!force_irqthreads) {
-#ifdef __ARCH_IRQ_EXIT_IRQS_DISABLED 		
+	if (!force_irqthreads)
 		__do_softirq();
-#else
-		do_softirq();
-#endif
-	} else {
-		__local_bh_disable((unsigned long)__builtin_return_address(0), SOFTIRQ_OFFSET);
-		wakeup_softirqd(); 
+	else {
+		__local_bh_disable((unsigned long)__builtin_return_address(0),
+				SOFTIRQ_OFFSET);
+		wakeup_softirqd();
 		__local_bh_enable(SOFTIRQ_OFFSET);
 	}
-} 
+}
+#else
+static inline void invoke_softirq(void)
+{
+	if (!force_irqthreads)
+		do_softirq();
+	else {
+		__local_bh_disable((unsigned long)__builtin_return_address(0),
+				SOFTIRQ_OFFSET);
+		wakeup_softirqd();
+		__local_bh_enable(SOFTIRQ_OFFSET);
+	}
+}
+#endif
 
 /*
  * Exit an interrupt context. Process softirqs if needed and possible:
@@ -500,7 +511,6 @@ static void tasklet_hi_action(struct softirq_action *a)
 	}
 }
 
-
 void tasklet_init(struct tasklet_struct *t,
 		  void (*func)(unsigned long), unsigned long data)
 {
@@ -605,8 +615,8 @@ static void remote_softirq_receive(void *data)
 	unsigned long flags;
 	int softirq;
 
-	softirq = *(int *)cp->info;
-	
+	softirq = cp->priv;
+
 	local_irq_save(flags);
 	__local_trigger(cp, softirq);
 	local_irq_restore(flags);
@@ -616,8 +626,9 @@ static int __try_remote_softirq(struct call_single_data *cp, int cpu, int softir
 {
 	if (cpu_online(cpu)) {
 		cp->func = remote_softirq_receive;
-		cp->info = &softirq;
+		cp->info = cp;
 		cp->flags = 0;
+		cp->priv = softirq;
 
 		__smp_call_function_single(cpu, cp, 0);
 		return 0;

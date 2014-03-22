@@ -54,9 +54,7 @@ struct omx_pvr_data {
 #define OMX_IOCIONREGISTER	_IOWR(OMX_IOC_MAGIC, 2, struct ion_fd_data)
 #define OMX_IOCIONUNREGISTER	_IOWR(OMX_IOC_MAGIC, 3, struct ion_fd_data)
 #define OMX_IOCPVRREGISTER	_IOWR(OMX_IOC_MAGIC, 4, struct omx_pvr_data)
-
 #define OMX_IOC_MAXNR	(4)
-
 #ifdef __KERNEL__
 
 /**
@@ -134,7 +132,6 @@ struct omx_conn_rsp {
 struct omx_disc_req {
 	u32 addr;
 } __packed;
-
 
 #endif /* __KERNEL__ */
 

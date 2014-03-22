@@ -265,11 +265,15 @@ int wm8994_irq_init(struct wm8994 *wm8994)
 	}
 
 	if (!wm8994->irq) {
+		dev_warn(wm8994->dev,
+			 "No interrupt specified, no interrupts\n");
 		wm8994->irq_base = 0;
 		return 0;
 	}
 
 	if (!wm8994->irq_base) {
+		dev_err(wm8994->dev,
+			"No interrupt base specified, no interrupts\n");
 		return 0;
 	}
 

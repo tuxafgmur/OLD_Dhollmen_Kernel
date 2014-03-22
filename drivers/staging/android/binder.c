@@ -642,8 +642,10 @@ static int binder_update_page_range(struct binder_proc *proc, int allocate,
 		page = &proc->pages[(page_addr - proc->buffer) / PAGE_SIZE];
 
 		BUG_ON(*page);
-		*page = alloc_page(GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO);
+		*page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 		if (*page == NULL) {
+			printk(KERN_ERR "binder: %d: binder_alloc_buf failed "
+			       "for page at %p\n", proc->pid, page_addr);
 			goto err_alloc_page_failed;
 		}
 		tmp_area.addr = page_addr;
@@ -992,7 +994,6 @@ static int binder_dec_node(struct binder_node *node, int strong, int internal)
 	return 0;
 }
 
-
 static struct binder_ref *binder_get_ref(struct binder_proc *proc,
 					 uint32_t desc)
 {
@@ -1065,7 +1066,7 @@ static struct binder_ref *binder_get_ref_for_node(struct binder_proc *proc,
 	rb_insert_color(&new_ref->rb_node_desc, &proc->refs_by_desc);
 	if (node) {
 		hlist_add_head(&new_ref->node_entry, &node->refs);
-	} 
+	}
 	return new_ref;
 }
 
@@ -1108,7 +1109,6 @@ static int binder_inc_ref(struct binder_ref *ref, int strong,
 	}
 	return 0;
 }
-
 
 static int binder_dec_ref(struct binder_ref *ref, int strong)
 {
@@ -1177,7 +1177,7 @@ static void binder_send_failed_reply(struct binder_transaction *t,
 				binder_pop_transaction(target_thread, t);
 				target_thread->return_error = error_code;
 				wake_up_interruptible(&target_thread->wait);
-			} 
+			}
 			return;
 		} else {
 			struct binder_transaction *next = t->from_parent;
@@ -2016,7 +2016,6 @@ retry:
 		goto done;
 	}
 
-
 	thread->looper |= BINDER_LOOPER_STATE_WAITING;
 	if (wait_for_proc_work)
 		proc->ready_threads++;
@@ -2132,7 +2131,7 @@ retry:
 					rb_erase(&node->rb_node, &proc->nodes);
 					kfree(node);
 					binder_stats_deleted(BINDER_STAT_NODE);
-				} 
+				}
 			}
 		} break;
 		case BINDER_WORK_DEAD_BINDER:
@@ -2266,9 +2265,9 @@ static void binder_release_work(struct list_head *list)
 			    death = container_of(w, struct binder_ref_death, work);
 				kfree(death);
 				binder_stats_deleted(BINDER_STAT_DEATH);
-			} break;		
+			} break;
 			default:
-			    pr_err("binder: unexpected work type, %d, not freed\n", w->type); 
+			    pr_err("binder: unexpected work type, %d, not freed\n", w->type);
 				break;
 		}
 	}
@@ -3001,7 +3000,7 @@ static void print_binder_proc(struct seq_file *m,
 		m->count = start_pos;
 }
 
-static const char * const binder_return_strings[] = { 
+static const char * const binder_return_strings[] = {
 	"BR_ERROR",
 	"BR_OK",
 	"BR_TRANSACTION",
@@ -3138,7 +3137,6 @@ static void print_binder_proc_stats(struct seq_file *m,
 
 	print_binder_stats(m, "  ", &proc->stats);
 }
-
 
 static int binder_state_show(struct seq_file *m, void *unused)
 {

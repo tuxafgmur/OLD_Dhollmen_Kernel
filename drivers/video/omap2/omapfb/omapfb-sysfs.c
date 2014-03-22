@@ -88,7 +88,6 @@ out:
 	return r ? r : count;
 }
 
-
 static ssize_t show_mirror(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {

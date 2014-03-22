@@ -44,7 +44,6 @@ static struct {
 #endif
 } dpi;
 
-
 static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
 {
 	int dsi_module;
@@ -382,4 +381,3 @@ int dpi_init(void)
 void dpi_exit(void)
 {
 }
-

@@ -614,9 +614,10 @@ decode_negTokenInit(unsigned char *security_blob, int length,
 		}
 	}
 
-  /*
-   * We currently ignore anything at the end of the SPNEGO blob after the 
-   * mechTypes have been parsed, since none of that info is used now.
-   */
+	/*
+	 * We currently ignore anything at the end of the SPNEGO blob after
+	 * the mechTypes have been parsed, since none of that info is
+	 * used at the moment.
+	 */
 	return 1;
 }

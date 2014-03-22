@@ -843,7 +843,6 @@ static int max8997_set_voltage_ldobuck_wrap(struct regulator_dev *rdev,
 	return max8997_set_voltage_ldobuck(rdev, min_uV, max_uV, &dummy);
 }
 
-
 static struct regulator_ops max8997_charger_ops = {
 	.is_enabled		= max8997_reg_is_enabled,
 	.enable			= max8997_reg_enable,

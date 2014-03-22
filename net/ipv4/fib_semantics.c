@@ -89,7 +89,6 @@ static DEFINE_SPINLOCK(fib_multipath_lock);
 
 #define endfor_nexthops(fi) }
 
-
 const struct fib_prop fib_props[RTN_MAX + 1] = {
 	[RTN_UNSPEC] = {
 		.error	= 0,
@@ -483,7 +482,6 @@ int fib_nh_match(struct fib_config *cfg, struct fib_info *fi)
 #endif
 	return 0;
 }
-
 
 /*
  * Picture
@@ -1219,7 +1217,6 @@ void fib_select_multipath(struct fib_result *res)
 			return;
 		}
 	}
-
 
 	/* w should be random number [0..fi->fib_power-1],
 	 * it is pretty bad approximation.

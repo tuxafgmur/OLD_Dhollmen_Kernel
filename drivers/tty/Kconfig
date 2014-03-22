@@ -67,7 +67,7 @@ config NR_TTY_DEVICES
 	---help---
 	  This is the highest numbered device created in /dev. You will actually have
 	  NR_TTY_DEVICES+1 devices in /dev. The default is 11, which will result in
-	  12 /dev entries. The lowest number you can set is 11, anything below that, 
+	  12 /dev entries. The lowest number you can set is 11, anything below that,
 	  and it will default to 11. 63 is also the upper limit so we don't overrun
 	  the serial consoles.
 
@@ -144,7 +144,6 @@ config LEGACY_PTYS
 	  security.  This option enables these legacy devices; on most
 	  systems, it is safe to say N.
 
-
 config LEGACY_PTY_COUNT
 	int "Maximum number of legacy PTY in use"
 	depends on LEGACY_PTYS
@@ -192,7 +191,7 @@ config ROCKETPORT
 	tristate "Comtrol RocketPort support"
 	depends on SERIAL_NONSTANDARD && (ISA || EISA || PCI)
 	help
-	  This driver supports Comtrol RocketPort and RocketModem PCI boards.   
+	  This driver supports Comtrol RocketPort and RocketModem PCI boards.
           These boards provide 2, 4, 8, 16, or 32 high-speed serial ports or
           modems.  For information about the RocketPort/RocketModem  boards
           and this driver read <file:Documentation/serial/rocket.txt>.

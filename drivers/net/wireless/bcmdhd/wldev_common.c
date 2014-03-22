@@ -2,13 +2,13 @@
  * Common function shared by Linux WEXT, cfg80211 and p2p drivers
  *
  * Copyright (C) 1999-2012, Broadcom Corporation
- * 
+ *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- * 
+ *
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -16,7 +16,7 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- * 
+ *
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
@@ -52,7 +52,6 @@ s32 wldev_ioctl(
 {
 	s32 ret = 0;
 	struct wl_ioctl ioc;
-
 
 	memset(&ioc, 0, sizeof(ioc));
 	ioc.cmd = cmd;
@@ -94,7 +93,6 @@ s32 wldev_iovar_getbuf(
 	return ret;
 }
 
-
 s32 wldev_iovar_setbuf(
 	struct net_device *dev, s8 *iovar_name,
 	void *param, s32 paramlen, void *buf, s32 buflen, struct mutex* buf_sync)
@@ -124,7 +122,6 @@ s32 wldev_iovar_setint(
 	return wldev_iovar_setbuf(dev, iovar, &val, sizeof(val), iovar_buf,
 		sizeof(iovar_buf), NULL);
 }
-
 
 s32 wldev_iovar_getint(
 	struct net_device *dev, s8 *iovar, s32 *pval)
@@ -167,7 +164,10 @@ s32 wldev_mkiovar_bsscfg(
 	iolen = prefixlen + namelen + sizeof(u32) + paramlen;
 
 	if (buflen < 0 || iolen > (u32)buflen)
+	{
+		WLDEV_ERROR(("%s: buffer is too short\n", __FUNCTION__));
 		return BCME_BUFTOOSHORT;
+	}
 
 	p = (s8 *)iovar_buf;
 
@@ -242,7 +242,6 @@ s32 wldev_iovar_setint_bsscfg(
 	return wldev_iovar_setbuf_bsscfg(dev, iovar, &val, sizeof(val), iovar_buf,
 		sizeof(iovar_buf), bssidx, NULL);
 }
-
 
 s32 wldev_iovar_getint_bsscfg(
 	struct net_device *dev, s8 *iovar, s32 *pval, s32 bssidx)
@@ -324,7 +323,7 @@ int wldev_set_band(
 	int error = -1;
 
 	if ((band == WLC_BAND_AUTO) || (band == WLC_BAND_5G) || (band == WLC_BAND_2G)) {
-		error = wldev_ioctl(dev, WLC_SET_BAND, &band, sizeof(band), 1);
+		error = wldev_ioctl(dev, WLC_SET_BAND, &band, sizeof(band), true);
 		if (!error)
 			dhd_bus_band_set(dev, band);
 	}
@@ -344,12 +343,16 @@ int wldev_set_country(
 
 	error = wldev_iovar_getbuf(dev, "country", &cspec, sizeof(cspec),
 		smbuf, sizeof(smbuf), NULL);
+	if (error < 0)
+		WLDEV_ERROR(("%s: get country failed = %d\n", __FUNCTION__, error));
 
 	if ((error < 0) ||
 	    (strncmp(country_code, smbuf, WLC_CNTRY_BUF_SZ) != 0)) {
 		bzero(&scbval, sizeof(scb_val_t));
-		error = wldev_ioctl(dev, WLC_DISASSOC, &scbval, sizeof(scb_val_t), 1);
+		error = wldev_ioctl(dev, WLC_DISASSOC, &scbval, sizeof(scb_val_t), true);
 		if (error < 0) {
+			WLDEV_ERROR(("%s: set country failed due to Disassoc error %d\n",
+				__FUNCTION__, error));
 			return error;
 		}
 		cspec.rev = -1;
@@ -359,9 +362,13 @@ int wldev_set_country(
 		error = wldev_iovar_setbuf(dev, "country", &cspec, sizeof(cspec),
 			smbuf, sizeof(smbuf), NULL);
 		if (error < 0) {
+			WLDEV_ERROR(("%s: set country for %s as %s rev %d failed\n",
+				__FUNCTION__, country_code, cspec.ccode, cspec.rev));
 			return error;
 		}
 		dhd_bus_country_set(dev, &cspec);
+		WLDEV_ERROR(("%s: set country for %s as %s rev %d\n",
+			__FUNCTION__, country_code, cspec.ccode, cspec.rev));
 	}
 	return 0;
 }

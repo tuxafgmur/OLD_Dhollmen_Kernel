@@ -155,12 +155,12 @@ static inline void fix_screen_off_min_step(struct cpufreq_lulzactive_cpuinfo *pc
 		screen_off_min_step = 0;
 		return;
 	}
-	
-	if (DEFAULT_SCREEN_OFF_MIN_STEP == screen_off_min_step) 
+
+	if (DEFAULT_SCREEN_OFF_MIN_STEP == screen_off_min_step)
 		for(screen_off_min_step=0;
 		pcpu->lulzfreq_table[screen_off_min_step].frequency != 500000;
 		screen_off_min_step++);
-	
+
 	if (screen_off_min_step >= pcpu->lulzfreq_table_size)
 		for(screen_off_min_step=0;
 		pcpu->lulzfreq_table[screen_off_min_step].frequency != 500000;
@@ -169,17 +169,17 @@ static inline void fix_screen_off_min_step(struct cpufreq_lulzactive_cpuinfo *pc
 
 static inline unsigned int adjust_screen_off_freq(
 	struct cpufreq_lulzactive_cpuinfo *pcpu, unsigned int freq) {
-	
-	if (early_suspended && freq > pcpu->lulzfreq_table[screen_off_min_step].frequency) {		
+
+	if (early_suspended && freq > pcpu->lulzfreq_table[screen_off_min_step].frequency) {
 		freq = pcpu->lulzfreq_table[screen_off_min_step].frequency;
 		pcpu->target_freq = pcpu->policy->cur;
-		
+
 		if (freq > pcpu->policy->max)
 			freq = pcpu->policy->max;
 		if (freq < pcpu->policy->min)
 			freq = pcpu->policy->min;
 	}
-	
+
 	return freq;
 }
 
@@ -260,7 +260,7 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 	 */
 	if (load_since_change > cpu_load)
 		cpu_load = load_since_change;
-	
+
 	/*
 	 * START lulzactive algorithm section
 	 */
@@ -273,12 +273,12 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 			if (ret < 0) {
 				goto rearm;
 			}
-			
+
 			// apply pump_up_step by tegrak
 			index -= pump_up_step;
 			if (index < 0)
 				index = 0;
-			
+
 			new_freq = pcpu->lulzfreq_table[index].frequency;
 		}
 		else {
@@ -288,7 +288,7 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 				new_freq = pcpu->policy->max * cpu_load / 100;
 		}
 	}
-	else {		
+	else {
 		if (pump_down_step) {
 			ret = cpufreq_frequency_table_target(
 				pcpu->policy, pcpu->lulzfreq_table,
@@ -297,20 +297,20 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 			if (ret < 0) {
 				goto rearm;
 			}
-			
+
 			// apply pump_down_step by tegrak
 			index += pump_down_step;
 			if (index >= pcpu->lulzfreq_table_size) {
 				index = pcpu->lulzfreq_table_size - 1;
 			}
-			
-			new_freq = (pcpu->policy->cur > pcpu->policy->min) ? 
+
+			new_freq = (pcpu->policy->cur > pcpu->policy->min) ?
 				(pcpu->lulzfreq_table[index].frequency) :
 				(pcpu->policy->min);
 		}
 		else {
 			new_freq = pcpu->policy->cur * cpu_load / 100;
-		}		
+		}
 	}
 	if (cpufreq_frequency_table_target(pcpu->policy, pcpu->lulzfreq_table,
 					   new_freq, CPUFREQ_RELATION_H,
@@ -323,7 +323,7 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 
 	// adjust freq when screen off
 	new_freq = adjust_screen_off_freq(pcpu, new_freq);
-	
+
 	if (pcpu->target_freq == new_freq)
 		goto rearm_if_notmax;
 
@@ -483,7 +483,6 @@ static int cpufreq_lulzactive_up_task(void *data)
 	unsigned long flags;
 	struct cpufreq_lulzactive_cpuinfo *pcpu;
 
-
 	while (1) {
 		set_current_state(TASK_INTERRUPTIBLE);
 		spin_lock_irqsave(&up_cpumask_lock, flags);
@@ -601,7 +600,7 @@ static ssize_t store_hispeed_freq(struct kobject *kobj,
 	return count;
 }
 
-static struct global_attr hispeed_freq_attr = __ATTR(hispeed_freq, 0644,
+static struct global_attr hispeed_freq_attr = __ATTR(hispeed_freq, 0664,
 		show_hispeed_freq, store_hispeed_freq);
 
 // inc_cpu_load
@@ -615,7 +614,7 @@ static ssize_t store_inc_cpu_load(struct kobject *kobj,
 			struct attribute *attr, const char *buf, size_t count)
 {
 	if(strict_strtoul(buf, 0, &inc_cpu_load)==-EINVAL) return -EINVAL;
-	
+
 	if (inc_cpu_load > 100) {
 		inc_cpu_load = 100;
 	}
@@ -706,9 +705,9 @@ static ssize_t store_pump_down_step(struct kobject *kobj,
 			struct attribute *attr, const char *buf, size_t count)
 {
 	struct cpufreq_lulzactive_cpuinfo *pcpu;
-	
+
 	if(strict_strtoul(buf, 0, &pump_down_step)==-EINVAL) return -EINVAL;
-	
+
 	pcpu = &per_cpu(cpuinfo, 0);
 	// fix out of bound
 	if (pcpu->lulzfreq_table_size <= pump_down_step) {
@@ -725,10 +724,10 @@ static ssize_t show_screen_off_min_step(struct kobject *kobj,
 				     struct attribute *attr, char *buf)
 {
 	struct cpufreq_lulzactive_cpuinfo *pcpu;
-	
+
 	pcpu = &per_cpu(cpuinfo, 0);
 	fix_screen_off_min_step(pcpu);
-	
+
 	return sprintf(buf, "%lu\n", screen_off_min_step);
 }
 
@@ -736,12 +735,12 @@ static ssize_t store_screen_off_min_step(struct kobject *kobj,
 			struct attribute *attr, const char *buf, size_t count)
 {
 	struct cpufreq_lulzactive_cpuinfo *pcpu;
-	
+
 	if(strict_strtoul(buf, 0, &screen_off_min_step)==-EINVAL) return -EINVAL;
-	
+
 	pcpu = &per_cpu(cpuinfo, 0);
 	fix_screen_off_min_step(pcpu);
-	
+
 	return count;
 }
 
@@ -785,14 +784,14 @@ static ssize_t show_freq_table(struct kobject *kobj,
 	struct cpufreq_lulzactive_cpuinfo *pcpu;
 	char temp[64];
 	int i;
-	
+
 	pcpu = &per_cpu(cpuinfo, 0);
-	
+
 	for (i = 0; i < pcpu->lulzfreq_table_size; i++) {
 		sprintf(temp, "%u\n", pcpu->lulzfreq_table[i].frequency);
 		strcat(buf, temp);
 	}
-	
+
 	return strlen(buf);
 }
 
@@ -817,7 +816,7 @@ static struct attribute *lulzactive_attributes[] = {
 
 void start_lulzactive(void);
 void stop_lulzactive(void);
-		
+
 static struct attribute_group lulzactive_attr_group = {
 	.attrs = lulzactive_attributes,
 	.name = "lulzactive",
@@ -971,7 +970,7 @@ void start_lulzactive(void)
 	if( pump_down_step == 0 )
 	{
 		pump_down_step = pump_up_step;
-	}	
+	}
 
 	up_task = kthread_create(cpufreq_lulzactive_up_task, NULL,
 				 "klulzactiveup");
@@ -1008,7 +1007,6 @@ static int __init cpufreq_lulzactive_init(void)
 	early_suspended = 0;
 	screen_off_min_step = DEFAULT_SCREEN_OFF_MIN_STEP;
 	timer_rate = DEFAULT_TIMER_RATE;
-
 
 	/* Initalize per-cpu timers */
 	for_each_possible_cpu(i) {

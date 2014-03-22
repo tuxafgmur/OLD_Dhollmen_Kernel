@@ -88,10 +88,9 @@ suffix_$(CONFIG_KERNEL_GZIP) = gzip
 suffix_$(CONFIG_KERNEL_LZO)  = lzo
 suffix_$(CONFIG_KERNEL_LZMA) = lzma
 
-
 targets 	:= vmlinux vmlinux.lds \
 		piggy.$(suffix_y) piggy.$(suffix_y).o \
-		font.o font.c head.o misc.o decompress.o $(OBJS)		 
+		font.o font.c head.o misc.o decompress.o $(OBJS)
 
 # Make sure files are removed during clean
 extra-y       += piggy.gzip piggy.lzo piggy.lzma lib1funcs.S

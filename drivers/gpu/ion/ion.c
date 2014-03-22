@@ -189,6 +189,37 @@ static bool ion_handle_validate(struct ion_client *client, struct ion_handle *ha
 	return false;
 }
 
+/* commenting this function because we r not using it currently*/
+#if 0
+static bool ion_handle_validate_frm_dev(struct ion_device *dev,
+					struct ion_handle *handle)
+{
+	struct rb_node **p;
+	struct rb_node *parent = NULL;
+	struct ion_client *client;
+	struct rb_node *n;
+
+	p = &dev->user_clients.rb_node;
+	while (*p) {
+		parent = *p;
+		client = rb_entry(parent, struct ion_client, node);
+
+		n = client->handles.rb_node;
+		while (n) {
+			struct ion_handle *handle_node =
+					rb_entry(n, struct ion_handle, node);
+			if (handle < handle_node)
+				n = n->rb_left;
+			else if (handle > handle_node)
+				n = n->rb_right;
+			else
+				return true;
+		}
+	}
+	return false;
+}
+#endif
+
 static void ion_handle_add(struct ion_client *client, struct ion_handle *handle)
 {
 	struct rb_node **p = &client->handles.rb_node;
@@ -366,7 +397,6 @@ int ion_phys_frm_dev(struct ion_device *dev, struct ion_handle *handle,
 	return ret;
 }
 EXPORT_SYMBOL(ion_phys_frm_dev);
-
 
 void *ion_map_kernel(struct ion_client *client, struct ion_handle *handle)
 {
@@ -703,6 +733,7 @@ static void _ion_client_destroy(struct kref *kref)
 	struct ion_device *dev = client->dev;
 	struct rb_node *n;
 
+	pr_debug("%s: %d\n", __func__, __LINE__);
 	while ((n = rb_first(&client->handles))) {
 		struct ion_handle *handle = rb_entry(n, struct ion_handle,
 						     node);
@@ -741,6 +772,7 @@ static int ion_share_release(struct inode *inode, struct file* file)
 {
 	struct ion_buffer *buffer = file->private_data;
 
+	pr_debug("%s: %d\n", __func__, __LINE__);
 	/* drop the reference to the buffer -- this prevents the
 	   buffer from going away because the client holding it exited
 	   while it was being passed */
@@ -750,9 +782,12 @@ static int ion_share_release(struct inode *inode, struct file* file)
 
 static void ion_vma_open(struct vm_area_struct *vma)
 {
+
 	struct ion_buffer *buffer = vma->vm_file->private_data;
+	struct ion_handle *handle = vma->vm_private_data;
 	struct ion_client *client;
 
+	pr_debug("%s: %d\n", __func__, __LINE__);
 	/* check that the client still exists and take a reference so
 	   it can't go away until this vma is closed */
 	client = ion_client_lookup(buffer->dev, current->group_leader);
@@ -760,19 +795,36 @@ static void ion_vma_open(struct vm_area_struct *vma)
 		vma->vm_private_data = NULL;
 		return;
 	}
+	pr_debug("%s: %d client_cnt %d handle_cnt %d alloc_cnt %d\n",
+		 __func__, __LINE__,
+		 atomic_read(&client->ref.refcount),
+		 atomic_read(&handle->ref.refcount),
+		 atomic_read(&buffer->ref.refcount));
 }
 
 static void ion_vma_close(struct vm_area_struct *vma)
 {
 	struct ion_handle *handle = vma->vm_private_data;
+	struct ion_buffer *buffer = vma->vm_file->private_data;
 	struct ion_client *client;
 
+	pr_debug("%s: %d\n", __func__, __LINE__);
 	/* this indicates the client is gone, nothing to do here */
 	if (!handle)
 		return;
 	client = handle->client;
+	pr_debug("%s: %d client_cnt %d handle_cnt %d alloc_cnt %d\n",
+		 __func__, __LINE__,
+		 atomic_read(&client->ref.refcount),
+		 atomic_read(&handle->ref.refcount),
+		 atomic_read(&buffer->ref.refcount));
 	ion_handle_put(handle);
 	ion_client_put(client);
+	pr_debug("%s: %d client_cnt %d handle_cnt %d alloc_cnt %d\n",
+		 __func__, __LINE__,
+		 atomic_read(&client->ref.refcount),
+		 atomic_read(&handle->ref.refcount),
+		 atomic_read(&buffer->ref.refcount));
 }
 
 static struct vm_operations_struct ion_vm_ops = {
@@ -788,6 +840,7 @@ static int ion_share_mmap(struct file *file, struct vm_area_struct *vma)
 	struct ion_handle *handle;
 	int ret;
 
+	pr_debug("%s: %d\n", __func__, __LINE__);
 	/* make sure the client still exists, it's possible for the client to
 	   have gone away but the map/share fd still to be around, take
 	   a reference to it so it can't go away while this mapping exists */
@@ -834,6 +887,11 @@ static int ion_share_mmap(struct file *file, struct vm_area_struct *vma)
 	/* move the handle into the vm_private_data so we can access it from
 	   vma_open/close */
 	vma->vm_private_data = handle;
+	pr_debug("%s: %d client_cnt %d handle_cnt %d alloc_cnt %d\n",
+		 __func__, __LINE__,
+		 atomic_read(&client->ref.refcount),
+		 atomic_read(&handle->ref.refcount),
+		 atomic_read(&buffer->ref.refcount));
 	return 0;
 
 err1:
@@ -898,10 +956,11 @@ static int ion_inval_cached(struct ion_handle *handle, size_t size,
 static int ion_map_gralloc(struct ion_client *client, void *grallocHandle,
 			   struct ion_handle **handleY)
 {
-	struct ion_client *pvr_ion_client;
+	struct ion_client *pvr_ion_client = NULL;
 	struct ion_buffer *ionbuff;
-	int fd = (int) grallocHandle;
+/*	int fd = (int) grallocHandle; */ /*temporary commenting*/
 
+//	*handleY = PVRSRVExportFDToIONHandle(fd, &pvr_ion_client);//Temporary fix
 	ionbuff = ion_share(pvr_ion_client, *handleY);
 	*handleY = ion_import(client, ionbuff);
 	return 0;
@@ -1111,6 +1170,7 @@ static int ion_release(struct inode *inode, struct file *file)
 {
 	struct ion_client *client = file->private_data;
 
+	pr_debug("%s: %d\n", __func__, __LINE__);
 	ion_client_put(client);
 	return 0;
 }
@@ -1121,6 +1181,7 @@ static int ion_open(struct inode *inode, struct file *file)
 	struct ion_device *dev = container_of(miscdev, struct ion_device, dev);
 	struct ion_client *client;
 
+	pr_debug("%s: %d\n", __func__, __LINE__);
 	client = ion_client_create(dev, -1, "user");
 	if (IS_ERR_OR_NULL(client))
 		return PTR_ERR(client);

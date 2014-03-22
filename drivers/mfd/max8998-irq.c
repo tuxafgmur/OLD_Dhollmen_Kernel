@@ -197,11 +197,15 @@ int max8998_irq_init(struct max8998_dev *max8998)
 	int ret;
 
 	if (!max8998->irq) {
+		dev_warn(max8998->dev,
+			 "No interrupt specified, no interrupts\n");
 		max8998->irq_base = 0;
 		return 0;
 	}
 
 	if (!max8998->irq_base) {
+		dev_err(max8998->dev,
+			"No interrupt base specified, no interrupts\n");
 		return 0;
 	}
 

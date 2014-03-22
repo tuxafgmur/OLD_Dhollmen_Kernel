@@ -34,7 +34,6 @@
 
 #include "usb.h"
 
-
 /* PCI-based HCs are common, but plenty of non-PCI HCs are used too */
 
 #ifdef CONFIG_PM_SLEEP
@@ -270,7 +269,6 @@ disable_pci:
 	return retval;
 }
 EXPORT_SYMBOL_GPL(usb_hcd_pci_probe);
-
 
 /* may be called without controller electrically present */
 /* may be called with controller, bus, and devices active */

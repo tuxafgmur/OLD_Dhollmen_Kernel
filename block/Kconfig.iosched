@@ -109,7 +109,7 @@ choice
 
 	config DEFAULT_ROW
 		bool "ROW" if IOSCHED_ROW=y
-	
+
 	config DEFAULT_SIO
 		bool "SIO" if IOSCHED_SIO=y
 

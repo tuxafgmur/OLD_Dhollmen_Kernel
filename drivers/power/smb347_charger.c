@@ -169,6 +169,7 @@ static void smb347_charger_init(struct smb347_chg_data *chg)
 
 	/* STATUS ingerrupt : Clear */
 	smb347_i2c_write(chg->client, SMB347_STATUS_INTERRUPT, 0x00);
+	msleep(50);
 }
 
 static int smb347_read_status(struct smb_charger_callbacks *ptr)
@@ -339,7 +340,6 @@ static const struct i2c_device_id smb347_id[] = {
 	{ "smb347-charger", 0 },
 };
 
-
 static struct i2c_driver smb347_i2c_driver = {
 	.driver = {
 		.owner	= THIS_MODULE,
@@ -349,7 +349,6 @@ static struct i2c_driver smb347_i2c_driver = {
 	.remove		= smb347_remove,
 	.id_table	= smb347_id,
 };
-
 
 MODULE_DEVICE_TABLE(i2c, smb347_id);
 

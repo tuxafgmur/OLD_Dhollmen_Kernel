@@ -1,10 +1,9 @@
 /*
- * drivers/power/process.c - Functions for starting/stopping processes on 
+ * drivers/power/process.c - Functions for starting/stopping processes on
  *                           suspend transitions.
  *
  * Originally from swsusp.
  */
-
 
 #undef DEBUG
 
@@ -19,10 +18,10 @@
 #include <linux/wakelock.h>
 #include "power.h"
 
-/* 
+/*
  * Timeout for stopping processes
  */
-unsigned int __read_mostly freeze_timeout_msecs = 2 * MSEC_PER_SEC;
+#define TIMEOUT	(20 * HZ)
 
 static inline int freezable(struct task_struct * p)
 {
@@ -46,7 +45,7 @@ static int try_to_freeze_tasks(bool sig_only)
 
 	do_gettimeofday(&start);
 
-	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
+	end_time = jiffies + TIMEOUT;
 
 	if (!sig_only)
 		freeze_workqueues_begin();
@@ -208,4 +207,3 @@ void thaw_processes(void)
 	schedule();
 	printk("done.\n");
 }
-

@@ -30,7 +30,7 @@ static int __init readahead(char *str)
 		return -EINVAL;
 
 	if (bytes) {
-		if (bytes < PAGE_CACHE_SIZE)  /* missed 'k'/'m' suffixes? */
+		if (bytes < PAGE_CACHE_SIZE)
 			return -EINVAL;
 
 		if (bytes > 256 << 20)    /* limit to 256MB */
@@ -39,12 +39,12 @@ static int __init readahead(char *str)
 
 	max_readahead_pages = bytes / PAGE_CACHE_SIZE;
 	default_backing_dev_info.ra_pages = max_readahead_pages;
-	
+
 	return 0;
 }
 
 early_param("readahead", readahead);
-		
+
 /*
  * Initialise a struct file's readahead state.  Assumes that the caller has
  * memset *ra to zero.

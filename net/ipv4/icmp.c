@@ -584,7 +584,6 @@ void icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info)
 	if (ip_options_echo(&icmp_param.replyopts.opt.opt, skb_in))
 		goto out_unlock;
 
-
 	/*
 	 *	Prepare data for ICMP header.
 	 */
@@ -629,7 +628,6 @@ out_unlock:
 out:;
 }
 EXPORT_SYMBOL(icmp_send);
-
 
 /*
  *	Handle ICMP_DEST_UNREACH, ICMP_TIME_EXCEED, and ICMP_QUENCH.
@@ -751,7 +749,6 @@ out_err:
 	goto out;
 }
 
-
 /*
  *	Handle ICMP_REDIRECT.
  */
@@ -870,7 +867,6 @@ out_err:
 	ICMP_INC_STATS_BH(dev_net(skb_dst(skb)->dev), ICMP_MIB_INERRORS);
 	goto out;
 }
-
 
 /*
  *	Handle ICMP_ADDRESS_MASK requests.  (RFC950)
@@ -1012,7 +1008,6 @@ int icmp_rcv(struct sk_buff *skb)
 	 */
 	if (icmph->type > NR_ICMP_TYPES)
 		goto error;
-
 
 	/*
 	 *	Parse the ICMP message
@@ -1165,7 +1160,7 @@ static int __net_init icmp_sk_init(struct net *net)
 	}
 
 	/* Control parameters for ECHO replies. */
-	net->ipv4.sysctl_icmp_echo_ignore_all = 1;
+	net->ipv4.sysctl_icmp_echo_ignore_all = 0;
 	net->ipv4.sysctl_icmp_echo_ignore_broadcasts = 1;
 
 	/* Control parameter - ignore bogus broadcast responses? */

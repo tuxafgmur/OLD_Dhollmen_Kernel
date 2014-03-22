@@ -88,6 +88,8 @@ static int wm8958_dsp2_fw(struct snd_soc_codec *codec, const char *name,
 
 	if (check) {
 		memcpy(&data64, fw->data + 24, sizeof(u64));
+		dev_info(codec->dev, "%s timestamp %llx\n",
+			 name, be64_to_cpu(data64));
 	} else {
 		snd_soc_write(codec, 0x102, 0x2);
 		snd_soc_write(codec, 0x900, 0x2);
@@ -126,6 +128,7 @@ static int wm8958_dsp2_fw(struct snd_soc_codec *codec, const char *name,
 			str = kzalloc(block_len + 1, GFP_KERNEL);
 			if (str) {
 				memcpy(str, data + 8, block_len);
+				dev_info(codec->dev, "%s: %s\n", name, str);
 				kfree(str);
 			} else {
 				dev_err(codec->dev, "Out of memory\n");
@@ -164,6 +167,8 @@ static int wm8958_dsp2_fw(struct snd_soc_codec *codec, const char *name,
 
 	if (!check) {
 		wm8994->cur_fw = fw;
+	} else {
+		dev_info(codec->dev, "%s: got firmware\n", name);
 	}
 
 	goto ok;
@@ -384,7 +389,7 @@ static void wm8958_dsp_apply(struct snd_soc_codec *codec, int path, int start)
 			return;
 
 		snd_soc_update_bits(codec, WM8958_DSP2_CONFIG,
-				    WM8958_MBC_ENA, 0);	
+				    WM8958_MBC_ENA, 0);
 		snd_soc_write(codec, WM8958_DSP2_EXECCONTROL,
 			      WM8958_DSP2_STOP);
 		snd_soc_update_bits(codec, WM8958_DSP2_PROGRAM,
@@ -640,7 +645,6 @@ static int wm8958_vss_put(struct snd_kcontrol *kcontrol,
 
 	return 0;
 }
-
 
 #define WM8958_VSS_SWITCH(xname, xval) {\
 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = (xname), \
@@ -903,7 +907,6 @@ void wm8958_dsp2_init(struct snd_soc_codec *codec)
 			     ARRAY_SIZE(wm8958_vss_snd_controls));
 	snd_soc_add_controls(codec, wm8958_enh_eq_snd_controls,
 			     ARRAY_SIZE(wm8958_enh_eq_snd_controls));
-
 
 	/* We don't *require* firmware and don't want to delay boot */
 	request_firmware_nowait(THIS_MODULE, FW_ACTION_HOTPLUG,

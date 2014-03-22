@@ -125,7 +125,6 @@ static inline struct bfq_queue *bfq_entity_to_bfqq(struct bfq_entity *entity)
 	return bfqq;
 }
 
-
 /**
  * bfq_delta - map service into the virtual time domain.
  * @service: amount of service.

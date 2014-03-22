@@ -2,7 +2,7 @@
  * linux/fs/binfmt_som.c
  *
  * These are the functions used to load SOM format executables as used
- * by HP-UX.  
+ * by HP-UX.
  *
  * Copyright 1999 Matthew Wilcox <willy@bofh.ai>
  * based on binfmt_elf which is
@@ -31,7 +31,6 @@
 
 #include <asm/uaccess.h>
 #include <asm/pgtable.h>
-
 
 #include <linux/elf.h>
 
@@ -179,7 +178,6 @@ out:
 	return retval;
 }
 
-
 /*
  * These are the functions used to load SOM executables and shared
  * libraries.  There is no binary dependent code anywhere else.
@@ -225,6 +223,7 @@ load_som_binary(struct linux_binprm * bprm, struct pt_regs * regs)
 		goto out_free;
 
 	/* OK, This is the point of no return */
+	current->flags &= ~PF_FORKNOEXEC;
 	current->personality = PER_HPUX;
 	setup_new_exec(bprm);
 

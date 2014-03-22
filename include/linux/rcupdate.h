@@ -33,7 +33,6 @@
 #ifndef __LINUX_RCUPDATE_H
 #define __LINUX_RCUPDATE_H
 
-#include <linux/rcu_types.h>
 #include <linux/cache.h>
 #include <linux/spinlock.h>
 #include <linux/threads.h>
@@ -64,6 +63,16 @@ static inline void rcutorture_record_progress(unsigned long vernum)
 #define UINT_CMP_LT(a, b)	(UINT_MAX / 2 < (a) - (b))
 #define ULONG_CMP_GE(a, b)	(ULONG_MAX / 2 >= (a) - (b))
 #define ULONG_CMP_LT(a, b)	(ULONG_MAX / 2 < (a) - (b))
+
+/**
+ * struct rcu_head - callback structure for use with RCU
+ * @next: next update requests in a list
+ * @func: actual update function to call after the grace period.
+ */
+struct rcu_head {
+	struct rcu_head *next;
+	void (*func)(struct rcu_head *head);
+};
 
 /* Exported common interfaces */
 extern void call_rcu_sched(struct rcu_head *head,
@@ -362,7 +371,6 @@ extern int rcu_my_thread_group_empty(void);
 		(p) = (typeof(*v) __force space *)(v); \
 	})
 
-
 /**
  * rcu_access_pointer() - fetch RCU pointer with no dereferencing
  * @p: The pointer to read
@@ -510,7 +518,6 @@ extern int rcu_my_thread_group_empty(void);
  */
 #define rcu_dereference_sched_protected(p, c) \
 	__rcu_dereference_protected((p), (c), __rcu)
-
 
 /**
  * rcu_dereference() - fetch RCU-protected pointer for dereferencing

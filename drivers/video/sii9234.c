@@ -114,7 +114,6 @@
 #define MHL_TX_MHLTX_CTL6_REG		0xA5
 #define MHL_TX_MHLTX_CTL7_REG		0xA6
 
-
 /* MHL TX SYS STAT Registers */
 #define MHL_TX_SYSSTAT_REG		0x09
 
@@ -2338,7 +2337,7 @@ static CLASS_ATTR(test_result, 0664 , sysfs_check_mhl_command, NULL);
 
 static ssize_t sii9234_swing_level_show(struct device *dev,
 					struct device_attribute *attr,
-					char *buf, size_t size)
+					char *buf)
 {
 	struct sii9234_data *sii9234 = dev_get_drvdata(dev);
 
@@ -2487,7 +2486,7 @@ static int __devinit sii9234_mhl_tx_i2c_probe(struct i2c_client *client,
 		goto err_exit3;
 	}
 	dev_set_drvdata(sec_mhl_dev, sii9234);
-	ret = sysfs_create_file(&sec_mhl_dev->kobj, &dev_attr_swing_level);
+	ret = sysfs_create_file(&sec_mhl_dev->kobj, &dev_attr_swing_level.attr);
 	if (ret) {
 		dev_err(&client->dev, "failed to create swing_level attribute file\n");
 		goto err_exit3;

@@ -288,9 +288,9 @@ struct ext4_group_desc
  */
 
 struct flex_groups {
-	atomic_t free_inodes;
-	atomic_t free_blocks;
-	atomic_t used_dirs;
+	atomic64_t	free_blocks;
+	atomic_t	free_inodes;
+	atomic_t	used_dirs;
 };
 
 #define EXT4_BG_INODE_UNINIT	0x0001 /* Inode table/bitmap not in use */
@@ -1560,7 +1560,6 @@ struct dx_hash_info
  * Control parameters used by ext4_htree_next_block
  */
 #define HASH_NB_ALWAYS		1
-
 
 /*
  * Describe an inode's exact location on disk and in memory

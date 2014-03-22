@@ -2041,7 +2041,6 @@ ext4_ext_in_cache(struct inode *inode, ext4_lblk_t block,
 	return ret;
 }
 
-
 /*
  * ext4_ext_rm_idx:
  * removes index from the index block.
@@ -2197,7 +2196,6 @@ static int ext4_remove_blocks(handle_t *handle, struct inode *inode,
 	}
 	return 0;
 }
-
 
 /*
  * ext4_ext_rm_leaf() Removes the extents associated with the
@@ -2378,10 +2376,6 @@ ext4_ext_rm_leaf(handle_t *handle, struct inode *inode,
 		if (uninitialized && num)
 			ext4_ext_mark_uninitialized(ex);
 
-		err = ext4_ext_dirty(handle, inode, path + depth);
-		if (err)
-			goto out;
-
 		/*
 		 * If the extent was completely released,
 		 * we need to remove it from the leaf
@@ -2402,6 +2396,10 @@ ext4_ext_rm_leaf(handle_t *handle, struct inode *inode,
 			}
 			le16_add_cpu(&eh->eh_entries, -1);
 		}
+
+		err = ext4_ext_dirty(handle, inode, path + depth);
+		if (err)
+			goto out;
 
 		ex--;
 		ex_ee_block = le32_to_cpu(ex->ee_block);
@@ -4008,7 +4006,7 @@ static int ext4_xattr_fiemap(struct inode *inode,
 		error = ext4_get_inode_loc(inode, &iloc);
 		if (error)
 			return error;
-		physical = iloc.bh->b_blocknr << blockbits;
+		physical = (__u64)iloc.bh->b_blocknr << blockbits;
 		offset = EXT4_GOOD_OLD_INODE_SIZE +
 				EXT4_I(inode)->i_extra_isize;
 		physical += offset;
@@ -4016,7 +4014,7 @@ static int ext4_xattr_fiemap(struct inode *inode,
 		flags |= FIEMAP_EXTENT_DATA_INLINE;
 		brelse(iloc.bh);
 	} else { /* external block */
-		physical = EXT4_I(inode)->i_file_acl << blockbits;
+		physical = (__u64)EXT4_I(inode)->i_file_acl << blockbits;
 		length = inode->i_sb->s_blocksize;
 	}
 

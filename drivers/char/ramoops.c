@@ -121,6 +121,8 @@ static int __init ramoops_probe(struct platform_device *pdev)
 	int err = -EINVAL;
 
 	if (!pdata->mem_size || !pdata->record_size) {
+		pr_err("The memory size and the record size must be "
+			"non-zero\n");
 		goto fail3;
 	}
 

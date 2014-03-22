@@ -819,6 +819,11 @@ int omapdss_hdmi_display_set_mode(struct omap_dss_device *dssdev,
 	return r1 ? : r2;
 }
 
+void hdmi_disable_video_boot(void)
+{
+	hdmi_ti_4xxx_wp_video_start(&hdmi.hdmi_data, 0);
+}
+
 void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
 {
 	struct fb_videomode t;
@@ -870,14 +875,16 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
 		DSSERR("failed to enable hdmi_vref regulator\n");
 		goto err3;
 	}
+	/* don't power on HDMI , if we are in LPM mode */
+	if (sec_bootmode != 5) {
+		r = hdmi_power_on(dssdev);
+		if (r) {
+			DSSERR("failed to power on device\n");
+			goto err4;
+		}
 
-	r = hdmi_power_on(dssdev);
-	if (r) {
-		DSSERR("failed to power on device\n");
-		goto err4;
+		hdmi.enabled = true;
 	}
-
-	hdmi.enabled = true;
 
 	mutex_unlock(&hdmi.lock);
 	return 0;

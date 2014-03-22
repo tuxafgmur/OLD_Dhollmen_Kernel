@@ -179,25 +179,24 @@ static ssize_t check_ir_show(struct device *dev, struct device_attribute *attr,
 	return sprintf(buf, "%d\n", _data);
 }
 
-
 static ssize_t clock_store(struct device *dev, struct device_attribute *attr,
 						   const char *buf, size_t size)
 {
 	unsigned int _data;
 	if (sscanf(buf, "%u", &_data) == 1)
-		if (   _data == 300000 
-			|| _data == 600000 
+		if (   _data == 300000
+			|| _data == 600000
 			|| _data == 800000
 			|| _data == 1008000
 #ifdef CONFIG_OMAP4430_TOP_CPU
-			|| _data == 1200000 
+			|| _data == 1200000
 			|| _data == 1350000
 			|| _data == 1420000
 			|| _data == 1480000
 #endif
 		)
 		ir_data.cpu_frequency = _data;
-		
+
 	return size;
 }
 

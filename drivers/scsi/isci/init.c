@@ -168,12 +168,9 @@ static struct sas_domain_function_template isci_transport_ops  = {
 	.lldd_control_phy	= isci_phy_control,
 };
 
-
 /******************************************************************************
 * P R O T E C T E D  M E T H O D S
 ******************************************************************************/
-
-
 
 /**
  * isci_register_sas_ha() - This method initializes various lldd
@@ -458,7 +455,6 @@ static int __devinit isci_pci_probe(struct pci_dev *pdev, const struct pci_devic
 		if (sci_oem_parameters_validate(&orom->ctrl[i])) {
 			dev_warn(&pdev->dev,
 				 "[%d]: invalid oem parameters detected, falling back to firmware\n", i);
-			devm_kfree(&pdev->dev, orom);
 			orom = NULL;
 			break;
 		}

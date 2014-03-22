@@ -2287,10 +2287,6 @@ int copy_mount_string(const void __user *data, char **where)
 long do_mount(char *dev_name, char *dir_name, char *type_page,
 		  unsigned long flags, void *data_page)
 {
-	static const char storage[] = "/storage";
-	static const char source[]  = "/mnt/shell/emulated";
-	long res;
-	
 	struct path path;
 	int retval = 0;
 	int mnt_flags = 0;
@@ -2307,13 +2303,6 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
 	if (data_page)
 		((char *)data_page)[PAGE_SIZE - 1] = 0;
 
-	if (strcmp(dir_name, "/") == 0 && flags == (MS_SLAVE | MS_REC)) {
-		if ((res = do_mount(NULL, (char *)storage, NULL, (MS_SLAVE | MS_REC), NULL)) == 0) {
-			if ((res = do_mount(NULL, (char *)source, NULL, (MS_SLAVE | MS_REC), NULL)) == 0)
-				return 0;
-		}
-	}
-	
 	/* ... and get the mountpoint */
 	retval = kern_path(dir_name, LOOKUP_FOLLOW, &path);
 	if (retval)

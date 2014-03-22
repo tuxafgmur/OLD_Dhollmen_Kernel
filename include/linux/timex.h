@@ -127,7 +127,6 @@ struct timex {
 #define MOD_MICRO	ADJ_MICRO
 #define MOD_NANO	ADJ_NANO
 
-
 /*
  * Status codes (timex.status)
  */

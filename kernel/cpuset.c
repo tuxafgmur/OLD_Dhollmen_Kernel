@@ -135,7 +135,6 @@ static inline bool task_has_mempolicy(struct task_struct *task)
 }
 #endif
 
-
 /* bits in struct cpuset flags field */
 typedef enum {
 	CS_CPU_EXCLUSIVE,
@@ -1688,7 +1687,6 @@ static s64 cpuset_read_s64(struct cgroup *cont, struct cftype *cft)
 	return 0;
 }
 
-
 /*
  * for the common functions, 'private' gives the type of file
  */
@@ -2079,6 +2077,8 @@ static void scan_for_empty_cpusets(struct cpuset *root)
  * period.  This is necessary in order to make cpusets transparent
  * (of no affect) on systems that are actively using CPU hotplug
  * but making no active use of cpusets.
+ *
+ * The only exception to this is suspend/resume, where we don't modify cpusets at all.
  *
  * This routine ensures that top_cpuset.cpus_allowed tracks
  * cpu_active_mask on each CPU hotplug (cpuhp) event.
@@ -2484,8 +2484,16 @@ void cpuset_print_task_mems_allowed(struct task_struct *tsk)
 
 	dentry = task_cs(tsk)->css.cgroup->dentry;
 	spin_lock(&cpuset_buffer_lock);
-	snprintf(cpuset_name, CPUSET_NAME_LEN,
-		 dentry ? (const char *)dentry->d_name.name : "/");
+
+	if (!dentry) {
+		strcpy(cpuset_name, "/");
+	} else {
+		spin_lock(&dentry->d_lock);
+		strlcpy(cpuset_name, (const char *)dentry->d_name.name,
+			CPUSET_NAME_LEN);
+		spin_unlock(&dentry->d_lock);
+	}
+
 	nodelist_scnprintf(cpuset_nodelist, CPUSET_NODELIST_LEN,
 			   tsk->mems_allowed);
 	printk(KERN_INFO "%s cpuset=%s mems_allowed=%s\n",

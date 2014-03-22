@@ -801,8 +801,7 @@ static int btree_submit_bio_hook(struct inode *inode, int rw, struct bio *bio,
 
 #ifdef CONFIG_MIGRATION
 static int btree_migratepage(struct address_space *mapping,
-			struct page *newpage, struct page *page,
-			enum migrate_mode mode)
+			struct page *newpage, struct page *page)
 {
 	/*
 	 * we can't safely write a btree page from here,
@@ -817,7 +816,7 @@ static int btree_migratepage(struct address_space *mapping,
 	if (page_has_private(page) &&
 	    !try_to_release_page(page, GFP_KERNEL))
 		return -EAGAIN;
-	return migrate_page(mapping, newpage, page, mode);
+	return migrate_page(mapping, newpage, page);
 }
 #endif
 
@@ -966,7 +965,6 @@ struct extent_buffer *btrfs_find_create_tree_block(struct btrfs_root *root,
 				 bytenr, blocksize, NULL);
 	return eb;
 }
-
 
 int btrfs_write_tree_block(struct extent_buffer *buf)
 {
@@ -1709,7 +1707,6 @@ struct btrfs_root *open_ctree(struct super_block *sb,
 			     fs_info->btree_inode->i_mapping);
 	fs_info->pinned_extents = &fs_info->freed_extents[0];
 	fs_info->do_barriers = 1;
-
 
 	mutex_init(&fs_info->ordered_operations_mutex);
 	mutex_init(&fs_info->tree_log_mutex);

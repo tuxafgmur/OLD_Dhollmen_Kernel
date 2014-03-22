@@ -52,7 +52,6 @@ static void free_substream(struct snd_usb_substream *subs)
 	kfree(subs->rate_list.list);
 }
 
-
 /*
  * free a usb stream instance
  */
@@ -72,7 +71,6 @@ static void snd_usb_audio_pcm_free(struct snd_pcm *pcm)
 		snd_usb_audio_stream_free(stream);
 	}
 }
-
 
 /*
  * add this endpoint to the chip instance.
@@ -440,4 +438,3 @@ int snd_usb_parse_audio_endpoints(struct snd_usb_audio *chip, int iface_no)
 	}
 	return 0;
 }
-

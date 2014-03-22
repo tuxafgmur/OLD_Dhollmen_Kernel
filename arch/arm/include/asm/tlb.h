@@ -103,7 +103,7 @@ static inline void tlb_flush_mmu(struct mmu_gather *tlb)
 	free_pages_and_swap_cache(tlb->pages, tlb->nr);
 	tlb->nr = 0;
 	if (tlb->pages == tlb->local)
-		__tlb_alloc_page(tlb); 	
+		__tlb_alloc_page(tlb);
 }
 
 static inline void

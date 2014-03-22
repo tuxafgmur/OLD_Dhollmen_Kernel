@@ -90,7 +90,6 @@ const char pch_driver_version[] = DRV_VERSION;
 	PCH_GBE_INT_TX_CMPLT          \
 	)
 
-
 static unsigned int copybreak __read_mostly = PCH_GBE_COPYBREAK_DEFAULT;
 
 static int pch_gbe_mdio_read(struct net_device *netdev, int addr, int reg);
@@ -213,7 +212,6 @@ static void pch_gbe_mac_init_rx_addrs(struct pch_gbe_hw *hw, u16 mar_count)
 	/* wait busy */
 	pch_gbe_wait_clr_bit(&hw->reg->ADDR_MASK, PCH_GBE_BUSY);
 }
-
 
 /**
  * pch_gbe_mac_mc_addr_list_update - Update Multicast addresses
@@ -406,7 +404,6 @@ static void pch_gbe_mac_set_pause_packet(struct pch_gbe_hw *hw)
 
 	return;
 }
-
 
 /**
  * pch_gbe_alloc_queues - Allocate memory for all rings
@@ -605,8 +602,6 @@ static void pch_gbe_irq_enable(struct pch_gbe_adapter *adapter)
 	ioread32(&hw->reg->INT_ST);
 	pr_debug("INT_EN reg : 0x%08x\n", ioread32(&hw->reg->INT_EN));
 }
-
-
 
 /**
  * pch_gbe_setup_tctl - configure the Transmit control registers
@@ -1509,9 +1504,9 @@ pch_gbe_clean_rx(struct pch_gbe_adapter *adapter,
 			skb_put(skb, length);
 			skb->protocol = eth_type_trans(skb, netdev);
 			if (tcp_ip_status & PCH_GBE_RXD_ACC_STAT_TCPIPOK)
-				skb->ip_summed = CHECKSUM_NONE;
-			else
 				skb->ip_summed = CHECKSUM_UNNECESSARY;
+			else
+				skb->ip_summed = CHECKSUM_NONE;
 
 			napi_gro_receive(&adapter->napi, skb);
 			(*work_done)++;
@@ -1693,7 +1688,6 @@ static int pch_gbe_request_irq(struct pch_gbe_adapter *adapter)
 		 adapter->have_msi, flags, err);
 	return err;
 }
-
 
 static void pch_gbe_set_multi(struct net_device *netdev);
 /**
@@ -2512,7 +2506,6 @@ static struct pci_driver pch_gbe_driver = {
 	.shutdown = pch_gbe_shutdown,
 	.err_handler = &pch_gbe_err_handler
 };
-
 
 static int __init pch_gbe_init_module(void)
 {

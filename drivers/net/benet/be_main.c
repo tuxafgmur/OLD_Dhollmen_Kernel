@@ -1196,7 +1196,6 @@ static void be_rx_compl_process(struct be_adapter *adapter,
 	if (adapter->netdev->features & NETIF_F_RXHASH)
 		skb->rxhash = rxcp->rss_hash;
 
-
 	if (unlikely(rxcp->vlanf)) {
 		if (!adapter->vlan_grp || adapter->vlans_added == 0) {
 			kfree_skb(skb);
@@ -1705,7 +1704,6 @@ static int be_tx_queues_create(struct be_adapter *adapter)
 		goto tx_eq_free;
 
 	adapter->tx_eq.eq_idx = adapter->eq_next_idx++;
-
 
 	/* Alloc TX eth compl queue */
 	cq = &adapter->tx_obj.cq;
@@ -2590,7 +2588,6 @@ static int be_clear(struct be_adapter *adapter)
 	return 0;
 }
 
-
 #define FW_FILE_HDR_SIGN 	"ServerEngines Corp. "
 static bool be_flash_redboot(struct be_adapter *adapter,
 			const u8 *p, u32 img_start, int image_size,
@@ -3015,7 +3012,6 @@ pci_map_err:
 	be_unmap_pci_bars(adapter);
 	return -ENOMEM;
 }
-
 
 static void be_ctrl_cleanup(struct be_adapter *adapter)
 {

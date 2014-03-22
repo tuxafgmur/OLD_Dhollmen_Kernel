@@ -1,28 +1,13 @@
 #ifndef _LINUX_VT_H
 #define _LINUX_VT_H
 
-
 /*
  * These constants are also useful for user-level apps (e.g., VC
  * resizing).
  */
-
 #define MIN_NR_CONSOLES 1       /* must be at least 1 */
-#if (CONFIG_NR_TTY_DEVICES < 11)
-/* Lower Limit */
-#define MAX_NR_CONSOLES	11	
-#define MAX_NR_USER_CONSOLES 11
-#elif (CONFIG_NR_TTY_DEVICES > 63)
-/* Upper Limit */
-#define MAX_NR_CONSOLES 63
-#define MAX_NR_USER_CONSOLES 63
-#else
-/* Choose a sensible number */
-#define MAX_NR_CONSOLES CONFIG_NR_TTY_DEVICES
-#define MAX_NR_USER_CONSOLES CONFIG_NR_TTY_DEVICES
-#endif
-		/* serial lines start at 64 */
-		/* must be root to allocate above this */
+#define MAX_NR_CONSOLES	63	/* serial lines start at 64 */
+#define MAX_NR_USER_CONSOLES 63	/* must be root to allocate above this */
 		/* Note: the ioctl VT_GETSTATE does not work for
 		   consoles 16 and higher (since it returns a short) */
 

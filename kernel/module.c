@@ -108,7 +108,6 @@ static LIST_HEAD(modules);
 struct list_head *kdb_modules = &modules; /* kdb needs the list of modules */
 #endif /* CONFIG_KGDB_KDB */
 
-
 /* Block module loading/unloading? */
 int modules_disabled = 0;
 
@@ -1015,17 +1014,13 @@ static unsigned long maybe_relocated(unsigned long crc,
 static int check_version(Elf_Shdr *sechdrs,
 			 unsigned int versindex,
 			 const char *symname,
-			 struct module *mod, 
+			 struct module *mod,
 			 const unsigned long *crc,
 			 const struct module *crc_owner)
 {
 	unsigned int i, num_versions;
 	struct modversion_info *versions;
 
-	/* for exfat module */
-	if(!strncmp("exfat_", mod->name, 6))
-		return 1;
-	
 	/* Exporting module didn't supply crcs?  OK, we're already tainted. */
 	if (!crc)
 		return 1;
@@ -1088,7 +1083,7 @@ static inline int same_magic(const char *amagic, const char *bmagic,
 static inline int check_version(Elf_Shdr *sechdrs,
 				unsigned int versindex,
 				const char *symname,
-				struct module *mod, 
+				struct module *mod,
 				const unsigned long *crc,
 				const struct module *crc_owner)
 {
@@ -1990,6 +1985,9 @@ static void set_license(struct module *mod, const char *license)
 		license = "unspecified";
 
 	if (!license_is_gpl_compatible(license)) {
+		if (!test_taint(TAINT_PROPRIETARY_MODULE))
+			printk(KERN_WARNING "%s: module license '%s' taints "
+				"kernel.\n", mod->name, license);
 		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
 	}
 }
@@ -2431,16 +2429,14 @@ static int check_modinfo(struct module *mod, struct load_info *info)
 		if (err)
 			return err;
 	} else if (!same_magic(modmagic, vermagic, info->index.vers)) {
-	    if(!strncmp("exfat_", mod->name, 6))
-	        printk(KERN_WARNING "exFat detected, ignore vermagic.\n");
-	    else {
-			printk(KERN_ERR "%s: version magic '%s' should be '%s'\n", mod->name, modmagic, vermagic); 	
-			return -ENOEXEC;
-		}
+		printk(KERN_ERR "%s: version magic '%s' should be '%s'\n", mod->name, modmagic, vermagic);
+		return -ENOEXEC;
 	}
-	
+
 	if (get_modinfo(info, "staging")) {
 		add_taint_module(mod, TAINT_CRAP);
+		printk(KERN_WARNING "%s: module is from the staging directory,"
+		       " the quality is unknown, you have been warned.\n", mod->name);
 	}
 
 	/* Set up license info based on the info section */
@@ -2604,6 +2600,10 @@ static int check_module_license_and_versions(struct module *mod)
 
 	/* driverloader was caught wrongly pretending to be under GPL */
 	if (strcmp(mod->name, "driverloader") == 0)
+		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
+
+	/* lve claims to be GPL but upstream won't provide source */
+	if (strcmp(mod->name, "lve") == 0)
 		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
 
 #ifdef CONFIG_MODVERSIONS

@@ -42,7 +42,6 @@ Steffen Mueller <smueller@cpan.org>
 #endif
 #include "csnappy.h"
 
-
 static INLINE char*
 encode_varint32(char *sptr, uint32_t v)
 {
@@ -85,7 +84,6 @@ encode_varint32(char *sptr, uint32_t v)
 #define kBlockLog 15
 #define kBlockSize (1 << kBlockLog)
 
-
 #if defined(__arm__) && !(ARCH_ARM_HAVE_UNALIGNED)
 
 static uint8_t* emit_literal(
@@ -120,7 +118,7 @@ static uint8_t* emit_copy(
 	uint32_t len)
 {
 	DCHECK_GT(offset, 0);
-	
+
 	/* Emit 64 byte copies but make sure to keep at least four bytes
 	 * reserved */
 	while (unlikely(len >= 68)) {
@@ -235,7 +233,6 @@ static INLINE uint32_t Hash(const char *p, int shift)
 	return HashBytes(UNALIGNED_LOAD32(p), shift);
 }
 
-
 /*
  * Return the largest n such that
  *
@@ -328,7 +325,6 @@ FindMatchLength(const char *s1, const char *s2, const char *s2_limit)
 }
 #endif /* !defined(__x86_64__) */
 
-
 static INLINE char*
 EmitLiteral(char *op, const char *literal, int len, int allow_fast_path)
 {
@@ -380,12 +376,12 @@ EmitCopyLessThan64(char *op, int offset, int len)
 	if ((len < 12) && (offset < 2048)) {
 		int len_minus_4 = len - 4;
 		DCHECK_LT(len_minus_4, 8); /* Must fit in 3 bits */
-		*op++ = COPY_1_BYTE_OFFSET   +
-			((len_minus_4) << 2) +
+		*op++ = COPY_1_BYTE_OFFSET   |
+			((len_minus_4) << 2) |
 			((offset >> 8) << 5);
 		*op++ = offset & 0xff;
 	} else {
-		*op++ = COPY_2_BYTE_OFFSET + ((len-1) << 2);
+		*op++ = COPY_2_BYTE_OFFSET | ((len-1) << 2);
 		put_unaligned_le16(offset, op);
 		op += 2;
 	}
@@ -413,7 +409,6 @@ EmitCopy(char *op, int offset, int len)
 	op = EmitCopyLessThan64(op, offset, len);
 	return op;
 }
-
 
 /*
 For 0 <= offset <= 4, GetUint32AtOffset(GetEightBytesAt(p), offset) will
@@ -463,7 +458,6 @@ static INLINE uint32_t GetUint32AtOffset(const char* v, int offset) {
 }
 
 #endif /* !ARCH_K8 */
-
 
 #define kInputMarginBytes 15
 char*

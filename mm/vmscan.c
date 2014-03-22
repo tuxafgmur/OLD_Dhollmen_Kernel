@@ -178,7 +178,6 @@ static unsigned long zone_nr_lru_pages(struct zone *zone,
 	return zone_page_state(zone, NR_LRU_BASE + lru);
 }
 
-
 /*
  * Add a shrinker callback to be called from the vm
  */
@@ -726,15 +725,18 @@ static enum page_references page_check_references(struct page *page,
 		 */
 		SetPageReferenced(page);
 
+#ifndef CONFIG_CMA
+		if (referenced_page)
+			return PAGEREF_ACTIVATE;
+#else
 		if (referenced_page || referenced_ptes > 1)
 			return PAGEREF_ACTIVATE;
-
 		/*
 		 * Activate file-backed executable pages after first usage.
 		 */
 		if (vm_flags & VM_EXEC)
 			return PAGEREF_ACTIVATE;
-
+#endif
 		return PAGEREF_KEEP;
 	}
 
@@ -1050,8 +1052,9 @@ int __isolate_lru_page(struct page *page, isolate_mode_t mode, int file)
 	 * unevictable; only give shrink_page_list evictable pages.
 	 */
 	if (PageUnevictable(page))
+#ifndef CONFIG_CMA
 		return ret;
-
+#endif
 	ret = -EBUSY;
 
 	/*
@@ -2495,6 +2498,10 @@ static bool sleeping_prematurely(pg_data_t *pgdat, int order, long remaining,
 	unsigned long balanced = 0;
 	bool all_zones_ok = true;
 
+	/* If kswapd has been running too long, just sleep */
+	if (need_resched())
+		return false;
+
 	/* If a direct reclaimer woke kswapd within HZ/10, it's premature */
 	if (remaining)
 		return true;
@@ -2980,6 +2987,7 @@ static int kswapd(void *p)
 						&balanced_classzone_idx);
 		}
 	}
+	current->reclaim_state = NULL;
 	return 0;
 }
 
@@ -3535,7 +3543,6 @@ static void scan_zone_unevictable_pages(struct zone *zone)
 	}
 }
 
-
 /**
  * scan_all_zones_unevictable_pages - scan all unevictable lists for evictable pages
  *
@@ -3607,7 +3614,6 @@ static ssize_t write_scan_unevictable_node(struct sys_device *dev,
 	}
 	return 1;
 }
-
 
 static SYSDEV_ATTR(scan_unevictable_pages, S_IRUGO | S_IWUSR,
 			read_scan_unevictable_node,

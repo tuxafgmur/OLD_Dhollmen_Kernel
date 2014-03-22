@@ -30,7 +30,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
 		unsigned int freq = table[i].frequency;
 		if (freq == CPUFREQ_ENTRY_INVALID)
 			continue;
-		
+
 		if (freq < min_freq)
 			min_freq = freq;
 		if (freq > max_freq)
@@ -46,7 +46,6 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
 		return 0;
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_cpuinfo);
-
 
 int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
 				   struct cpufreq_frequency_table *table)
@@ -80,7 +79,6 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_verify);
-
 
 int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
 				   struct cpufreq_frequency_table *table,
@@ -221,7 +219,6 @@ int cpufreq_frequency_table_next_highest(struct cpufreq_policy *policy,
 }
 EXPORT_SYMBOL_GPL(cpufreq_frequency_table_next_highest);
 
-
 static DEFINE_PER_CPU(struct cpufreq_frequency_table *, cpufreq_show_table);
 
 /**
@@ -257,7 +254,6 @@ struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
 	.show = show_available_freqs,
 };
 EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_available_freqs);
-
 
 /*
  * if you use these, you must assure that the frequency table is valid

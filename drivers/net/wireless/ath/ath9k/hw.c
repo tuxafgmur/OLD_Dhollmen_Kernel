@@ -582,7 +582,6 @@ static int __ath9k_hw_init(struct ath_hw *ah)
 
 	ath9k_hw_init_mode_regs(ah);
 
-
 	if (ah->is_pciexpress)
 		ath9k_hw_aspm_init(ah);
 	else
@@ -2046,7 +2045,6 @@ int ath9k_hw_fill_cap_info(struct ath_hw *ah)
 		if (ah->eep_ops->get_eeprom(ah, EEP_CHAIN_MASK_REDUCE))
 			pCap->hw_caps |= ATH9K_HW_CAP_APM;
 	}
-
 
 	if (AR_SREV_9485(ah)) {
 		ant_div_ctl1 = ah->eep_ops->get_eeprom(ah, EEP_ANT_DIV_CTL1);

@@ -563,7 +563,6 @@ static ssize_t regulator_suspend_standby_state_show(struct device *dev,
 static DEVICE_ATTR(suspend_standby_state, 0444,
 		regulator_suspend_standby_state_show, NULL);
 
-
 /*
  * These are the only attributes are present for all regulators.
  * Other attributes are a function of regulator functionality.
@@ -644,6 +643,8 @@ static int suspend_set_state(struct regulator_dev *rdev,
 	 * configurable.
 	 */
 	if (!rstate->enabled && !rstate->disabled) {
+		if (can_set_state)
+			rdev_warn(rdev, "No configuration\n");
 		return 0;
 	}
 

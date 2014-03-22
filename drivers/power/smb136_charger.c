@@ -9,7 +9,6 @@
  * published by the Free Software Foundation.
  */
 
-
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
@@ -322,7 +321,6 @@ static const struct i2c_device_id smb136_id[] = {
 	{ }
 };
 
-
 static struct i2c_driver smb136_i2c_driver = {
 	.driver = {
 		.owner	= THIS_MODULE,
@@ -333,7 +331,6 @@ static struct i2c_driver smb136_i2c_driver = {
 	.remove	= __devexit_p(smb136_remove),
 	.command = NULL,
 };
-
 
 MODULE_DEVICE_TABLE(i2c, smb136_id);
 

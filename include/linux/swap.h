@@ -198,7 +198,6 @@ struct swap_info_struct {
 	unsigned long *frontswap_map;	/* frontswap in-use, one bit per page */
 	atomic_t frontswap_pages;		/* frontswap pages in-use counter */
 #endif
-				
 };
 
 struct swap_list_t {
@@ -217,7 +216,6 @@ extern unsigned int nr_free_pagecache_pages(void);
 
 /* Definition of global_page_state not available yet */
 #define nr_free_pages() global_page_state(NR_FREE_PAGES)
-
 
 /* linux/mm/swap.c */
 extern void __lru_cache_add(struct page *, enum lru_list lru);

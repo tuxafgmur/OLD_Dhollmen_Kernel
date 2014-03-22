@@ -331,7 +331,6 @@ extern ktime_t ktime_get_update_offsets(ktime_t *offs_real, ktime_t *offs_boot);
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
-
 /* Exported timer functions: */
 
 /* Initialize timers: */

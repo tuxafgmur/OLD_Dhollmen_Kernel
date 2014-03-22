@@ -1950,7 +1950,6 @@ int cifs_file_mmap(struct file *file, struct vm_area_struct *vma)
 	return rc;
 }
 
-
 static void cifs_copy_cache_pages(struct address_space *mapping,
 	struct list_head *pages, int bytes_read, char *data)
 {

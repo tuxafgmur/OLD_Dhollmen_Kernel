@@ -3,8 +3,8 @@ menu "CPU Frequency scaling"
 config CPU_FREQ
 	bool "CPU Frequency scaling"
 	help
-	  CPU Frequency scaling allows you to change the clock speed of 
-	  CPUs on the fly. This is a nice method to save power, because 
+	  CPU Frequency scaling allows you to change the clock speed of
+	  CPUs on the fly. This is a nice method to save power, because
 	  the lower the CPU clock speed, the less power the CPU consumes.
 
 	  Note that this driver doesn't automatically change the CPU
@@ -70,14 +70,13 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
 	select CPU_FREQ_GOV_USERSPACE
 	help
 	  Use the CPUFreq governor 'userspace' as default. This allows
-	  you to set the CPU frequency manually or when a userspace 
+	  you to set the CPU frequency manually or when a userspace
 	  program shall be able to set the CPU dynamically without having
 	  to enable the userspace governor manually.
 
 config CPU_FREQ_DEFAULT_GOV_ONDEMAND
 	bool "ondemand"
 	select CPU_FREQ_GOV_ONDEMAND
-	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use the CPUFreq governor 'ondemand' as default. This allows
 	  you to get a full dynamic frequency capable system by simply
@@ -89,19 +88,17 @@ config CPU_FREQ_DEFAULT_GOV_ONDEMAND
 config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
 	bool "conservative"
 	select CPU_FREQ_GOV_CONSERVATIVE
-	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use the CPUFreq governor 'conservative' as default. This allows
 	  you to get a full dynamic frequency capable system by simply
 	  loading your cpufreq low-level hardware driver.
 	  Be aware that not all cpufreq drivers support the conservative
-	  governor. If unsure have a look at the help section of the driver. 
+	  governor. If unsure have a look at the help section of the driver.
 	  Fallback governor will be the performance governor.
 
 config CPU_FREQ_DEFAULT_GOV_INTERACTIVE
 	bool "interactive"
 	select CPU_FREQ_GOV_INTERACTIVE
-	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use the CPUFreq governor 'interactive' as default. This allows
 	  you to get a full dynamic cpu frequency capable system by simply
@@ -111,7 +108,6 @@ config CPU_FREQ_DEFAULT_GOV_INTERACTIVE
 config CPU_FREQ_DEFAULT_GOV_LULZACTIVE
 	bool "lulzactive"
 	select CPU_FREQ_GOV_LULZACTIVE
-	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use the CPUFreq governor 'lulzactive' as default. This allows
 	  you to get a full dynamic cpu frequency capable system by simply
@@ -121,33 +117,30 @@ config CPU_FREQ_DEFAULT_GOV_LULZACTIVE
 config CPU_FREQ_DEFAULT_GOV_LULZACTIVEQ
 	bool "lulzactiveq"
 	select CPU_FREQ_GOV_LULZACTIVEQ
-	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use the CPUFreq governor 'lulzactiveq' as default. This allows
 	  you to get a full dynamic cpu frequency capable system wiht 'hotplug'
-	  queue mechanismby simply loading your cpufreq hardware driver, 
-	  	  
+	  queue mechanismby simply loading your cpufreq hardware driver,
+
 config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
 	bool "pegasusq"
 	select CPU_FREQ_GOV_PEGASUSQ
-	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use Samsung's own multi-core CPUFreq governor 'pegasusq' as default.
-	  This allows you to get a full dynamic cpu frequency capable system
-	  wiht 'pegasusq' by simply loading your cpufreq hardware driver.
+	  This allows you to get a full dynamic cpu frequency capable
+	  system by simply loading your cpufreq hardware driver.
 
 config CPU_FREQ_DEFAULT_GOV_HOTPLUG
 	bool "hotplug"
 	select CPU_FREQ_GOV_HOTPLUG
-	select CPU_FREQ_GOV_PERFORMANCE
+	select CPU_FREQ_GOV_PEGASUSQ
 	help
-	  Use the CPUFreq governor 'hotplug' as default. This allows you
-	  to get a full dynamic frequency capable system with CPU
-	  hotplug support by simply loading your cpufreq low-level
-	  hardware driver.  Not all cpufreq drivers support the hotplug governor.
-	  If unsure have a look at the help section of the driver. 
-	  Fallback governor will be the performance governor.
-	
+	  Use the CPUFreq governor 'hotplug' as default.
+	  This allows you to get a full dynamic frequency capable
+	  system with by simply loading your cpufreq hardware driver.
+	  Not all cpufreq drivers support the hotplug governor.
+	  Fallback governor will be the 'pegasusq' governor.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -159,7 +152,7 @@ config CPU_FREQ_GOV_PERFORMANCE
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_performance.
 
-	  If in doubt, say Y.
+	  If in doubt, say N.
 
 config CPU_FREQ_GOV_POWERSAVE
 	tristate "'powersave' governor"
@@ -177,7 +170,7 @@ config CPU_FREQ_GOV_USERSPACE
 	help
 	  Enable this cpufreq governor when you either want to set the
 	  CPU frequency manually or when a userspace program shall
-	  be able to set the CPU dynamically, like on LART 
+	  be able to set the CPU dynamically, like on LART
 	  <http://www.lartmaker.nl/>.
 
 	  To compile this driver as a module, choose M here: the
@@ -185,18 +178,18 @@ config CPU_FREQ_GOV_USERSPACE
 
 	  For details, take a look at <file:Documentation/cpu-freq/>.
 
-	  If in doubt, say Y.
+	  If in doubt, say N.
 
 config CPU_FREQ_GOV_ONDEMAND
 	tristate "'ondemand' cpufreq policy governor"
 	select CPU_FREQ_TABLE
 	help
 	  'ondemand' - This driver adds a dynamic cpufreq policy governor.
-	  The governor does a periodic polling and 
+	  The governor does a periodic polling and
 	  changes frequency based on the CPU utilization.
 	  The support for this governor depends on CPU capability to
 	  do fast frequency switching (i.e, very low latency frequency
-	  transitions). 
+	  transitions).
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_ondemand.
@@ -230,7 +223,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
 
 config CPU_FREQ_GOV_INTERACTIVE
 	tristate "'interactive' cpufreq policy governor"
-    depends on CPU_FREQ
+        depends on CPU_FREQ
 	help
 	  'interactive' - This driver adds a dynamic cpufreq policy governor
 	  designed for latency-sensitive workloads.
@@ -248,51 +241,51 @@ config CPU_FREQ_GOV_INTERACTIVE
 
 config CPU_FREQ_GOV_LULZACTIVE
 	tristate "'lulzactive' cpufreq policy governor"
-    depends on CPU_FREQ
+        depends on CPU_FREQ
 	help
-      'lulzactive' - When workload is greater than or equal to 80%, the governor
-      scales up CPU to next higher step. When workload is less than 80% governor
-      scales down CPU to next lower step. 
-      When screen is off, frequency is locked to global scaling minimum frequency.
-      Three user configurable parameters: inc_cpu_load, pump_up_step, pump_down_step
-      gives more control for the user. He can sets the threshold at which governor
-      decides to scale up/down. He can also set number of frequency steps to be
-      skipped while polling up and down.
-      When workload greater than or equal to inc_cpu_load, governor scales CPU 
-      pump_up_step steps up.
-      When workload is less than inc_cpu_load, governor scales CPU
-      down pump_down_step steps down.
+	   'lulzactive' - When workload is greater than or equal to 80%, the governor
+	   scales up CPU to next higher step. When workload is less than 80% governor
+	   scales down CPU to next lower step.
+	   When screen is off, frequency is locked to global scaling minimum frequency.
+	   Three user configurable parameters: inc_cpu_load, pump_up_step, pump_down_step
+	   gives more control for the user. He can sets the threshold at which governor
+	   decides to scale up/down. He can also set number of frequency steps to be
+	   skipped while polling up and down.
+	   When workload greater than or equal to inc_cpu_load, governor scales CPU
+	   pump_up_step steps up.
+	   When workload is less than inc_cpu_load, governor scales CPU
+	   down pump_down_step steps down.
 
-      To compile this driver as a module, choose M here: the
-      module will be called cpufreq_lulzactive.
+	   To compile this driver as a module, choose M here: the
+	   module will be called cpufreq_lulzactive.
 
-      If in doubt, say Y.
+	   If in doubt, say N.
 
 config CPU_FREQ_GOV_LULZACTIVEQ
-    tristate "'lulzactiveq' cpufreq governor"
-    depends on CPU_FREQ
-    help
-      'lulzactiveq' - This driver is an 'hotplug' mechanism added in lulzactive.
+	tristate "'lulzactiveq' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	   'lulzactiveq' - This driver is an 'hotplug' mechanism added in lulzactive.
 
-      To compile this driver as a module, choose M here: the
-	  module will be called cpufreq_lulzactiveq.
+	   To compile this driver as a module, choose M here:
+	   the module will be called cpufreq_lulzactiveq.
 
-      If in doubt, say N.
+	   If in doubt, say N.
 
 config CPU_FREQ_GOV_PEGASUSQ
 	tristate "'pegasusq' cpufreq governor"
 	depends on CPU_FREQ
 	help
 	  'pegasusq' - Samsung's own multi-core aware governor. It is basically
-	  an ondemand based governor which also controls hotplugging. 
-	  Switching to pegasusq will deactivate Stand Hotplug since the 
+	  an ondemand based governor which also controls hotplugging.
+	  Switching to pegasusq will deactivate Stand Hotplug since the
 	  governor's hotplugging logic can conflict with that.
-	  
+
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_pegasusq.
 
 	  If in doubt, say Y.
-        
+
 config CPU_FREQ_GOV_HOTPLUG
 	tristate "'hotplug' cpufreq governor"
 	depends on CPU_FREQ && NO_HZ && HOTPLUG_CPU
@@ -309,14 +302,9 @@ config CPU_FREQ_GOV_HOTPLUG
 	  devices.
 
 	  If you don't have one of these architectures or devices, use
-	  'ondemand' instead.
+	  'interactive' instead.
 
-	  If in doubt, say N.
-	
-menu "x86 CPU frequency scaling drivers"
-depends on X86
-source "drivers/cpufreq/Kconfig.x86"
-endmenu
+	  If in doubt, say Y.
 
 endif
 endmenu
