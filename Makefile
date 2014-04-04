@@ -590,7 +590,14 @@ else
 KBUILD_CFLAGS	+= -O2 -fno-unswitch-loops -fno-inline-functions
 endif
 
-KBUILD_CFLAGS +=  -Wno-maybe-uninitialized -Wno-enum-compare -Wno-address -Wno-unused-variable -Wno-unused-value -Wno-format -Wno-declaration-after-statement
+KBUILD_CFLAGS += -Wno-maybe-uninitialized \
+		 -Wno-enum-compare \
+		 -Wno-address \
+		 -Wno-unused-variable \
+		 -Wno-unused-value \
+		 -Wno-format \
+		 -Wno-declaration-after-statement \
+		 -Wno-deprecated-declarations
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 

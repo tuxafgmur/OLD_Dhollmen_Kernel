@@ -109,7 +109,9 @@ static struct clockdomain *cpu1_cd;
  * C4		769		1323
  */
 
-#ifdef CONFIG_OMAP4430_TOP_CPU
+#if defined (CONFIG_MACH_SAMSUNG_ESPRESSO) \
+	|| defined (CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
+	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
 static struct cpuidle_params cpuidle_params_table[] = {
 	/* C1 - CPUx WFI + MPU ON  + CORE ON */
 	{.exit_latency = 2 + 2,	.target_residency = 4, .valid = 1},
@@ -124,7 +126,7 @@ static struct cpuidle_params cpuidle_params_table[] = {
 	{.exit_latency = 1200, .target_residency = 35000, .valid = 0},
 #endif
 };
-#else	/* CONFIG_OMAP4430_TOP_CPU*/
+#else	/* (CONFIG_MACH_SAMSUNG_ESPRESSO) ... */
 static __initdata struct cpuidle_params omap446x_cpuidle_params_table[] = {
 	/* C1 - CPUx WFI + MPU ON  + CORE ON */
 	{.exit_latency = 2 + 2,	.target_residency = 4, .valid = 1},
@@ -154,7 +156,7 @@ static __initdata struct cpuidle_params omap447x_cpuidle_params_table[] = {
 	{.exit_latency = 1500, .target_residency = 15000, .valid = 0},
 #endif
 };
-#endif	/* CONFIG_OMAP4430_TOP_CPU */
+#endif	/* (CONFIG_MACH_SAMSUNG_ESPRESSO) ... */
 
 static void omap4_update_actual_state(struct cpuidle_device *dev,
 	struct omap4_processor_cx *cx)
@@ -618,11 +620,14 @@ DEFINE_PER_CPU(struct cpuidle_device, omap4_idle_dev);
  * Below is the desciption of each C state.
  * C1 : CPUx wfi + MPU inative + Core inactive
  */
-#ifdef CONFIG_OMAP4430_TOP_CPU
+
+#if defined (CONFIG_MACH_SAMSUNG_ESPRESSO) \
+	|| defined (CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
+	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
 void omap4_init_power_states(void)
 #else
 void omap4_init_power_states(
-		const struct cpuidle_params *cpuidle_params_table)
+	const struct cpuidle_params *cpuidle_params_table)
 #endif
 {
 	/*
@@ -704,7 +709,9 @@ int __init omap4_idle_init(void)
 	struct omap4_processor_cx *cx;
 	struct cpuidle_state *state;
 	struct cpuidle_device *dev;
-#ifndef CONFIG_OMAP4430_TOP_CPU
+#if defined (CONFIG_MACH_SAMSUNG_ESPRESSO) \
+	|| defined (CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
+	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
 	const struct cpuidle_params *idle_params;
 #endif
 
@@ -717,7 +724,9 @@ int __init omap4_idle_init(void)
 	core_pd = pwrdm_lookup("core_pwrdm");
 	BUG_ON(!core_pd);
 
-#ifdef CONFIG_OMAP4430_TOP_CPU
+#if defined (CONFIG_MACH_SAMSUNG_ESPRESSO) \
+	|| defined (CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
+	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
 	omap4_init_power_states();
 #else
 	if (cpu_is_omap446x())
