@@ -343,7 +343,7 @@ config MACH_OMAP_BLAZE
 
 config MACH_OMAP4_PANDA
 	bool "OMAP4 Panda Board"
-	default y
+	default n
 	depends on ARCH_OMAP4
 	select OMAP_PACKAGE_CBL
 	select OMAP_PACKAGE_CBS
@@ -351,7 +351,7 @@ config MACH_OMAP4_PANDA
 
 config MACH_TUNA
 	bool "Tuna Board"
-	default y
+	default n
 	depends on ARCH_OMAP4
 	select OMAP_PACKAGE_CBL
 	select OMAP_PACKAGE_CBS

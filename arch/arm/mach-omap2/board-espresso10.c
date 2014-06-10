@@ -248,11 +248,11 @@ static void __init espresso10_init(void)
 	/* Allow HSI omap_device to be registered later */
 	omap_hsi_allow_registration();
 #endif
-
+#ifdef CONFIG_SEC_DEBUG
 	if (sec_debug_get_level())
 		platform_add_devices(espresso10_dbg_devices,
 				     ARRAY_SIZE(espresso10_dbg_devices));
-
+#endif
 	sec_common_init_post();
 }
 
@@ -286,6 +286,7 @@ static void __init espresso10_reserve(void)
 	omap4_espresso10_init_carveout_sizes(get_omap_ion_platform_data());
 	omap_ion_init();
 #endif
+#ifdef CONFIG_SEC_DEBUG
 	/* do the static reservations first */
 	if (sec_debug_get_level()) {
 #if defined(CONFIG_ANDROID_RAM_CONSOLE)
@@ -297,7 +298,7 @@ static void __init espresso10_reserve(void)
 				ESPRESSO10_RAMOOPS_SIZE);
 #endif
 	}
-
+#endif
 	memblock_remove(PHYS_ADDR_SMC_MEM, PHYS_ADDR_SMC_SIZE);
 	memblock_remove(PHYS_ADDR_DUCATI_MEM, PHYS_ADDR_DUCATI_SIZE);
 

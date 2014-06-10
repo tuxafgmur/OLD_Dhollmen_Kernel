@@ -407,7 +407,7 @@ static struct notifier_block twl6030_power_pm_notifier = {
 void __init twl6030_power_init(struct twl4030_power_data *power_data, \
 					unsigned long features)
 {
-	int r;
+	int r = 0;
 
 	if (power_data) {
 		if (power_data->resource_config)
