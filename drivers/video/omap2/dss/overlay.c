@@ -551,7 +551,6 @@ int dss_check_overlay(struct omap_overlay *ovl, struct omap_dss_device *dssdev)
 	info = &ovl->info;
 
 	if (info->paddr == 0) {
-		DSSDBG("check_overlay failed: paddr 0\n");
 		return -EINVAL;
 	}
 
@@ -565,13 +564,6 @@ int dss_check_overlay(struct omap_overlay *ovl, struct omap_dss_device *dssdev)
 		dh = wb_info.height;
 	} else
 		dssdev->driver->get_resolution(dssdev, &dw, &dh);
-
-	DSSDBG("check_overlay %d: (%d,%d %dx%d -> %dx%d) disp (%dx%d)\n",
-			ovl->id,
-			info->pos_x, info->pos_y,
-			info->width, info->height,
-			info->out_width, info->out_height,
-			dw, dh);
 
 	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) == 0) {
 		outw = info->width;
@@ -590,14 +582,10 @@ int dss_check_overlay(struct omap_overlay *ovl, struct omap_dss_device *dssdev)
 
 	if (!info->wb_source) {
 		if (dw < info->pos_x + outw) {
-			DSSDBG("check_overlay failed 1: %d < %d + %d\n",
-					dw, info->pos_x, outw);
 			return -EINVAL;
 		}
 
 		if (dh < info->pos_y + outh) {
-			DSSDBG("check_overlay failed 2: %d < %d + %d\n",
-					dh, info->pos_y, outh);
 			return -EINVAL;
 		}
 	}

@@ -504,7 +504,6 @@ int wl_android_set_full_roam_scan_period(
 	char smbuf[WLC_IOCTL_SMLEN];
 
 	sscanf(command+sizeof("SETFULLROAMSCANPERIOD"), "%d", &full_roam_scan_period);
-	WL_TRACE(("%s: fullroamperiod = %d\n", __func__, full_roam_scan_period));
 
 	error = wldev_iovar_setbuf(dev, "fullroamperiod", &full_roam_scan_period,
 		sizeof(full_roam_scan_period), smbuf, sizeof(smbuf), NULL);
@@ -547,8 +546,6 @@ int wl_android_set_country_rev(
 
 	memset(country_code, 0, sizeof(country_code));
 	sscanf(command+sizeof("SETCOUNTRYREV"), "%10s %10d", country_code, &rev);
-	WL_TRACE(("%s: country_code = %s, rev = %d\n", __FUNCTION__,
-		country_code, rev));
 
 	memcpy(cspec.country_abbrev, country_code, sizeof(country_code));
 	memcpy(cspec.ccode, country_code, sizeof(country_code));
@@ -1155,8 +1152,6 @@ static int wl_android_get_cckm_rn(struct net_device *dev, char *command)
 {
 	int error, rn;
 
-	WL_TRACE(("%s:wl_android_get_cckm_rn\n", dev->name));
-
 	error = wldev_iovar_getint(dev, "cckm_rn", &rn);
 	if (unlikely(error)) {
 		WL_ERR(("wl_android_get_cckm_rn error (%d)\n", error));
@@ -1172,8 +1167,6 @@ static int wl_android_set_cckm_krk(struct net_device *dev, char *command)
 	int error;
 	unsigned char key[16];
 	static char iovar_buf[WLC_IOCTL_MEDLEN];
-
-	WL_TRACE(("%s: wl_iw_set_cckm_krk\n", dev->name));
 
 	memset(iovar_buf, 0, sizeof(iovar_buf));
 	memcpy(key, command+strlen("set cckm_krk")+1, 16);
@@ -1195,8 +1188,6 @@ static int wl_android_get_assoc_res_ies(struct net_device *dev, char *command)
 	wl_assoc_info_t assoc_info;
 	u32 resp_ies_len = 0;
 	int bytes_written = 0;
-
-	WL_TRACE(("%s: wl_iw_get_assoc_res_ies\n", dev->name));
 
 	error = wldev_iovar_getbuf(dev, "assoc_info", NULL, 0, buf, WL_ASSOC_INFO_MAX, NULL);
 	if (unlikely(error)) {
@@ -1287,10 +1278,8 @@ int wl_android_wifi_off(struct net_device *dev)
 	int ret = 0;
 
 	printk("%s in\n", __FUNCTION__);
-	if (!dev) {
-		DHD_TRACE(("%s: dev is null\n", __FUNCTION__));
+	if (!dev)
 		return -EINVAL;
-	}
 
 	dhd_net_if_lock(dev);
 	if (g_wifi_on) {
@@ -2228,7 +2217,6 @@ int wifi_get_mac_addr(unsigned char *buf)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 39))
 void *wifi_get_country_code(char *ccode)
 {
-	DHD_TRACE(("%s\n", __FUNCTION__));
 	if (!ccode)
 		return NULL;
 	if (wifi_control_data && wifi_control_data->get_country_code) {
@@ -2281,7 +2269,6 @@ static int wifi_remove(struct platform_device *pdev)
 
 static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 {
-	DHD_TRACE(("##> %s\n", __FUNCTION__));
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39)) && defined(OOB_INTR_ONLY) && 1
 	bcmsdh_oob_intr_set(0);
 #endif /* (OOB_INTR_ONLY) */
@@ -2290,7 +2277,6 @@ static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 
 static int wifi_resume(struct platform_device *pdev)
 {
-	DHD_TRACE(("##> %s\n", __FUNCTION__));
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39)) && defined(OOB_INTR_ONLY) && 1
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()))
 		bcmsdh_oob_intr_set(1);
@@ -2321,7 +2307,6 @@ static struct platform_driver wifi_device_legacy = {
 static int wifi_add_dev(void)
 {
 	int ret = 0;
-	DHD_TRACE(("## Calling platform_driver_register\n"));
 	ret = platform_driver_register(&wifi_device);
 	if (ret)
 		return ret;
@@ -2332,7 +2317,6 @@ static int wifi_add_dev(void)
 
 static void wifi_del_dev(void)
 {
-	DHD_TRACE(("## Unregister platform_driver_register\n"));
 	platform_driver_unregister(&wifi_device);
 	platform_driver_unregister(&wifi_device_legacy);
 }

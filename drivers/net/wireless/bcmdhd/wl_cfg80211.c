@@ -7212,10 +7212,6 @@ wl_bss_connect_done(struct wl_priv *wl, struct net_device *ndev,
 			sec->auth_assoc_res_status :
 			WLAN_STATUS_UNSPECIFIED_FAILURE,
 			GFP_KERNEL);
-		if (completed)
-			WL_INFO(("Report connect result - connection succeeded\n"));
-		else
-			WL_ERR(("Report connect result - connection failed\n"));
 	}
 	return err;
 }
@@ -8180,7 +8176,6 @@ static s32 wl_iscan_thread(void *data)
 		del_timer_sync(&iscan->timer);
 		iscan->timer_on = 0;
 	}
-	WL_DBG(("%s was terminated\n", __func__));
 
 	return 0;
 }
@@ -9256,7 +9251,6 @@ static s32 wl_event_handler(void *data)
 		}
 		DHD_OS_WAKE_UNLOCK(wl->pub);
 	}
-	WL_ERR(("%s was terminated\n", __func__));
 	complete_and_exit(&tsk->completed, 0);
 	return 0;
 }
