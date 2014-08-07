@@ -243,8 +243,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fno-unswitch-loops -fno-inline-functions -fomit-frame-pointer
-HOSTCXXFLAGS = -O2 -fno-unswitch-loops -fno-inline-functions
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fno-unswitch-loops -fno-inline-functions -fomit-frame-pointer
+HOSTCXXFLAGS = -O3 -fno-unswitch-loops -fno-inline-functions
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -347,7 +347,7 @@ MODFLAGS        = -DMODULE \
                   -march=armv7-a \
                   -mfpu=neon \
                   -mtune=cortex-a9 \
-                  -O2 \
+                  -O3 \
                   -fno-unswitch-loops \
                   -fno-inline-functions
 
@@ -361,7 +361,7 @@ LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
 CFLAGS_KERNEL  =  -march=armv7-a \
                   -mfpu=neon \
                   -mtune=cortex-a9 \
-                  -O2
+                  -O3
 
 ifdef CONFIG_GCC_48_FIXES
 CFLAGS_KERNEL  +=  -fno-aggressive-loop-optimizations -Wno-sizeof-pointer-memaccess
@@ -587,7 +587,7 @@ ifdef CONFIG_OPTIMIZE_SIZE_GCC_48_FIXES
 KBUILD_CFLAGS  +=  -fno-aggressive-loop-optimizations -Wno-sizeof-pointer-memaccess
 endif
 else
-KBUILD_CFLAGS	+= -O2 -fno-unswitch-loops -fno-inline-functions
+KBUILD_CFLAGS	+= -O3 -fno-unswitch-loops -fno-inline-functions
 endif
 
 KBUILD_CFLAGS += -Wno-maybe-uninitialized \
