@@ -8,7 +8,6 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
 #include <linux/fs.h>
 #include <linux/f2fs_fs.h>
 #include <linux/stat.h>
@@ -20,7 +19,6 @@
 #include <linux/compat.h>
 #include <linux/uaccess.h>
 #include <linux/mount.h>
-#include <linux/dcache.h>
 
 #include "f2fs.h"
 #include "node.h"
@@ -32,7 +30,7 @@ static int f2fs_vm_page_mkwrite(struct vm_area_struct *vma,
 						struct vm_fault *vmf)
 {
 	struct page *page = vmf->page;
-	struct inode *inode = file_inode(vma->vm_file);
+	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
 	struct dnode_of_data dn;
 	int err;
@@ -76,14 +74,14 @@ static int f2fs_vm_page_mkwrite(struct vm_area_struct *vma,
 
 mapped:
 	/* fill the page */
-	wait_on_page_writeback(page);
+	f2fs_wait_on_page_writeback(page, DATA);
 out:
 	return block_page_mkwrite_return(err);
 }
 
 static const struct vm_operations_struct f2fs_file_vm_ops = {
-	.fault		= filemap_fault,
-	.page_mkwrite	= f2fs_vm_page_mkwrite,
+	.fault        = filemap_fault,
+	.page_mkwrite = f2fs_vm_page_mkwrite,
 };
 
 static int get_parent_ino(struct inode *inode, nid_t *pino)
@@ -91,17 +89,7 @@ static int get_parent_ino(struct inode *inode, nid_t *pino)
 	struct dentry *dentry;
 
 	inode = igrab(inode);
-
-	/* Alex - the following is equivalent to: dentry = d_find_any_alias(inode); */
-	dentry = NULL;
-	spin_lock(&inode->i_lock);
-	if (!list_empty(&inode->i_dentry)) {
-		dentry = list_first_entry(&inode->i_dentry,
-					  struct dentry, d_alias);
-		dget(dentry);
-	}
-	spin_unlock(&inode->i_lock);
-
+	dentry = d_find_any_alias(inode);
 	iput(inode);
 	if (!dentry)
 		return 0;
@@ -116,14 +104,15 @@ static int get_parent_ino(struct inode *inode, nid_t *pino)
 	return 1;
 }
 
-int f2fs_sync_file(struct file *file, int datasync)
+int f2fs_sync_file(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	struct inode *inode = file->f_mapping->host;
+	struct f2fs_inode_info *fi = F2FS_I(inode);
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
 	int ret = 0;
 	bool need_cp = false;
 	struct writeback_control wbc = {
-		.sync_mode = WB_SYNC_NONE,
+		.sync_mode = WB_SYNC_ALL,
 		.nr_to_write = LONG_MAX,
 		.for_reclaim = 0,
 	};
@@ -131,8 +120,15 @@ int f2fs_sync_file(struct file *file, int datasync)
 	if (unlikely(f2fs_readonly(inode->i_sb)))
 		return 0;
 
+	ret = filemap_write_and_wait_range(inode->i_mapping, start, end);
+	if (ret) {
+		return ret;
+	}
+
 	/* guarantee free sections for fsync */
 	f2fs_balance_fs(sbi);
+
+	down_read(&fi->i_sem);
 
 	/*
 	 * Both of fdatasync() and fsync() are able to be recovered from
@@ -149,25 +145,33 @@ int f2fs_sync_file(struct file *file, int datasync)
 	else if (F2FS_I(inode)->xattr_ver == cur_cp_version(F2FS_CKPT(sbi)))
 		need_cp = true;
 
+	up_read(&fi->i_sem);
+
 	if (need_cp) {
 		nid_t pino;
 
-		F2FS_I(inode)->xattr_ver = 0;
-
 		/* all the dirty node pages should be flushed for POR */
 		ret = f2fs_sync_fs(inode->i_sb, 1);
+
+		down_write(&fi->i_sem);
+		F2FS_I(inode)->xattr_ver = 0;
 		if (file_wrong_pino(inode) && inode->i_nlink == 1 &&
 					get_parent_ino(inode, &pino)) {
 			F2FS_I(inode)->i_pino = pino;
 			file_got_pino(inode);
+			up_write(&fi->i_sem);
 			mark_inode_dirty_sync(inode);
 			ret = f2fs_write_inode(inode, NULL);
 			if (ret)
 				goto out;
+		} else {
+			up_write(&fi->i_sem);
 		}
 	} else {
 		/* if there is no written node page, write its inode page */
 		while (!sync_node_pages(sbi, inode->i_ino, &wbc)) {
+			if (fsync_mark_done(sbi, inode->i_ino))
+				goto out;
 			mark_inode_dirty_sync(inode);
 			ret = f2fs_write_inode(inode, NULL);
 			if (ret)
@@ -176,7 +180,7 @@ int f2fs_sync_file(struct file *file, int datasync)
 		ret = wait_on_node_pages_writeback(sbi, inode->i_ino);
 		if (ret)
 			goto out;
-		ret = blkdev_issue_flush(inode->i_sb->s_bdev, GFP_KERNEL, NULL);
+		ret = f2fs_issue_flush(F2FS_SB(inode->i_sb));
 	}
 out:
 	return ret;
@@ -228,6 +232,9 @@ static void truncate_partial_data_page(struct inode *inode, u64 from)
 	unsigned offset = from & (PAGE_CACHE_SIZE - 1);
 	struct page *page;
 
+	if (f2fs_has_inline_data(inode))
+		return truncate_inline_data(inode, from);
+
 	if (!offset)
 		return;
 
@@ -240,7 +247,7 @@ static void truncate_partial_data_page(struct inode *inode, u64 from)
 		f2fs_put_page(page, 1);
 		return;
 	}
-	wait_on_page_writeback(page);
+	f2fs_wait_on_page_writeback(page, DATA);
 	zero_user(page, offset, PAGE_CACHE_SIZE - offset);
 	set_page_dirty(page);
 	f2fs_put_page(page, 1);
@@ -271,10 +278,7 @@ int truncate_blocks(struct inode *inode, u64 from)
 		return err;
 	}
 
-	if (IS_INODE(dn.node_page))
-		count = ADDRS_PER_INODE(F2FS_I(inode));
-	else
-		count = ADDRS_PER_BLOCK;
+	count = ADDRS_PER_PAGE(dn.node_page, F2FS_I(inode));
 
 	count -= dn.ofs_in_node;
 	f2fs_bug_on(count < 0);
@@ -392,6 +396,7 @@ const struct inode_operations f2fs_file_inode_operations = {
 	.listxattr	= f2fs_listxattr,
 	.removexattr	= generic_removexattr,
 #endif
+	.fiemap		= f2fs_fiemap,
 };
 
 static void fill_zero(struct inode *inode, pgoff_t index,
@@ -410,7 +415,7 @@ static void fill_zero(struct inode *inode, pgoff_t index,
 	f2fs_unlock_op(sbi);
 
 	if (!IS_ERR(page)) {
-		wait_on_page_writeback(page);
+		f2fs_wait_on_page_writeback(page, DATA);
 		zero_user(page, start, len);
 		set_page_dirty(page);
 		f2fs_put_page(page, 1);
@@ -534,6 +539,7 @@ static int expand_inode_data(struct inode *inode, loff_t offset,
 		i_size_read(inode) < new_size) {
 		i_size_write(inode, new_size);
 		mark_inode_dirty(inode);
+		f2fs_write_inode(inode, NULL);
 	}
 
 	return ret;
@@ -542,11 +548,13 @@ static int expand_inode_data(struct inode *inode, loff_t offset,
 static long f2fs_fallocate(struct file *file, int mode,
 				loff_t offset, loff_t len)
 {
-	struct inode *inode = file_inode(file);
+	struct inode *inode = file->f_path.dentry->d_inode;
 	long ret;
 
 	if (mode & ~(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE))
 		return -EOPNOTSUPP;
+
+	mutex_lock(&inode->i_mutex);
 
 	if (mode & FALLOC_FL_PUNCH_HOLE)
 		ret = punch_hole(inode, offset, len);
@@ -557,6 +565,9 @@ static long f2fs_fallocate(struct file *file, int mode,
 		inode->i_mtime = inode->i_ctime = CURRENT_TIME;
 		mark_inode_dirty(inode);
 	}
+
+	mutex_unlock(&inode->i_mutex);
+
 	return ret;
 }
 
@@ -575,7 +586,7 @@ static inline __u32 f2fs_mask_flags(umode_t mode, __u32 flags)
 
 long f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-	struct inode *inode = file_inode(filp);
+	struct inode *inode = filp->f_dentry->d_inode;
 	struct f2fs_inode_info *fi = F2FS_I(inode);
 	unsigned int flags;
 	int ret;
@@ -588,7 +599,7 @@ long f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	{
 		unsigned int oldflags;
 
-		ret = mnt_want_write(filp->f_path.mnt);
+		ret = mnt_want_write_file(filp);
 		if (ret)
 			return ret;
 
@@ -625,7 +636,7 @@ long f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		inode->i_ctime = CURRENT_TIME;
 		mark_inode_dirty(inode);
 out:
-		mnt_drop_write(filp->f_path.mnt);
+		mnt_drop_write_file(filp);
 		return ret;
 	}
 	default:

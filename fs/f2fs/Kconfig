@@ -1,5 +1,5 @@
 config F2FS_FS
-	tristate "F2FS filesystem support"
+	tristate "F2FS filesystem support
 	depends on BLOCK
 	default y
 	help
@@ -9,11 +9,9 @@ config F2FS_FS
 	  of wandering tree and high cleaning overhead.
 
 	  Since flash-based storages show different characteristics according to
-	  the internal geometry or flash memory management schemes there are
-	  support to various parameters not only for configuring on-disk layout,
-	  but also for selecting allocation and cleaning algorithms.
-
-	  If unsure, say N.
+	  the internal geometry or flash memory management schemes aka FTL, F2FS
+	  and tools support various parameters not only for configuring on-disk
+	  layout, but also for selecting allocation and cleaning algorithms.
 
 config F2FS_STAT_FS
 	bool "F2FS Status Information"
@@ -35,10 +33,6 @@ config F2FS_FS_XATTR
 	help
 	  Extended attributes are name:value pairs associated with inodes by
 	  the kernel or by users
-
-	  (see the attr(5) man page, or visit <http://acl.bestbits.at/> for details).
-
-	  If unsure, say N.
 
 config F2FS_FS_POSIX_ACL
 	bool "F2FS Access Control Lists"
@@ -65,7 +59,7 @@ config F2FS_FS_SECURITY
 	  If you are not using a security module, say N.
 
 config F2FS_CHECK_FS
-	bool "F2FS consistency check feature"
+	bool "F2FS consistency checking feature"
 	depends on F2FS_FS
 	default n
 	help

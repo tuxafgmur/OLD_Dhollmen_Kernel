@@ -8,7 +8,6 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
 #include <linux/fs.h>
 #include <linux/f2fs_fs.h>
 #include <linux/pagemap.h>
@@ -20,7 +19,7 @@
 #include "xattr.h"
 #include "acl.h"
 
-static struct inode *f2fs_new_inode(struct inode *dir, umode_t mode)
+static struct inode *f2fs_new_inode(struct inode *dir, int mode)
 {
 	struct super_block *sb = dir->i_sb;
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
@@ -41,18 +40,9 @@ static struct inode *f2fs_new_inode(struct inode *dir, umode_t mode)
 	}
 	f2fs_unlock_op(sbi);
 
-	inode->i_uid = current_fsuid();
-
-	if (dir->i_mode & S_ISGID) {
-		inode->i_gid = dir->i_gid;
-		if (S_ISDIR(mode))
-			mode |= S_ISGID;
-	} else {
-		inode->i_gid = current_fsgid();
-	}
+	inode_init_owner(inode, dir, mode);
 
 	inode->i_ino = ino;
-	inode->i_mode = mode;
 	inode->i_blocks = 0;
 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
 	inode->i_generation = sbi->s_next_generation++;
@@ -107,7 +97,7 @@ static inline void set_cold_files(struct f2fs_sb_info *sbi, struct inode *inode,
 }
 
 static int f2fs_create(struct inode *dir, struct dentry *dentry, int mode,
-		       struct nameidata *nd)
+						struct nameidata *nd)
 {
 	struct super_block *sb = dir->i_sb;
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
@@ -153,15 +143,9 @@ static int f2fs_link(struct dentry *old_dentry, struct inode *dir,
 		struct dentry *dentry)
 {
 	struct inode *inode = old_dentry->d_inode;
-	struct super_block *sb;
-	struct f2fs_sb_info *sbi;
+	struct super_block *sb = dir->i_sb;
+	struct f2fs_sb_info *sbi = F2FS_SB(sb);
 	int err;
-
-	if (inode->i_nlink >= F2FS_LINK_MAX)
-		return -EMLINK;
-
-	sb = dir->i_sb;
-	sbi = F2FS_SB(sb);
 
 	f2fs_balance_fs(sbi);
 
@@ -185,7 +169,7 @@ out:
 
 struct dentry *f2fs_get_parent(struct dentry *child)
 {
-	struct qstr dotdot = {.len = 2, .name = ".."};
+	struct qstr dotdot = {.name = "..", .len = 2};
 	unsigned long ino = f2fs_inode_by_name(child->d_inode, &dotdot);
 	if (!ino)
 		return ERR_PTR(-ENOENT);
@@ -193,7 +177,7 @@ struct dentry *f2fs_get_parent(struct dentry *child)
 }
 
 static struct dentry *f2fs_lookup(struct inode *dir, struct dentry *dentry,
-					struct nameidata *nd)
+		struct nameidata *nd)
 {
 	struct inode *inode = NULL;
 	struct f2fs_dir_entry *de;
@@ -211,6 +195,8 @@ static struct dentry *f2fs_lookup(struct inode *dir, struct dentry *dentry,
 		inode = f2fs_iget(dir->i_sb, ino);
 		if (IS_ERR(inode))
 			return ERR_CAST(inode);
+
+		stat_inc_inline_inode(inode);
 	}
 
 	return d_splice_alias(inode, dentry);
@@ -289,14 +275,9 @@ out:
 
 static int f2fs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
 {
-	struct f2fs_sb_info *sbi;
+	struct f2fs_sb_info *sbi = F2FS_SB(dir->i_sb);
 	struct inode *inode;
 	int err;
-
-	if (dir->i_nlink >= F2FS_LINK_MAX)
-		return -EMLINK;
-
-	sbi = F2FS_SB(dir->i_sb);
 
 	f2fs_balance_fs(sbi);
 
@@ -431,12 +412,17 @@ static int f2fs_rename(struct inode *old_dir, struct dentry *old_dentry,
 		}
 
 		f2fs_set_link(new_dir, new_entry, new_page, old_inode);
+		down_write(&F2FS_I(old_inode)->i_sem);
 		F2FS_I(old_inode)->i_pino = new_dir->i_ino;
+		up_write(&F2FS_I(old_inode)->i_sem);
 
 		new_inode->i_ctime = CURRENT_TIME;
+		down_write(&F2FS_I(new_inode)->i_sem);
 		if (old_dir_entry)
 			drop_nlink(new_inode);
 		drop_nlink(new_inode);
+		up_write(&F2FS_I(new_inode)->i_sem);
+
 		mark_inode_dirty(new_inode);
 
 		if (!new_inode->i_nlink)
@@ -447,12 +433,6 @@ static int f2fs_rename(struct inode *old_dir, struct dentry *old_dentry,
 		update_inode_page(old_inode);
 		update_inode_page(new_inode);
 	} else {
-		if (old_dir_entry) {
-			err = -EMLINK;
-			if (new_dir->i_nlink >= F2FS_LINK_MAX)
-				goto out_dir;
-		}
-
 		err = f2fs_add_link(new_dentry, old_inode);
 		if (err)
 			goto out_dir;
@@ -472,7 +452,9 @@ static int f2fs_rename(struct inode *old_dir, struct dentry *old_dentry,
 		if (old_dir != new_dir) {
 			f2fs_set_link(old_inode, old_dir_entry,
 						old_dir_page, new_dir);
+			down_write(&F2FS_I(old_inode)->i_sem);
 			F2FS_I(old_inode)->i_pino = new_dir->i_ino;
+			up_write(&F2FS_I(old_inode)->i_sem);
 			update_inode_page(old_inode);
 		} else {
 			kunmap(old_dir_page);

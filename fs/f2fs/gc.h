@@ -8,16 +8,19 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
-#define GC_THREAD_MIN_WB_PAGES		1	/* Threshold to determine whether IO subsystem is idle */
+#define GC_THREAD_MIN_WB_PAGES		1	/*
+						 * a threshold to determine
+						 * whether IO subsystem is idle
+						 * or not
+						 */
 #define DEF_GC_THREAD_MIN_SLEEP_TIME	30000	/* milliseconds */
 #define DEF_GC_THREAD_MAX_SLEEP_TIME	60000
 #define DEF_GC_THREAD_NOGC_SLEEP_TIME	300000	/* wait 5 min */
-#define LIMIT_INVALID_BLOCK		40 	/* percentage over total user space */
-#define LIMIT_FREE_BLOCK		40 	/* percentage over invalid + free space */
+#define LIMIT_INVALID_BLOCK	40 /* percentage over total user space */
+#define LIMIT_FREE_BLOCK	40 /* percentage over invalid + free space */
 
 /* Search max. number of dirty segments to select a victim segment */
-#define DEF_MAX_VICTIM_SEARCH 		4096 /* covers 8GB */
+#define DEF_MAX_VICTIM_SEARCH 4096 /* covers 8GB */
 
 struct f2fs_gc_kthread {
 	struct task_struct *f2fs_gc_task;

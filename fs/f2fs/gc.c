@@ -8,7 +8,6 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
 #include <linux/fs.h>
 #include <linux/module.h>
 #include <linux/backing-dev.h>
@@ -45,11 +44,6 @@ static int gc_thread_func(void *data)
 		if (kthread_should_stop())
 			break;
 
-		if (sbi->sb->s_frozen >= SB_FREEZE_WRITE) {
-			wait_ms = increase_sleep_time(gc_th, wait_ms);
-			continue;
-		}
-
 		/*
 		 * [GC triggering condition]
 		 * 0. GC is not conducted currently.
@@ -57,7 +51,6 @@ static int gc_thread_func(void *data)
 		 * 2. IO subsystem is idle by checking the # of writeback pages.
 		 * 3. IO subsystem is idle by checking the # of requests in
 		 *    bdev's request list.
-		 *
 		 * Note) We have to avoid triggering GCs too much frequently.
 		 * Because it is possible that some segments can be
 		 * invalidated soon after by user update or deletion.
@@ -330,7 +323,6 @@ got_it:
 				set_bit(secno, dirty_i->victim_secmap);
 		}
 		*result = (p.min_segno / p.ofs_unit) * p.ofs_unit;
-
 	}
 	mutex_unlock(&dirty_i->seglist_lock);
 
@@ -528,15 +520,10 @@ static void move_data_page(struct inode *inode, struct page *page, int gc_type)
 		set_page_dirty(page);
 		set_cold_data(page);
 	} else {
-		struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
-
 		f2fs_wait_on_page_writeback(page, DATA);
 
-		if (clear_page_dirty_for_io(page) &&
-			S_ISDIR(inode->i_mode)) {
-			dec_page_count(sbi, F2FS_DIRTY_DENTS);
+		if (clear_page_dirty_for_io(page))
 			inode_dec_dirty_dents(inode);
-		}
 		set_cold_data(page);
 		do_write_data_page(page, &fio);
 		clear_cold_data(page);
@@ -686,7 +673,8 @@ static void do_garbage_collect(struct f2fs_sb_info *sbi, unsigned int segno,
 	f2fs_put_page(sum_page, 1);
 }
 
-int f2fs_gc(struct f2fs_sb_info *sbi) {
+int f2fs_gc(struct f2fs_sb_info *sbi)
+{
 	struct list_head ilist;
 	unsigned int segno, i;
 	int gc_type = BG_GC;
@@ -697,6 +685,8 @@ int f2fs_gc(struct f2fs_sb_info *sbi) {
 gc_more:
 	if (unlikely(!(sbi->sb->s_flags & MS_ACTIVE)))
 		goto stop;
+	if (unlikely(is_set_ckpt_flags(F2FS_CKPT(sbi), CP_ERROR_FLAG)))
+		goto stop;
 
 	if (gc_type == BG_GC && has_not_enough_free_secs(sbi, nfree)) {
 		gc_type = FG_GC;
@@ -706,6 +696,11 @@ gc_more:
 	if (!__get_victim(sbi, &segno, gc_type, NO_CHECK_TYPE))
 		goto stop;
 	ret = 0;
+
+	/* readahead multi ssa blocks those have contiguous address */
+	if (sbi->segs_per_sec > 1)
+		ra_meta_pages(sbi, GET_SUM_BLOCK(sbi, segno), sbi->segs_per_sec,
+								META_SSA);
 
 	for (i = 0; i < sbi->segs_per_sec; i++)
 		do_garbage_collect(sbi, segno + i, &ilist, gc_type);
@@ -728,18 +723,21 @@ stop:
 	return ret;
 }
 
-void build_gc_manager(struct f2fs_sb_info *sbi) {
+void build_gc_manager(struct f2fs_sb_info *sbi)
+{
 	DIRTY_I(sbi)->v_ops = &default_v_ops;
 }
 
-int __init create_gc_caches(void) {
+int __init create_gc_caches(void)
+{
 	winode_slab = f2fs_kmem_cache_create("f2fs_gc_inodes",
-			sizeof(struct inode_entry), NULL);
+			sizeof(struct inode_entry));
 	if (!winode_slab)
 		return -ENOMEM;
 	return 0;
 }
 
-void destroy_gc_caches(void) {
+void destroy_gc_caches(void)
+{
 	kmem_cache_destroy(winode_slab);
 }

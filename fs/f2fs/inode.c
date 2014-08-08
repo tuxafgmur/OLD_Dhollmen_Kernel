@@ -8,11 +8,11 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
 #include <linux/fs.h>
 #include <linux/f2fs_fs.h>
 #include <linux/buffer_head.h>
 #include <linux/writeback.h>
+#include <linux/bitops.h>
 
 #include "f2fs.h"
 #include "node.h"
@@ -20,18 +20,16 @@
 void f2fs_set_inode_flags(struct inode *inode)
 {
 	unsigned int flags = F2FS_I(inode)->i_flags;
-
-	inode->i_flags &= ~(S_SYNC | S_APPEND | S_IMMUTABLE |
-			S_NOATIME | S_DIRSYNC);
+	unsigned int new_fl = 0;
 
 	if (flags & FS_SYNC_FL)
-		inode->i_flags |= S_SYNC;
+		new_fl |= S_SYNC;
 	if (flags & FS_APPEND_FL)
-		inode->i_flags |= S_APPEND;
+		new_fl |= S_APPEND;
 	if (flags & FS_IMMUTABLE_FL)
-		inode->i_flags |= S_IMMUTABLE;
+		new_fl |= S_IMMUTABLE;
 	if (flags & FS_NOATIME_FL)
-		inode->i_flags |= S_NOATIME;
+		new_fl |= S_NOATIME;
 	if (flags & FS_DIRSYNC_FL)
 		inode->i_flags |= S_DIRSYNC;
 }
@@ -86,9 +84,9 @@ static int do_read_inode(struct inode *inode)
 	ri = F2FS_INODE(node_page);
 
 	inode->i_mode = le16_to_cpu(ri->i_mode);
-	inode->i_uid = le32_to_cpu(ri->i_uid);
-	inode->i_gid = le32_to_cpu(ri->i_gid);
-	set_nlink(inode, le32_to_cpu(ri->i_links));
+	inode->i_uid  = le32_to_cpu(ri->i_uid);
+	inode->i_gid  = le32_to_cpu(ri->i_gid);
+	inode->i_nlink = le32_to_cpu(ri->i_links);
 	inode->i_size = le64_to_cpu(ri->i_size);
 	inode->i_blocks = le64_to_cpu(ri->i_blocks);
 
@@ -106,6 +104,7 @@ static int do_read_inode(struct inode *inode)
 	fi->flags = 0;
 	fi->i_advise = ri->i_advise;
 	fi->i_pino = le32_to_cpu(ri->i_pino);
+	fi->i_dir_level = ri->i_dir_level;
 
 	get_extent_info(&fi->ext, ri->i_ext);
 	get_inline_info(fi, ri);
@@ -200,6 +199,7 @@ void update_inode(struct inode *inode, struct page *node_page)
 	ri->i_flags = cpu_to_le32(F2FS_I(inode)->i_flags);
 	ri->i_pino = cpu_to_le32(F2FS_I(inode)->i_pino);
 	ri->i_generation = cpu_to_le32(inode->i_generation);
+	ri->i_dir_level = F2FS_I(inode)->i_dir_level;
 
 	__set_inode_rdev(inode, ri);
 	set_cold_node(inode, node_page);
@@ -208,24 +208,29 @@ void update_inode(struct inode *inode, struct page *node_page)
 	clear_inode_flag(F2FS_I(inode), FI_DIRTY_INODE);
 }
 
-int update_inode_page(struct inode *inode)
+void update_inode_page(struct inode *inode)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
 	struct page *node_page;
-
+retry:
 	node_page = get_node_page(sbi, inode->i_ino);
-	if (IS_ERR(node_page))
-		return PTR_ERR(node_page);
-
+	if (IS_ERR(node_page)) {
+		int err = PTR_ERR(node_page);
+		if (err == -ENOMEM) {
+			cond_resched();
+			goto retry;
+		} else if (err != -ENOENT) {
+			f2fs_stop_checkpoint(sbi);
+		}
+		return;
+	}
 	update_inode(inode, node_page);
 	f2fs_put_page(node_page, 1);
-	return 0;
 }
 
 int f2fs_write_inode(struct inode *inode, struct writeback_control *wbc)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
-	int ret;
 
 	if (inode->i_ino == F2FS_NODE_INO(sbi) ||
 			inode->i_ino == F2FS_META_INO(sbi))
@@ -239,13 +244,13 @@ int f2fs_write_inode(struct inode *inode, struct writeback_control *wbc)
 	 * during the urgent cleaning time when runing out of free sections.
 	 */
 	f2fs_lock_op(sbi);
-	ret = update_inode_page(inode);
+	update_inode_page(inode);
 	f2fs_unlock_op(sbi);
 
 	if (wbc)
 		f2fs_balance_fs(sbi);
 
-	return ret;
+	return 0;
 }
 
 /*
@@ -261,7 +266,7 @@ void f2fs_evict_inode(struct inode *inode)
 			inode->i_ino == F2FS_META_INO(sbi))
 		goto no_delete;
 
-	f2fs_bug_on(atomic_read(&F2FS_I(inode)->dirty_dents));
+	f2fs_bug_on(get_dirty_dents(inode));
 	remove_dirty_dir_inode(inode);
 
 	if (inode->i_nlink || is_bad_inode(inode))
@@ -279,5 +284,7 @@ void f2fs_evict_inode(struct inode *inode)
 	f2fs_unlock_op(sbi);
 
 no_delete:
+	invalidate_mapping_pages(NODE_MAPPING(sbi), inode->i_ino, inode->i_ino);
 	end_writeback(inode);
+
 }
