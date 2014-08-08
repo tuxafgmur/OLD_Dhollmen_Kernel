@@ -1,5 +1,5 @@
 config F2FS_FS
-	tristate "F2FS filesystem support
+	tristate "F2FS filesystem support"
 	depends on BLOCK
 	default y
 	help
