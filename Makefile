@@ -596,6 +596,7 @@ KBUILD_CFLAGS += -Wno-maybe-uninitialized \
 		 -Wno-unused-variable \
 		 -Wno-unused-value \
 		 -Wno-format \
+		 -Wno-array-bounds \
 		 -Wno-declaration-after-statement \
 		 -Wno-deprecated-declarations
 
