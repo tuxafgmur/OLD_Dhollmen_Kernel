@@ -1,17 +1,46 @@
 config EXFAT_FS
-	tristate "Samsung Open-Sourced exFAT"
-	depends on BLOCK
-	select NLS_UTF8
-	default y
+	tristate "exFAT fs support"
+	select NLS
 	help
 	  exFAT (Extended File Allocation Table) is a Microsoft file system optimized for flash drives.
-	  It is supported in Windows XP and later, Mac OS X Snow Leopard from 10.6.5, Mac OSX Lion
-	  and OSX Mountain Lion. Also is supported in a number of media devices such as flat panel TVs,
-	  media centers, and portable media players.
-	  exFAT can be used where the NTFS file system is not a feasible solution, due to data structure overhead,
+	  Can be used where the NTFS file system is not a feasible solution, due to data structure overhead,
 	  or where the file size limit of the standard FAT32 file system is unacceptable.
 	  Unlike NTFS, exFAT cannot pre-allocate disk space for a file by just marking arbitrary space on disk
 	  as 'allocated'.
 
   	  To compile this file system support as a module, choose M here.
-  	  The modules will be called exfat_core.ko and exfat_fs.ko
+  	  The module will be called exfat.ko
+
+config EXFAT_DISCARD
+	bool "enable discard support"
+	depends on EXFAT_FS
+	default y
+
+config EXFAT_DELAYED_SYNC
+	bool "enable delayed sync"
+	depends on EXFAT_FS
+	default n
+
+config EXFAT_KERNEL_DEBUG
+	bool "enable kernel debug features via ioctl"
+	depends on EXFAT_FS
+	default n
+
+config EXFAT_DEBUG_MSG
+	bool "print debug messages"
+	depends on EXFAT_FS
+	default n
+
+config EXFAT_DEFAULT_CODEPAGE
+	int "Default codepage for exFAT"
+	default 437
+	depends on EXFAT_FS
+	help
+	  This option should be set to the codepage of your exFAT filesystems.
+
+config EXFAT_DEFAULT_IOCHARSET
+	string "Default iocharset for exFAT"
+	default "utf8"
+	depends on EXFAT_FS
+	help
+	  Set this to the default input/output character set you'd like exFAT to use.
