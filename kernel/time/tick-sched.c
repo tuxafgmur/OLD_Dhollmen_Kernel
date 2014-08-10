@@ -295,6 +295,7 @@ void tick_nohz_stop_sched_tick(int inidle)
 	if (unlikely(!cpu_online(cpu))) {
 		if (cpu == tick_do_timer_cpu)
 			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
+		return;
 	}
 
 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
@@ -307,8 +308,6 @@ void tick_nohz_stop_sched_tick(int inidle)
 		static int ratelimit;
 
 		if (ratelimit < 10) {
-			printk(KERN_ERR "NOHZ: local_softirq_pending %02x\n",
-			       (unsigned int) local_softirq_pending());
 			ratelimit++;
 		}
 		goto end;
