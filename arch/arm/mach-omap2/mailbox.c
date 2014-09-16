@@ -36,12 +36,16 @@
 #define MAILBOX_IRQ_NOTFULL(m)		(1 << (2 * (m) + 1))
 #define MAILBOX_SOFTRESET		1
 
-#define MBOX_NUM_USER                  2
-#define OMAP4_MBOX_NUM_USER            3
-#define MBOX_NR_REGS                   2
-#define OMAP4_MBOX_NR_REGS             3
+#define MBOX_NUM_USER 			2
+#define OMAP4_MBOX_NUM_USER 		3
+#define MBOX_NR_REGS 			2
+#define OMAP4_MBOX_NR_REGS 		3
 
-#define SET_MPU_CORE_CONSTRAINT		10
+#ifdef CONFIG_ENABLE_GPIO_TO_ALLOW_C2_IN_CAMERA
+#define SET_MPU_CORE_CONSTRAINT 	400
+#else
+#define SET_MPU_CORE_CONSTRAINT 	10
+#endif
 
 static void __iomem *mbox_base;
 

@@ -1,6 +1,7 @@
 config EXFAT_FS
 	tristate "exFAT fs support"
 	select NLS
+	default y
 	help
 	  exFAT (Extended File Allocation Table) is a Microsoft file system optimized for flash drives.
 	  Can be used where the NTFS file system is not a feasible solution, due to data structure overhead,

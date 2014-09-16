@@ -18,7 +18,6 @@
   * You should have received a copy of the GNU General Public License
   * along with this program; if not, write to the Free Software
   * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  *
   */
 
 #include <linux/io.h>
@@ -62,10 +61,6 @@ static void omap4430_phy_init_for_eyediagram(u32 swcap_trim_offset)
 
 		__raw_writel(read_val, ctrl_base + USB2PHYCM_TRIM_OFFSET);
 	}
-	pr_info("%s, usb swcap_trim_offset = 0x%x, USB2PHYCM_TRIM = 0x%x\n",
-		__func__,
-		swcap_trim_offset,
-		__raw_readl(ctrl_base + USB2PHYCM_TRIM_OFFSET));
 #ifndef CONFIG_USB_SWITCH_FSA9480
 	iounmap(ctrl_base);
 #endif	/* CONFIG_USB_SWITCH_FSA9480 */

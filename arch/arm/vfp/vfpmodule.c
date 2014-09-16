@@ -62,7 +62,6 @@ static void vfp_thread_flush(struct thread_info *thread)
 
 	vfp->hard.fpexc = FPEXC_EN;
 	vfp->hard.fpscr = FPSCR_ROUND_NEAREST;
-
 	/*
 	 * Disable VFP to ensure we initialize it first.  We must ensure
 	 * that the modification of vfp_current_hw_state[] and hardware disable
@@ -131,11 +130,10 @@ static int vfp_notifier(struct notifier_block *self, unsigned long cmd, void *v)
 
 #ifdef CONFIG_SMP
 		cpu = thread->cpu;
-
 		/*
-		 * On SMP, if VFP is enabled, save the old state in
-		 * case the thread migrates to a different CPU. The
-		 * restoring is done lazily.
+		 * On SMP, if VFP is enabled, save the old state
+		 * in case the thread migrates to a different CPU.
+		 * The restoring is done lazily.
 		 */
 		if ((fpexc & FPEXC_EN) && vfp_current_hw_state[cpu]) {
 			vfp_save_state(vfp_current_hw_state[cpu], fpexc);
@@ -149,10 +147,8 @@ static int vfp_notifier(struct notifier_block *self, unsigned long cmd, void *v)
 		if (thread->vfpstate.hard.cpu != cpu)
 			vfp_current_hw_state[cpu] = NULL;
 #endif
-
 		/*
-		 * Always disable VFP so we can lazily save/restore the
-		 * old state.
+		 * Always disable VFP so we can lazily save/restore the old state.
 		 */
 		fmxr(FPEXC, fpexc & ~FPEXC_EN);
 		break;
@@ -192,8 +188,7 @@ static void vfp_raise_sigfpe(unsigned int sicode, struct pt_regs *regs)
 	info.si_addr = (void __user *)(instruction_pointer(regs) - 4);
 
 	/*
-	 * This is the same as NWFPE, because it's not clear what
-	 * this is used for
+	 * This is the same as NWFPE, because it's not clear what this is used for.
 	 */
 	current->thread.error_code = 0;
 	current->thread.trap_no = 6;
@@ -240,8 +235,8 @@ static void vfp_raise_exceptions(u32 exceptions, u32 inst, u32 fpscr, struct pt_
 
 	fmxr(FPSCR, fpscr);
 
-#define RAISE(stat,en,sig)				\
-	if (exceptions & stat && fpscr & en)		\
+#define RAISE(stat,en,sig)			\
+	if (exceptions & stat && fpscr & en)	\
 		si_code = sig;
 
 	/*
@@ -264,31 +259,14 @@ static u32 vfp_emulate_instruction(u32 inst, u32 fpscr, struct pt_regs *regs)
 {
 	u32 exceptions = VFP_EXCEPTION_ERROR;
 
-	pr_debug("VFP: emulate: INST=0x%08x SCR=0x%08x\n", inst, fpscr);
-
 	if (INST_CPRTDO(inst)) {
 		if (!INST_CPRT(inst)) {
-			/*
-			 * CPDO
-			 */
 			if (vfp_single(inst)) {
 				exceptions = vfp_single_cpdo(inst, fpscr);
 			} else {
 				exceptions = vfp_double_cpdo(inst, fpscr);
 			}
-		} else {
-			/*
-			 * A CPRT instruction can not appear in FPINST2, nor
-			 * can it cause an exception.  Therefore, we do not
-			 * have to emulate it.
-			 */
 		}
-	} else {
-		/*
-		 * A CPDT instruction can not appear in FPINST2, nor can
-		 * it cause an exception.  Therefore, we do not have to
-		 * emulate it.
-		 */
 	}
 	return exceptions & ~VFP_NAN_FLAG;
 }
@@ -304,14 +282,12 @@ void VFP_bounce(u32 trigger, u32 fpexc, struct pt_regs *regs)
 
 	/*
 	 * At this point, FPEXC can have the following configuration:
-	 *
 	 *  EX DEX IXE
 	 *  0   1   x   - synchronous exception
 	 *  1   x   0   - asynchronous exception
 	 *  1   x   1   - sychronous on VFP subarch 1 and asynchronous on later
 	 *  0   0   1   - synchronous on VFP9 (non-standard subarch 1
 	 *                implementation), undefined otherwise
-	 *
 	 * Clear various bits and enable access to the VFP so we can
 	 * handle the bounce.
 	 */
@@ -377,7 +353,7 @@ void VFP_bounce(u32 trigger, u32 fpexc, struct pt_regs *regs)
 	 * If there isn't a second FP instruction, exit now. Note that
 	 * the FPEXC.FP2V bit is valid only if FPEXC.EX is 1.
 	 */
-	if (fpexc ^ (FPEXC_EX | FPEXC_FP2V))
+	if ((fpexc & (FPEXC_EX | FPEXC_FP2V)) != (FPEXC_EX | FPEXC_FP2V))
 		goto exit;
 
 	/*
@@ -416,7 +392,6 @@ static int vfp_pm_suspend(void)
 
 	/* if vfp is on, then save state for resumption */
 	if (fpexc & FPEXC_EN) {
-		printk(KERN_DEBUG "%s: saving vfp state\n", __func__);
 		vfp_save_state(&ti->vfpstate, fpexc);
 
 		/* disable, just in case */
@@ -534,7 +509,6 @@ void vfp_flush_hwstate(struct thread_info *thread)
  * a CPU has been killed, indicating that the VFP hardware doesn't contain
  * a threads VFP state.  When a CPU starts up, we re-enable access to the
  * VFP hardware.
- *
  * Both CPU_DYING and CPU_STARTING are called on the CPU which
  * is being offlined/onlined.
  */
@@ -559,7 +533,6 @@ static int __init vfp_init(void)
 
 	if (cpu_arch >= CPU_ARCH_ARMv6)
 		on_each_cpu(vfp_enable, NULL, 1);
-
 	/*
 	 * First check that there is a VFP that we can use.
 	 * The handler is already setup to just log calls, so
@@ -571,16 +544,16 @@ static int __init vfp_init(void)
 	barrier();
 	vfp_vector = vfp_null_entry;
 
-	printk(KERN_INFO "VFP support v0.3: ");
 	if (VFP_arch)
-		printk("not present\n");
+		printk("VFP support v0.3: not present\n");
 	else if (vfpsid & FPSID_NODOUBLE) {
-		printk("no double precision support\n");
+		printk("VFP support v0.3: no double precision support\n");
 	} else {
 		hotcpu_notifier(vfp_hotplug, 0);
 
-		VFP_arch = (vfpsid & FPSID_ARCH_MASK) >> FPSID_ARCH_BIT;  /* Extract the architecture version */
-		printk("implementor %02x architecture %d part %02x variant %x rev %x\n",
+		/* Extract the architecture version */
+		VFP_arch = (vfpsid & FPSID_ARCH_MASK) >> FPSID_ARCH_BIT;
+		printk("VFP support v0.3: implementor %02x architecture %d part %02x variant %x rev %x\n",
 			(vfpsid & FPSID_IMPLEMENTER_MASK) >> FPSID_IMPLEMENTER_BIT,
 			(vfpsid & FPSID_ARCH_MASK) >> FPSID_ARCH_BIT,
 			(vfpsid & FPSID_PART_MASK) >> FPSID_PART_BIT,
@@ -602,11 +575,13 @@ static int __init vfp_init(void)
 			elf_hwcap |= HWCAP_VFPv3;
 
 			/*
-			 * Check for VFPv3 D16. CPUs in this configuration
-			 * only have 16 x 64bit registers.
+			 * Check for VFPv3 D16 and VFPv4 D16. CPUs in this
+			 * configuration only have 16 x 64bit registers.
 			 */
 			if (((fmrx(MVFR0) & MVFR0_A_SIMD_MASK)) == 1)
 				elf_hwcap |= HWCAP_VFPv3D16;
+			else
+				elf_hwcap |= HWCAP_VFPD32;
 		}
 #endif
 #ifdef CONFIG_NEON

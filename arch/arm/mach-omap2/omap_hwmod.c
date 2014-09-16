@@ -166,7 +166,6 @@ static LIST_HEAD(omap_hwmod_list);
 /* mpu_oh: used to add/remove MPU initiator from sleepdep list */
 static struct omap_hwmod *mpu_oh;
 
-
 /* Private functions */
 
 /**
@@ -1247,8 +1246,6 @@ static int _reset(struct omap_hwmod *oh)
 {
 	int ret;
 
-	pr_debug("omap_hwmod: %s: resetting\n", oh->name);
-
 	ret = (oh->class->reset) ? oh->class->reset(oh) : _ocp_softreset(oh);
 
 	return ret;
@@ -1274,8 +1271,6 @@ static int _enable(struct omap_hwmod *oh)
 		     "from initialized, idle, or disabled state\n", oh->name);
 		return -EINVAL;
 	}
-
-	pr_debug("omap_hwmod: %s: enabling\n", oh->name);
 
 	_add_initiator_dep(oh, mpu_oh);
 	if (oh->_clk && oh->_clk->clkdm) {
@@ -1413,8 +1408,6 @@ static int _shutdown(struct omap_hwmod *oh)
 		     "from idle, or enabled state\n", oh->name);
 		return -EINVAL;
 	}
-
-	pr_debug("omap_hwmod: %s: disabling\n", oh->name);
 
 	if (oh->class->pre_shutdown) {
 		prev_state = oh->_state;
@@ -1636,9 +1629,6 @@ void omap_hwmod_write(u32 v, struct omap_hwmod *oh, u16 reg_offs)
  */
 int omap_hwmod_softreset(struct omap_hwmod *oh)
 {
-	u32 v;
-	int ret;
-
 	if (!oh || !(oh->_sysc_cache))
 		return -EINVAL;
 
@@ -2405,9 +2395,6 @@ int omap_hwmod_for_each_by_class(const char *classname,
 	if (!classname || !fn)
 		return -EINVAL;
 
-	pr_debug("omap_hwmod: %s: looking for modules of class %s\n",
-		 __func__, classname);
-
 	list_for_each_entry(temp_oh, &omap_hwmod_list, node) {
 		if (!strcmp(temp_oh->class->name, classname)) {
 			pr_debug("omap_hwmod: %s: %s: calling callback fn\n",
@@ -2417,10 +2404,6 @@ int omap_hwmod_for_each_by_class(const char *classname,
 				break;
 		}
 	}
-
-	if (ret)
-		pr_debug("omap_hwmod: %s: iterator terminated early: %d\n",
-			 __func__, ret);
 
 	return ret;
 }
