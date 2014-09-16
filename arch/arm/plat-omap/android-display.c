@@ -32,8 +32,7 @@ struct omap_android_display_data {
 	/* members with default values */
 	u32 width;
 	u32 height;
-	u32 bpp;		/* must be 2 or 4 */
-
+	u32 bpp;
 	/* members with no default value */
 	u32 tiler1d_mem;
 };
@@ -145,9 +144,7 @@ done:
 	dsscomp_set_platform_data(&data);
 
 	/* remember setting for ion carveouts */
-	mem->tiler1d_mem =
-		NUM_ANDROID_TILER1D_SLOTS * data.tiler1d_slotsz;
-	pr_info("android_display: tiler1d %u\n", mem->tiler1d_mem);
+	mem->tiler1d_mem = NUM_ANDROID_TILER1D_SLOTS * data.tiler1d_slotsz;
 }
 
 static u32 vram_size(struct omap_android_display_data *mem)
@@ -170,14 +167,6 @@ static void set_vram_sizes(struct sgx_omaplfb_config *sgx_config,
 	}
 
 	if (sgx_config) {
-#if defined(CONFIG_GCBV)
-		/* Add 2 extra VRAM buffers for gc320 composition - 4470 only*/
-		/* TODO: cpu_is_omap447x() is not returning the proper value
-			at this stage. Need to fix it */
-		if (1/*cpu_is_omap447x()*/)
-			sgx_config->vram_buffers += 2;
-#endif
-
 		vram += sgx_config->vram_reserve;
 		num_vram_buffers = max(sgx_config->vram_buffers,
 				       num_vram_buffers);
@@ -189,8 +178,6 @@ static void set_vram_sizes(struct sgx_omaplfb_config *sgx_config,
 		/* set fb0 vram needs */
 		if (fb->mem_desc.region_cnt >= 1) {
 			fb->mem_desc.region[0].size = vram;
-			pr_info("android_display: setting fb0.vram to %u\n",
-									vram);
 		}
 
 		/* set global vram needs incl. additional regions specified */
@@ -199,7 +186,6 @@ static void set_vram_sizes(struct sgx_omaplfb_config *sgx_config,
 				vram += fb->mem_desc.region[i].size;
 	}
 
-	pr_info("android_display: setting vram to %u\n", vram);
 	omap_vram_set_sdram_vram(vram, 0);
 }
 
