@@ -1003,13 +1003,9 @@ grow_dev_page(struct block_device *bdev, sector_t block,
 	sector_t end_block;
 	int ret = 0;		/* Will call free_more_memory() */
 
-#ifdef CONFIG_CMA
-	page = find_or_create_page(inode->i_mapping, index,
-		(mapping_gfp_mask(inode->i_mapping) & ~__GFP_FS));
-#else
 	page = find_or_create_page(inode->i_mapping, index,
 		(mapping_gfp_mask(inode->i_mapping) & ~__GFP_FS)|__GFP_MOVABLE);
-#endif
+
 	if (!page)
 		return ret;
 
@@ -1277,16 +1273,6 @@ static void bh_lru_install(struct buffer_head *bh)
 {
 	struct buffer_head *evictee = NULL;
 
-#ifdef CONFIG_CMA
-	/*
-	 * Pages are busy when their buffers stay on bh_lru list.
-	 * The CMA pages are expected to be migrated at any time,
-	 * therefore they should never go on any local LRU lists.
-	 */
-	if (is_cma_pageblock(bh->b_page))
-		return;
-#endif
-
 	check_irqs_on();
 	bh_lru_lock();
 	if (__this_cpu_read(bh_lrus.bhs[0]) != bh) {
@@ -1451,33 +1437,8 @@ void invalidate_bh_lrus(void)
 }
 EXPORT_SYMBOL_GPL(invalidate_bh_lrus);
 
-#ifdef CONFIG_CMA
-static void evict_bh_lru(void *arg)
-{
-	struct bh_lru *b = &get_cpu_var(bh_lrus);
-	struct buffer_head *bh = arg;
-	int i;
-
-	for (i = 0; i < BH_LRU_SIZE; i++) {
-		if (b->bhs[i] == bh) {
-			printk("%s[%d] drop buffer head %p.\n", __func__,
-				__LINE__, b->bhs[i]);
-			brelse(b->bhs[i]);
-			b->bhs[i] = NULL;
-			break;
-		}
-	}
-
-	put_cpu_var(bh_lrus);
-}
-
-void evict_bh_lrus(struct buffer_head *bh)
-{
-	on_each_cpu(evict_bh_lru, bh, 1);
-}
-#else
 static inline void evict_bh_lrus(struct buffer_head *bh) { }
-#endif
+
 EXPORT_SYMBOL_GPL(evict_bh_lrus);
 
 void set_bh_page(struct buffer_head *bh,

@@ -44,7 +44,6 @@ static void __jbd2_journal_unfile_buffer(struct journal_head *jh);
  *	The journal MUST be locked.  We don't perform atomic mallocs on the
  *	new transaction	and we can't block without protecting against other
  *	processes trying to touch the journal while it is in transition.
- *
  */
 
 static transaction_t *
@@ -149,8 +148,6 @@ alloc_transaction:
 		}
 	}
 
-	jbd_debug(3, "New handle %p going live.\n", handle);
-
 	/*
 	 * We need to hold j_state_lock until t_updates has been incremented,
 	 * for proper journal barrier handling
@@ -225,7 +222,6 @@ repeat:
 		 */
 		DEFINE_WAIT(wait);
 
-		jbd_debug(2, "Handle %p starting new commit...\n", handle);
 		atomic_sub(nblocks, &transaction->t_outstanding_credits);
 		prepare_to_wait(&journal->j_wait_transaction_locked, &wait,
 				TASK_UNINTERRUPTIBLE);
@@ -265,7 +261,6 @@ repeat:
 	 * jbd2_journal_extend().
 	 */
 	if (__jbd2_log_space_left(journal) < jbd_space_needed(journal)) {
-		jbd_debug(2, "Handle %p waiting for checkpoint...\n", handle);
 		atomic_sub(nblocks, &transaction->t_outstanding_credits);
 		read_unlock(&journal->j_state_lock);
 		write_lock(&journal->j_state_lock);
@@ -282,10 +277,6 @@ repeat:
 	handle->h_transaction = transaction;
 	atomic_inc(&transaction->t_updates);
 	atomic_inc(&transaction->t_handle_count);
-	jbd_debug(4, "Handle %p given %d credits (total %d, free %d)\n",
-		  handle, nblocks,
-		  atomic_read(&transaction->t_outstanding_credits),
-		  __jbd2_log_space_left(journal));
 	read_unlock(&journal->j_state_lock);
 
 	lock_map_acquire(&handle->h_lockdep_map);
@@ -399,8 +390,6 @@ int jbd2_journal_extend(handle_t *handle, int nblocks)
 
 	/* Don't extend a locked-down transaction! */
 	if (handle->h_transaction->t_state != T_RUNNING) {
-		jbd_debug(3, "denied handle %p %d blocks: "
-			  "transaction not running\n", handle, nblocks);
 		goto error_out;
 	}
 
@@ -408,22 +397,16 @@ int jbd2_journal_extend(handle_t *handle, int nblocks)
 	wanted = atomic_read(&transaction->t_outstanding_credits) + nblocks;
 
 	if (wanted > journal->j_max_transaction_buffers) {
-		jbd_debug(3, "denied handle %p %d blocks: "
-			  "transaction too large\n", handle, nblocks);
 		goto unlock;
 	}
 
 	if (wanted > __jbd2_log_space_left(journal)) {
-		jbd_debug(3, "denied handle %p %d blocks: "
-			  "insufficient log space\n", handle, nblocks);
 		goto unlock;
 	}
 
 	handle->h_buffer_credits += nblocks;
 	atomic_add(nblocks, &transaction->t_outstanding_credits);
 	result = 0;
-
-	jbd_debug(3, "extended handle %p by %d\n", handle, nblocks);
 unlock:
 	spin_unlock(&transaction->t_handle_lock);
 error_out:
@@ -474,7 +457,6 @@ int jbd2__journal_restart(handle_t *handle, int nblocks, int gfp_mask)
 	tid = transaction->t_tid;
 	spin_unlock(&transaction->t_handle_lock);
 
-	jbd_debug(2, "restarting handle %p\n", handle);
 	need_to_start = !tid_geq(journal->j_commit_request, tid);
 	read_unlock(&journal->j_state_lock);
 	if (need_to_start)
@@ -598,9 +580,6 @@ do_get_write_access(handle_t *handle, struct journal_head *jh,
 	transaction = handle->h_transaction;
 	journal = transaction->t_journal;
 
-	jbd_debug(5, "journal_head %p, force_copy %d\n", jh, force_copy);
-
-	JBUFFER_TRACE(jh, "entry");
 repeat:
 	bh = jh2bh(jh);
 
@@ -642,7 +621,6 @@ repeat:
 		 * do it under the buffer lock to be sure we don't race
 		 * with running write-out.
 		 */
-		JBUFFER_TRACE(jh, "Journalling dirty buffer");
 		clear_buffer_dirty(bh);
 		set_buffer_jbddirty(bh);
 	}
@@ -675,7 +653,6 @@ repeat:
 	 * need to make another one
 	 */
 	if (jh->b_frozen_data) {
-		JBUFFER_TRACE(jh, "has frozen data");
 		J_ASSERT_JH(jh, jh->b_next_transaction == NULL);
 		jh->b_next_transaction = transaction;
 		goto done;
@@ -684,7 +661,6 @@ repeat:
 	/* Is there data here we need to preserve? */
 
 	if (jh->b_transaction && jh->b_transaction != transaction) {
-		JBUFFER_TRACE(jh, "owned by older transaction");
 		J_ASSERT_JH(jh, jh->b_next_transaction == NULL);
 		J_ASSERT_JH(jh, jh->b_transaction ==
 					journal->j_committing_transaction);
@@ -704,7 +680,6 @@ repeat:
 
 			wqh = bit_waitqueue(&bh->b_state, BH_Unshadow);
 
-			JBUFFER_TRACE(jh, "on shadow: sleep");
 			jbd_unlock_bh_state(bh);
 			/* commit wakes up all shadow buffers after IO */
 			for ( ; ; ) {
@@ -733,9 +708,7 @@ repeat:
 		 * in that case. */
 
 		if (jh->b_jlist != BJ_Forget || force_copy) {
-			JBUFFER_TRACE(jh, "generate frozen data");
 			if (!frozen_buffer) {
-				JBUFFER_TRACE(jh, "allocate memory for buffer");
 				jbd_unlock_bh_state(bh);
 				frozen_buffer =
 					jbd2_alloc(jh2bh(jh)->b_size,
@@ -744,7 +717,6 @@ repeat:
 					printk(KERN_EMERG
 					       "%s: OOM for frozen_buffer\n",
 					       __func__);
-					JBUFFER_TRACE(jh, "oom!");
 					error = -ENOMEM;
 					jbd_lock_bh_state(bh);
 					goto done;
@@ -764,9 +736,7 @@ repeat:
 	 * commits the new data
 	 */
 	if (!jh->b_transaction) {
-		JBUFFER_TRACE(jh, "no transaction");
 		J_ASSERT_JH(jh, !jh->b_next_transaction);
-		JBUFFER_TRACE(jh, "file as BJ_Reserved");
 		spin_lock(&journal->j_list_lock);
 		__jbd2_journal_file_buffer(jh, transaction, BJ_Reserved);
 		spin_unlock(&journal->j_list_lock);
@@ -807,7 +777,6 @@ out:
 	if (unlikely(frozen_buffer))	/* It's usually NULL */
 		jbd2_free(frozen_buffer, bh->b_size);
 
-	JBUFFER_TRACE(jh, "exit");
 	return error;
 }
 
@@ -861,13 +830,11 @@ int jbd2_journal_get_create_access(handle_t *handle, struct buffer_head *bh)
 	struct journal_head *jh = jbd2_journal_add_journal_head(bh);
 	int err;
 
-	jbd_debug(5, "journal_head %p\n", jh);
 	err = -EROFS;
 	if (is_handle_aborted(handle))
 		goto out;
 	err = 0;
 
-	JBUFFER_TRACE(jh, "entry");
 	/*
 	 * The buffer may already belong to this transaction due to pre-zeroing
 	 * in the filesystem's new_block code.  It may also be on the previous,
@@ -898,13 +865,11 @@ int jbd2_journal_get_create_access(handle_t *handle, struct buffer_head *bh)
 		/* first access by this transaction */
 		jh->b_modified = 0;
 
-		JBUFFER_TRACE(jh, "file as BJ_Reserved");
 		__jbd2_journal_file_buffer(jh, transaction, BJ_Reserved);
 	} else if (jh->b_transaction == journal->j_committing_transaction) {
 		/* first access by this transaction */
 		jh->b_modified = 0;
 
-		JBUFFER_TRACE(jh, "set next transaction");
 		jh->b_next_transaction = transaction;
 	}
 	spin_unlock(&journal->j_list_lock);
@@ -917,7 +882,6 @@ int jbd2_journal_get_create_access(handle_t *handle, struct buffer_head *bh)
 	 * and the reallocating as data - this would cause a second revoke,
 	 * which hits an assertion error.
 	 */
-	JBUFFER_TRACE(jh, "cancelling revoke");
 	jbd2_journal_cancel_revoke(handle, jh);
 out:
 	jbd2_journal_put_journal_head(jh);
@@ -956,8 +920,6 @@ int jbd2_journal_get_undo_access(handle_t *handle, struct buffer_head *bh)
 	struct journal_head *jh = jbd2_journal_add_journal_head(bh);
 	char *committed_data = NULL;
 
-	JBUFFER_TRACE(jh, "entry");
-
 	/*
 	 * Do this first --- it can drop the journal lock, so we want to
 	 * make sure that obtaining the committed_data is done
@@ -982,7 +944,6 @@ repeat:
 	if (!jh->b_committed_data) {
 		/* Copy out the current buffer contents into the
 		 * preserved, committed copy. */
-		JBUFFER_TRACE(jh, "generate b_committed data");
 		if (!committed_data) {
 			jbd_unlock_bh_state(bh);
 			goto repeat;
@@ -1064,8 +1025,6 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 	journal_t *journal = transaction->t_journal;
 	struct journal_head *jh = bh2jh(bh);
 
-	jbd_debug(5, "journal_head %p\n", jh);
-	JBUFFER_TRACE(jh, "entry");
 	if (is_handle_aborted(handle))
 		goto out;
 
@@ -1090,7 +1049,6 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 	 * result in this test being false, so we go in and take the locks.
 	 */
 	if (jh->b_transaction == transaction && jh->b_jlist == BJ_Metadata) {
-		JBUFFER_TRACE(jh, "fastpath");
 		J_ASSERT_JH(jh, jh->b_transaction ==
 					journal->j_running_transaction);
 		goto out_unlock_bh;
@@ -1105,7 +1063,6 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 	 * leave it alone for now.
 	 */
 	if (jh->b_transaction != transaction) {
-		JBUFFER_TRACE(jh, "already on other transaction");
 		J_ASSERT_JH(jh, jh->b_transaction ==
 					journal->j_committing_transaction);
 		J_ASSERT_JH(jh, jh->b_next_transaction == transaction);
@@ -1117,14 +1074,12 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 	/* That test should have eliminated the following case: */
 	J_ASSERT_JH(jh, jh->b_frozen_data == NULL);
 
-	JBUFFER_TRACE(jh, "file as BJ_Metadata");
 	spin_lock(&journal->j_list_lock);
 	__jbd2_journal_file_buffer(jh, handle->h_transaction, BJ_Metadata);
 	spin_unlock(&journal->j_list_lock);
 out_unlock_bh:
 	jbd_unlock_bh_state(bh);
 out:
-	JBUFFER_TRACE(jh, "exit");
 	return 0;
 }
 
@@ -1200,8 +1155,6 @@ int jbd2_journal_forget (handle_t *handle, struct buffer_head *bh)
 		clear_buffer_dirty(bh);
 		clear_buffer_jbddirty(bh);
 
-		JBUFFER_TRACE(jh, "belongs to current transaction: unfile");
-
 		/*
 		 * we only want to drop a reference if this transaction
 		 * modified the buffer
@@ -1237,9 +1190,8 @@ int jbd2_journal_forget (handle_t *handle, struct buffer_head *bh)
 		J_ASSERT_JH(jh, (jh->b_transaction ==
 				 journal->j_committing_transaction));
 		/* However, if the buffer is still owned by a prior
-		 * (committing) transaction, we can't drop it yet... */
-		JBUFFER_TRACE(jh, "belongs to older transaction");
-		/* ... but we CAN drop it from the new transaction if we
+		 * (committing) transaction, we can't drop it yet...
+		 * ... but we CAN drop it from the new transaction if we
 		 * have also modified it since the original commit. */
 
 		if (jh->b_next_transaction) {
@@ -1247,8 +1199,7 @@ int jbd2_journal_forget (handle_t *handle, struct buffer_head *bh)
 			jh->b_next_transaction = NULL;
 
 			/*
-			 * only drop a reference if this transaction modified
-			 * the buffer
+			 * only drop a reference if this transaction modified the buffer
 			 */
 			if (was_modified)
 				drop_reserve = 1;
@@ -1301,12 +1252,8 @@ int jbd2_journal_stop(handle_t *handle)
 	}
 
 	if (--handle->h_ref > 0) {
-		jbd_debug(4, "h_ref %d -> %d\n", handle->h_ref + 1,
-			  handle->h_ref);
 		return err;
 	}
-
-	jbd_debug(4, "Handle %p going down\n", handle);
 
 	/*
 	 * Implement synchronous transaction batching.  If the handle
@@ -1381,8 +1328,6 @@ int jbd2_journal_stop(handle_t *handle)
 		 * completes the commit thread, it just doesn't write
 		 * anything to disk. */
 
-		jbd_debug(2, "transaction too old, requesting commit for "
-					"handle %p\n", handle);
 		/* This is non-blocking */
 		jbd2_log_start_commit(journal, transaction->t_tid);
 
@@ -1598,7 +1543,6 @@ __journal_try_to_free_buffer(journal_t *journal, struct buffer_head *bh)
 	if (jh->b_cp_transaction != NULL && jh->b_transaction == NULL) {
 		/* written-back checkpointed metadata buffer */
 		if (jh->b_jlist == BJ_None) {
-			JBUFFER_TRACE(jh, "remove from checkpoint list");
 			__jbd2_journal_remove_checkpoint(jh);
 		}
 	}
@@ -1672,20 +1616,10 @@ int jbd2_journal_try_to_free_buffers(journal_t *journal,
 		__journal_try_to_free_buffer(journal, bh);
 		jbd2_journal_put_journal_head(jh);
 		jbd_unlock_bh_state(bh);
-#ifndef CONFIG_CMA
+
 		if (buffer_jbd(bh))
 			goto busy;
-#else
-		if (buffer_jbd(bh)) {
-			/*
-			 * Workaround: In case of CMA page, just commit journal.
-			 */
-			if (is_cma_pageblock(page))
-				jbd2_journal_force_commit(journal);
-			else
-				goto busy;
-		}
-#endif
+
 	} while ((bh = bh->b_this_page) != head);
 
 	ret = try_to_free_buffers(page);
@@ -1712,7 +1646,6 @@ static int __dispose_buffer(struct journal_head *jh, transaction_t *transaction)
 	struct buffer_head *bh = jh2bh(jh);
 
 	if (jh->b_cp_transaction) {
-		JBUFFER_TRACE(jh, "on running+cp transaction");
 		__jbd2_journal_temp_unlink_buffer(jh);
 		/*
 		 * We don't want to write the buffer anymore, clear the
@@ -1723,7 +1656,6 @@ static int __dispose_buffer(struct journal_head *jh, transaction_t *transaction)
 		__jbd2_journal_file_buffer(jh, transaction, BJ_Forget);
 		may_free = 0;
 	} else {
-		JBUFFER_TRACE(jh, "on running transaction");
 		__jbd2_journal_unfile_buffer(jh);
 	}
 	return may_free;
@@ -1825,7 +1757,6 @@ static int journal_unmap_buffer(journal_t *journal, struct buffer_head *bh)
 		 * it's a writeback-mode buffer so we don't care
 		 * if it hits disk safely. */
 		if (!jh->b_cp_transaction) {
-			JBUFFER_TRACE(jh, "not on any transaction: zap");
 			goto zap_buffer;
 		}
 
@@ -1839,10 +1770,8 @@ static int journal_unmap_buffer(journal_t *journal, struct buffer_head *bh)
 		 * journaled data... */
 
 		if (journal->j_running_transaction) {
-			/* ... and once the current transaction has
-			 * committed, the buffer won't be needed any
-			 * longer. */
-			JBUFFER_TRACE(jh, "checkpointed: add to BJ_Forget");
+			/* ... and once the current transaction has committed,
+			 * the buffer won't be needed any longer. */
 			ret = __dispose_buffer(jh,
 					journal->j_running_transaction);
 			jbd2_journal_put_journal_head(jh);
@@ -1856,7 +1785,6 @@ static int journal_unmap_buffer(journal_t *journal, struct buffer_head *bh)
 			 * passed into commit.  We must attach this buffer to
 			 * the committing transaction, if it exists. */
 			if (journal->j_committing_transaction) {
-				JBUFFER_TRACE(jh, "give to committing trans");
 				ret = __dispose_buffer(jh,
 					journal->j_committing_transaction);
 				jbd2_journal_put_journal_head(jh);
@@ -1872,7 +1800,6 @@ static int journal_unmap_buffer(journal_t *journal, struct buffer_head *bh)
 			}
 		}
 	} else if (transaction == journal->j_committing_transaction) {
-		JBUFFER_TRACE(jh, "on committing transaction");
 		/*
 		 * The buffer is committing, we simply cannot touch
 		 * it. So we just set j_next_transaction to the
@@ -1896,7 +1823,6 @@ static int journal_unmap_buffer(journal_t *journal, struct buffer_head *bh)
 		 * i_size already for this truncate so recovery will not
 		 * expose the disk blocks we are discarding here.) */
 		J_ASSERT_JH(jh, transaction == journal->j_running_transaction);
-		JBUFFER_TRACE(jh, "on running transaction");
 		may_free = __dispose_buffer(jh, transaction);
 	}
 
@@ -2134,9 +2060,6 @@ int jbd2_journal_file_inode(handle_t *handle, struct jbd2_inode *jinode)
 
 	if (is_handle_aborted(handle))
 		return -EIO;
-
-	jbd_debug(4, "Adding inode %lu, tid:%d\n", jinode->i_vfs_inode->i_ino,
-			transaction->t_tid);
 
 	/*
 	 * First check whether inode isn't already on the transaction's

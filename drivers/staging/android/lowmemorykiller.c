@@ -128,20 +128,14 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	int selected_oom_adj;
 #endif
 	int array_size = ARRAY_SIZE(lowmem_adj);
-#ifndef CONFIG_CMA
 	int other_free = global_page_state(NR_FREE_PAGES);
-#else
-	int other_free = global_page_state(NR_FREE_PAGES) -
-					global_page_state(NR_FREE_CMA_PAGES);
-#endif
 	int other_file = global_page_state(NR_FILE_PAGES) -
 						global_page_state(NR_SHMEM);
 
 	/*
 	 * If we already have a death outstanding, then
 	 * bail out right away; indicating to vmscan
-	 * that we have nothing further to offer on
-	 * this pass.
+	 * that we have nothing further to offer on this pass.
 	 *
 	 */
 #ifdef CONFIG_ENHANCED_LMK_ROUTINE

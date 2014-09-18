@@ -35,7 +35,6 @@
  */
 static void journal_end_buffer_io_sync(struct buffer_head *bh, int uptodate)
 {
-	BUFFER_TRACE(bh, "");
 	if (uptodate)
 		set_buffer_uptodate(bh);
 	else
@@ -130,7 +129,6 @@ static int journal_submit_commit_record(journal_t *journal,
 		tmp->h_chksum[0] 	= cpu_to_be32(crc32_sum);
 	}
 
-	JBUFFER_TRACE(descriptor, "submit commit block");
 	lock_buffer(bh);
 	clear_buffer_dirty(bh);
 	set_buffer_uptodate(bh);
@@ -339,10 +337,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 
 	/* Do we need to erase the effects of a prior jbd2_journal_flush? */
 	if (journal->j_flags & JBD2_FLUSHED) {
-		jbd_debug(3, "super block updated\n");
 		jbd2_journal_update_superblock(journal, 1);
-	} else {
-		jbd_debug(3, "superblock not updated\n");
 	}
 
 	J_ASSERT(journal->j_running_transaction != NULL);
@@ -352,8 +347,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 	J_ASSERT(commit_transaction->t_state == T_RUNNING);
 
 	trace_jbd2_start_commit(journal, commit_transaction);
-	jbd_debug(1, "JBD: starting commit of transaction %d\n",
-			commit_transaction->t_tid);
 
 	write_lock(&journal->j_state_lock);
 	commit_transaction->t_state = T_LOCKED;
@@ -402,7 +395,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 	 */
 	while (commit_transaction->t_reserved_list) {
 		jh = commit_transaction->t_reserved_list;
-		JBUFFER_TRACE(jh, "reserved, unused: refile");
 		/*
 		 * A jbd2_journal_get_undo_access()+jbd2_journal_release_buffer() may
 		 * leave undo-committed data.
@@ -427,8 +419,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 	__jbd2_journal_clean_checkpoint_list(journal);
 	spin_unlock(&journal->j_list_lock);
 
-	jbd_debug (3, "JBD: commit phase 1\n");
-
 	/*
 	 * Switch to a new revoke table.
 	 */
@@ -447,8 +437,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 	wake_up(&journal->j_wait_transaction_locked);
 	write_unlock(&journal->j_state_lock);
 
-	jbd_debug (3, "JBD: commit phase 2\n");
-
 	/*
 	 * Now start flushing things to disk, in the order they appear
 	 * on the transaction lists.  Data blocks go first.
@@ -461,8 +449,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 	jbd2_journal_write_revoke_records(journal, commit_transaction,
 					  WRITE_SYNC);
 	blk_finish_plug(&plug);
-
-	jbd_debug(3, "JBD: commit phase 2\n");
 
 	/*
 	 * Way to go: we have now written out all of the data for a
@@ -499,7 +485,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 
 		if (is_journal_aborted(journal)) {
 			clear_buffer_jbddirty(jh2bh(jh));
-			JBUFFER_TRACE(jh, "journal is aborting: refile");
 			jbd2_buffer_abort_trigger(jh,
 						  jh->b_frozen_data ?
 						  jh->b_frozen_triggers :
@@ -522,8 +507,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 
 			J_ASSERT (bufs == 0);
 
-			jbd_debug(4, "JBD: get descriptor\n");
-
 			descriptor = jbd2_journal_get_descriptor_buffer(journal);
 			if (!descriptor) {
 				jbd2_journal_abort(journal, -EIO);
@@ -531,8 +514,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 			}
 
 			bh = jh2bh(descriptor);
-			jbd_debug(4, "JBD: got buffer %llu (%p)\n",
-				(unsigned long long)bh->b_blocknr, bh->b_data);
 			header = (journal_header_t *)&bh->b_data[0];
 			header->h_magic     = cpu_to_be32(JBD2_MAGIC_NUMBER);
 			header->h_blocktype = cpu_to_be32(JBD2_DESCRIPTOR_BLOCK);
@@ -547,7 +528,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 
 			/* Record it so that we can wait for IO
                            completion later */
-			BUFFER_TRACE(bh, "ph3: file as descriptor");
 			jbd2_journal_file_buffer(descriptor, commit_transaction,
 					BJ_LogCtl);
 		}
@@ -586,7 +566,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 		 * We need to clean this up before we release new_bh
 		 * (which is of type BJ_IO)
 		 */
-		JBUFFER_TRACE(jh, "ph3: write metadata");
 		flags = jbd2_journal_write_metadata_buffer(commit_transaction,
 						      jh, &new_jh, blocknr);
 		if (flags < 0) {
@@ -624,8 +603,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 		if (bufs == journal->j_wbufsize ||
 		    commit_transaction->t_buffers == NULL ||
 		    space_left < tag_bytes + 16) {
-
-			jbd_debug(4, "JBD: Submit %d IOs\n", bufs);
 
 			/* Write an end-of-descriptor marker before
                            submitting the IOs.  "tag" still points to
@@ -707,8 +684,6 @@ start_journal_io:
 	   so we incur less scheduling load.
 	*/
 
-	jbd_debug(3, "JBD: commit phase 3\n");
-
 	/*
 	 * akpm: these are BJ_IO, and j_list_lock is not needed.
 	 * See __journal_try_to_free_buffer.
@@ -731,14 +706,12 @@ wait_for_iobuf:
 
 		clear_buffer_jwrite(bh);
 
-		JBUFFER_TRACE(jh, "ph4: unfile after journal write");
 		jbd2_journal_unfile_buffer(journal, jh);
 
 		/*
 		 * ->t_iobuf_list should contain only dummy buffer_heads
 		 * which were created by jbd2_journal_write_metadata_buffer().
 		 */
-		BUFFER_TRACE(bh, "dumping temporary bh");
 		jbd2_journal_put_journal_head(jh);
 		__brelse(bh);
 		J_ASSERT_BH(bh, atomic_read(&bh->b_count) == 0);
@@ -755,7 +728,6 @@ wait_for_iobuf:
                    to remember it against this transaction so that when
                    we finally commit, we can do any checkpointing
                    required. */
-		JBUFFER_TRACE(jh, "file as BJ_Forget");
 		jbd2_journal_file_buffer(jh, commit_transaction, BJ_Forget);
 		/*
 		 * Wake up any transactions which were waiting for this IO to
@@ -765,13 +737,10 @@ wait_for_iobuf:
 		 */
 		smp_mb();
 		wake_up_bit(&bh->b_state, BH_Unshadow);
-		JBUFFER_TRACE(jh, "brelse shadowed buffer");
 		__brelse(bh);
 	}
 
 	J_ASSERT (commit_transaction->t_shadow_list == NULL);
-
-	jbd_debug(3, "JBD: commit phase 4\n");
 
 	/* Here we wait for the revoke record and descriptor record buffers */
  wait_for_ctlbuf:
@@ -790,7 +759,6 @@ wait_for_iobuf:
 		if (unlikely(!buffer_uptodate(bh)))
 			err = -EIO;
 
-		BUFFER_TRACE(bh, "ph5: control buffer writeout done: unfile");
 		clear_buffer_jwrite(bh);
 		jbd2_journal_unfile_buffer(journal, jh);
 		jbd2_journal_put_journal_head(jh);
@@ -801,7 +769,6 @@ wait_for_iobuf:
 	if (err)
 		jbd2_journal_abort(journal, err);
 
-	jbd_debug(3, "JBD: commit phase 5\n");
 	write_lock(&journal->j_state_lock);
 	J_ASSERT(commit_transaction->t_state == T_COMMIT_DFLUSH);
 	commit_transaction->t_state = T_COMMIT_JFLUSH;
@@ -829,8 +796,6 @@ wait_for_iobuf:
            processing: any buffers committed as a result of this
            transaction can be removed from any checkpoint list it was on
            before. */
-
-	jbd_debug(3, "JBD: commit phase 6\n");
 
 	J_ASSERT(list_empty(&commit_transaction->t_inode_list));
 	J_ASSERT(commit_transaction->t_buffers == NULL);
@@ -891,7 +856,6 @@ restart_loop:
 		spin_lock(&journal->j_list_lock);
 		cp_transaction = jh->b_cp_transaction;
 		if (cp_transaction) {
-			JBUFFER_TRACE(jh, "remove from old cp transaction");
 			cp_transaction->t_chp_stats.cs_dropped++;
 			__jbd2_journal_remove_checkpoint(jh);
 		}
@@ -916,7 +880,6 @@ restart_loop:
 		}
 
 		if (buffer_jbddirty(bh)) {
-			JBUFFER_TRACE(jh, "add to new checkpointing trans");
 			__jbd2_journal_insert_checkpoint(jh, commit_transaction);
 			if (is_journal_aborted(journal))
 				clear_buffer_jbddirty(bh);
@@ -934,7 +897,6 @@ restart_loop:
 			if (!jh->b_next_transaction)
 				try_to_free = 1;
 		}
-		JBUFFER_TRACE(jh, "refile or unfile buffer");
 		__jbd2_journal_refile_buffer(jh);
 		jbd_unlock_bh_state(bh);
 		if (try_to_free)
@@ -963,8 +925,6 @@ restart_loop:
 	}
 
 	/* Done with this transaction! */
-
-	jbd_debug(3, "JBD: commit phase 7\n");
 
 	J_ASSERT(commit_transaction->t_state == T_COMMIT_JFLUSH);
 
@@ -1039,8 +999,6 @@ restart_loop:
 		journal->j_commit_callback(journal, commit_transaction);
 
 	trace_jbd2_end_commit(journal, commit_transaction);
-	jbd_debug(1, "JBD: commit %d complete, head %d\n",
-		  journal->j_commit_sequence, journal->j_tail_sequence);
 	if (to_free)
 		kfree(commit_transaction);
 

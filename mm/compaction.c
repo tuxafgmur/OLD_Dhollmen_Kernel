@@ -16,7 +16,7 @@
 #include <linux/sysfs.h>
 #include "internal.h"
 
-#if defined CONFIG_COMPACTION || defined CONFIG_CMA
+#if defined CONFIG_COMPACTION
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/compaction.h>
@@ -334,7 +334,7 @@ isolate_migratepages_range(struct zone *zone, struct compact_control *cc,
         return low_pfn;
 }
 
-#endif /* CONFIG_COMPACTION || CONFIG_CMA */
+#endif /* CONFIG_COMPACTION */
 #ifdef CONFIG_COMPACTION
 
 /* Returns true if the page is within a block suitable for migration to */
