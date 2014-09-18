@@ -63,15 +63,6 @@ static struct page *__dma_alloc_buffer(struct device *dev, size_t size, gfp_t gf
 	void *ptr;
 	u64 mask = get_coherent_dma_mask(dev);
 
-#ifdef CONFIG_DMA_API_DEBUG
-	u64 limit = (mask + 1) & ~mask;
-	if (limit && size >= limit) {
-		dev_warn(dev, "coherent allocation too big (requested %#x mask %#llx)\n",
-			size, mask);
-		return NULL;
-	}
-#endif
-
 	if (!mask)
 		return NULL;
 

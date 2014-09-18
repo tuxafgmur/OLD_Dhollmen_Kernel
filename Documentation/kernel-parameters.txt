@@ -22,7 +22,6 @@ Hyphens (dashes) and underscores are equivalent in parameter names, so
 can also be entered as
 	log-buf-len=1M print_fatal_signals=1
 
-
 This document may not be entirely up to date and comprehensive. The command
 "modinfo -p ${modulename}" shows a current list of all parameters of a loadable
 module. Loadable modules, after being loaded into the running kernel, also
@@ -659,8 +658,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
 			Disable PIN 1 of APIC timer
 			Can be useful to work around chipset bugs.
 
-	dma_debug=off	If the kernel is compiled with DMA_API_DEBUG support,
-			this option disables the debugging code at boot.
+	dma_debug=off	This option disables the debugging code at boot.
 
 	dma_debug_entries=<number>
 			This option allows to tune the number of preallocated
@@ -797,7 +795,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
 			tracer at boot up. function-list is a comma separated
 			list of functions. This list can be changed at run
 			time by the set_ftrace_filter file in the debugfs
-			tracing directory. 
+			tracing directory.
 
 	ftrace_notrace=[function-list]
 			[FTRACE] Do not trace the functions specified in
@@ -1212,10 +1210,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
 			libata.dma=0	  Disable all PATA and SATA DMA
 			libata.dma=1	  PATA and SATA Disk DMA only
 			libata.dma=2	  ATAPI (CDROM) DMA only
-			libata.dma=4	  Compact Flash DMA only 
+			libata.dma=4	  Compact Flash DMA only
 			Combinations also work, so libata.dma=3 enables DMA
 			for disks and CDROMs, but not CFs.
-	
+
 	libata.ignore_hpa=	[LIBATA] Ignore HPA limit
 			libata.ignore_hpa=0	  keep BIOS limits (default)
 			libata.ignore_hpa=1	  ignore limits, using full disk
@@ -2086,7 +2084,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
 			Format: { parport<nr> | timid | 0 }
 			See also Documentation/parport.txt.
 
-	pmtmr=		[X86] Manual setup of pmtmr I/O Port. 
+	pmtmr=		[X86] Manual setup of pmtmr I/O Port.
 			Override pmtimer IOPort with a hex value.
 			e.g. pmtmr=0x508
 
