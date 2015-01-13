@@ -11,7 +11,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #include <linux/err.h>
@@ -26,9 +25,6 @@
 #include "../../pvr/ion.h"
 #endif
 
-#define ALLOC_FROM_CARVOUT	0
-#define ALLOC_FROM_CMA		1
-
 struct ion_device *omap_ion_device;
 EXPORT_SYMBOL(omap_ion_device);
 
@@ -36,14 +32,6 @@ int num_heaps;
 struct ion_heap **heaps;
 struct ion_heap *tiler_heap;
 static struct ion_heap *nonsecure_tiler_heap;
-
-#ifdef CONFIG_ION_CMA
-int omap_ion_preprocess_tiler_alloc(bool enable)
-{
-	return omap_tiler_prealloc(tiler_heap, enable);
-}
-EXPORT_SYMBOL(omap_ion_preprocess_tiler_alloc);
-#endif
 
 int omap_ion_tiler_alloc(struct ion_client *client,
 			 struct omap_ion_tiler_alloc_data *data)
@@ -128,17 +116,14 @@ int omap_ion_probe(struct platform_device *pdev)
 		struct ion_platform_heap *heap_data = &pdata->heaps[i];
 
 		if (heap_data->type == OMAP_ION_HEAP_TYPE_TILER) {
-			heaps[i] = omap_tiler_heap_create(heap_data,
-					&pdev->dev);
-
+			heaps[i] = omap_tiler_heap_create(heap_data);
 			if (heap_data->id == OMAP_ION_HEAP_NONSECURE_TILER)
 				nonsecure_tiler_heap = heaps[i];
 			else
 				tiler_heap = heaps[i];
 		} else if (heap_data->type ==
 				OMAP_ION_HEAP_TYPE_TILER_RESERVATION) {
-			heaps[i] = omap_tiler_heap_create(heap_data,
-					&pdev->dev);
+			heaps[i] = omap_tiler_heap_create(heap_data);
 		} else {
 			heaps[i] = ion_heap_create(heap_data);
 		}
@@ -147,10 +132,6 @@ int omap_ion_probe(struct platform_device *pdev)
 			goto err;
 		}
 		ion_device_add_heap(omap_ion_device, heaps[i]);
-		pr_info("%s: adding heap %s of type %d with %lx@%x\n",
-			__func__, heap_data->name, heap_data->type,
-			heap_data->base, heap_data->size);
-
 	}
 
 	platform_set_drvdata(pdev, omap_ion_device);
@@ -207,7 +188,7 @@ int omap_ion_share_fd_to_buffers(int fd, struct ion_buffer **buffers,
 
 #ifdef CONFIG_PVR_SGX
 	if (*num_handles == 2) {
-		PVRSRVExportFDToIONHandles(fd, &client, handles);
+		PVRSRVExportFDToIONHandles(fd, &client, handles, num_handles);
 	} else if (*num_handles == 1) {
 		handles[0] = PVRSRVExportFDToIONHandle(fd, &client);
 	} else {
@@ -221,9 +202,7 @@ int omap_ion_share_fd_to_buffers(int fd, struct ion_buffer **buffers,
 				handles,
 				num_handles);
 	} else {
-		pr_err("%s: export_fd_to_ion_handles"
-				"not initiazied",
-				__func__);
+		pr_err("%s: export_fd_to_ion_handles not initiazied", __func__);
 		ret = -EINVAL;
 		goto exit;
 	}

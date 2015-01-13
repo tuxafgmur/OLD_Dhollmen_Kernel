@@ -583,10 +583,6 @@ struct device {
 
 	struct dma_coherent_mem	*dma_mem; /* internal for coherent mem
 					     override */
-#ifdef CONFIG_ION_CMA
-	bool preferred_align;
-	unsigned int cma_align;
-#endif
 	/* arch specific additions */
 	struct dev_archdata	archdata;
 

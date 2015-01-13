@@ -11,7 +11,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #ifndef _LINUX_OMAP_ION_H
@@ -26,8 +25,7 @@
  * @fmt:	format of the data (8, 16, 32bit or page)
  * @flags:	flags passed to heap
  * @stride:	stride of the allocation, returned to caller from kernel
- * @handle:	pointer that will be populated with a cookie to use to refer
- *		to this allocation
+ * @handle:	pointer that will be populated with a cookie to use to refer to this allocation
  *
  * Provided by userspace as an argument to the ioctl
  */
@@ -50,18 +48,17 @@ struct omap_ion_phys_addr_data {
 
 #ifdef __KERNEL__
 int omap_ion_tiler_alloc(struct ion_client *client,
-			 struct omap_ion_tiler_alloc_data *data);
+			struct omap_ion_tiler_alloc_data *data);
 int omap_ion_nonsecure_tiler_alloc(struct ion_client *client,
-			 struct omap_ion_tiler_alloc_data *data);
+			struct omap_ion_tiler_alloc_data *data);
 /* given a handle in the tiler, return a list of tiler pages that back it */
 int omap_tiler_pages(struct ion_client *client, struct ion_handle *handle,
-		     int *n, u32 ** tiler_pages);
+			int *n, u32 ** tiler_pages);
 int omap_ion_share_fd_to_buffers(int fd, struct ion_buffer **buffers,
-				 int *num_handles);
+			int *num_handles);
 int omap_tiler_vinfo(struct ion_client *client,
 			struct ion_handle *handle, unsigned int *vstride,
 			unsigned int *vsize);
-int omap_ion_preprocess_tiler_alloc(bool enable);
 #endif /* __KERNEL__ */
 
 /* additional heaps used only on omap */
@@ -99,7 +96,6 @@ enum {
 	OMAP_ION_HEAP_NONSECURE_TILER,
 	OMAP_ION_HEAP_TILER_RESERVATION,
 	OMAP_ION_HEAP_SECURE_OUTPUT_WFDHDCP,
-	OMAP_ION_HEAP_TILER_CMA,
 };
 
 #endif /* _LINUX_ION_H */

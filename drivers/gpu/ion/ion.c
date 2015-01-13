@@ -189,37 +189,6 @@ static bool ion_handle_validate(struct ion_client *client, struct ion_handle *ha
 	return false;
 }
 
-/* commenting this function because we r not using it currently*/
-#if 0
-static bool ion_handle_validate_frm_dev(struct ion_device *dev,
-					struct ion_handle *handle)
-{
-	struct rb_node **p;
-	struct rb_node *parent = NULL;
-	struct ion_client *client;
-	struct rb_node *n;
-
-	p = &dev->user_clients.rb_node;
-	while (*p) {
-		parent = *p;
-		client = rb_entry(parent, struct ion_client, node);
-
-		n = client->handles.rb_node;
-		while (n) {
-			struct ion_handle *handle_node =
-					rb_entry(n, struct ion_handle, node);
-			if (handle < handle_node)
-				n = n->rb_left;
-			else if (handle > handle_node)
-				n = n->rb_right;
-			else
-				return true;
-		}
-	}
-	return false;
-}
-#endif
-
 static void ion_handle_add(struct ion_client *client, struct ion_handle *handle)
 {
 	struct rb_node **p = &client->handles.rb_node;
@@ -234,8 +203,6 @@ static void ion_handle_add(struct ion_client *client, struct ion_handle *handle)
 			p = &(*p)->rb_left;
 		else if (handle > entry)
 			p = &(*p)->rb_right;
-		else
-			WARN(1, "%s: buffer already found.", __func__);
 	}
 
 	rb_link_node(&handle->node, parent, p);

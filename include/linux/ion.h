@@ -11,7 +11,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
 #ifndef _LINUX_ION_H
@@ -25,17 +24,16 @@ struct ion_handle;
  * @ION_HEAP_TYPE_SYSTEM:	 memory allocated via vmalloc
  * @ION_HEAP_TYPE_SYSTEM_CONTIG: memory allocated via kmalloc
  * @ION_HEAP_TYPE_CARVEOUT:	 memory allocated from a prereserved
- * 				 carveout heap, allocations are physically
- * 				 contiguous
+ * 				 carveout heap, allocations are physically contiguous
  * @ION_HEAP_END:		 helper for iterating over heaps
  */
 enum ion_heap_type {
 	ION_HEAP_TYPE_SYSTEM,
 	ION_HEAP_TYPE_SYSTEM_CONTIG,
 	ION_HEAP_TYPE_CARVEOUT,
-	ION_HEAP_TYPE_CUSTOM, /* must be last so device specific heaps always
-				 are at the end of this enum */
-	ION_NUM_HEAPS = 16,
+	ION_HEAP_TYPE_CUSTOM, 	/* must be last so device specific heaps always
+				   are at the end of this enum */
+	ION_NUM_HEAPS,
 };
 
 #define ION_HEAP_SYSTEM_MASK		(1 << ION_HEAP_TYPE_SYSTEM)
@@ -83,7 +81,7 @@ struct ion_platform_heap {
  */
 struct ion_platform_data {
 	int nr;
-	struct ion_platform_heap *heaps;
+	struct ion_platform_heap heaps[];
 };
 
 /**
@@ -117,7 +115,7 @@ void ion_client_destroy(struct ion_client *client);
  * an opaque handle to it.
  */
 struct ion_handle *ion_alloc(struct ion_client *client, size_t len,
-			     size_t align, unsigned int flags);
+			size_t align, unsigned int flags);
 
 /**
  * ion_free - free a handle
@@ -145,7 +143,7 @@ void ion_free(struct ion_client *client, struct ion_handle *handle);
  * holding a reference.
  */
 int ion_phys(struct ion_client *client, struct ion_handle *handle,
-	     ion_phys_addr_t *addr, size_t *len);
+			ion_phys_addr_t *addr, size_t *len);
 
 /**
  * ion_phys_frm_dev - returns the physical address and len of a handle
@@ -214,8 +212,7 @@ void ion_unmap_dma(struct ion_client *client, struct ion_handle *handle);
  * another client.  That is, ion_free should not be called on this handle until
  * the buffer has been imported into the other client.
  */
-struct ion_buffer *ion_share(struct ion_client *client,
-			     struct ion_handle *handle);
+struct ion_buffer *ion_share(struct ion_client *client, struct ion_handle *handle);
 
 /**
  * ion_import() - given an buffer in another client, import it
@@ -226,8 +223,7 @@ struct ion_buffer *ion_share(struct ion_client *client,
  * to it further.  This is called to share a handle from one kernel client to
  * another.
  */
-struct ion_handle *ion_import(struct ion_client *client,
-			      struct ion_buffer *buffer);
+struct ion_handle *ion_import(struct ion_client *client, struct ion_buffer *buffer);
 
 /**
  * ion_import_fd() - given an fd obtained via ION_IOC_SHARE ioctl, import it
@@ -241,6 +237,7 @@ struct ion_handle *ion_import(struct ion_client *client,
  * the handle to use to refer to it further.
  */
 struct ion_handle *ion_import_fd(struct ion_client *client, int fd);
+
 #endif /* __KERNEL__ */
 
 /**
@@ -248,25 +245,23 @@ struct ion_handle *ion_import_fd(struct ion_client *client, int fd);
  *
  * create a client by opening /dev/ion
  * most operations handled via following ioctls
- *
  */
 
 /**
- * struct ion_allocation_data - metadata passed from userspace for allocations
- * @len:	size of the allocation
- * @align:	required alignment of the allocation
- * @flags:	flags passed to heap
- * @handle:	pointer that will be populated with a cookie to use to refer
- *		to this allocation
+ * struct ion_map_data - metadata passed to/from userspace for mapping handle
+ * @handle:	a handle
+ * @map_cacheable: if the handle should be mapped cachable
+ * @fd: a file descriptor representing that handle
  *
- * Provided by userspace as an argument to the ioctl
+ * For ION_IOC_MAP_CACHEABLE, userspace populates the handle field with
+ * the handle returned from ion alloc and passes the caching attribute.
+ * The kernel returns the file descriptor to share or map in the fd field
  */
-struct ion_allocation_data {
-	size_t len;
-	size_t align;
-        unsigned int heap_mask;
-	unsigned int flags;
+struct ion_map_data {
 	struct ion_handle *handle;
+	unsigned char map_cacheable;
+	int fd;
+	unsigned char cacheable;
 };
 
 /**
@@ -284,6 +279,23 @@ struct ion_fd_data {
 	struct ion_handle *handle;
 	int fd;
 	unsigned char cacheable;
+};
+
+/**
+ * struct ion_allocation_data - metadata passed from userspace for allocations
+ * @len:	size of the allocation
+ * @align:	required alignment of the allocation
+ * @flags:	flags passed to heap
+ * @handle:	pointer that will be populated with a cookie to use to refer
+ *		to this allocation
+ *
+ * Provided by userspace as an argument to the ioctl
+ */
+struct ion_allocation_data {
+	size_t len;
+	size_t align;
+	unsigned int flags;
+	struct ion_handle *handle;
 };
 
 /**
@@ -305,22 +317,6 @@ struct ion_handle_data {
 struct ion_custom_data {
 	unsigned int cmd;
 	unsigned long arg;
-};
-
-/**
- * struct ion_map_data - metadata passed to/from userspace for mapping handle
- * @handle:	a handle
- * @map_cacheable: if the handle should be mapped cachable
- * @fd: a file descriptor representing that handle
- *
- * For ION_IOC_MAP_CACHEABLE, userspace populates the handle field with
- * the handle returned from ion alloc and passes the caching attribute.
- * The kernel returns the file descriptor to share or map in the fd field
- */
-struct ion_map_data {
-	struct ion_handle *handle;
-	unsigned char map_cacheable;
-	int fd;
 };
 
 /**
@@ -357,8 +353,7 @@ struct ion_map_gralloc_to_ionhandle_data {
  * Takes an ion_allocation_data struct and returns it with the handle field
  * populated with the opaque handle for the allocation.
  */
-#define ION_IOC_ALLOC		_IOWR(ION_IOC_MAGIC, 0, \
-				      struct ion_allocation_data)
+#define ION_IOC_ALLOC		_IOWR(ION_IOC_MAGIC, 0, struct ion_allocation_data)
 
 /**
  * DOC: ION_IOC_FREE - free memory
@@ -395,7 +390,7 @@ struct ion_map_gralloc_to_ionhandle_data {
  * descriptor obtained from ION_IOC_SHARE and returns the struct with the handle
  * filed set to the corresponding opaque handle.
  */
-#define ION_IOC_IMPORT		_IOWR(ION_IOC_MAGIC, 5, struct ion_fd_data)
+#define ION_IOC_IMPORT		_IOWR(ION_IOC_MAGIC, 5, int)
 
 /**
  * DOC: ION_IOC_CUSTOM - call architecture specific ion ioctl
@@ -403,12 +398,9 @@ struct ion_map_gralloc_to_ionhandle_data {
  * Takes the argument of the architecture specific ioctl to call and
  * passes appropriate userdata for that ioctl
  */
-#define ION_IOC_CUSTOM		_IOWR(ION_IOC_MAGIC, 6, struct ion_custom_data)
-
-#define ION_IOC_SYNC 			_IOWR(ION_IOC_MAGIC, 7, struct ion_fd_data)
-#define ION_IOC_MAP_CACHEABLE		_IOWR(ION_IOC_MAGIC, 8, struct ion_fd_data)
-#define ION_IOC_FLUSH_CACHED		_IOWR(ION_IOC_MAGIC, 9, struct ion_cached_user_buf_data)
-#define ION_IOC_INVAL_CACHED		_IOWR(ION_IOC_MAGIC, 10, struct ion_cached_user_buf_data)
-#define ION_IOC_MAP_GRALLOC	        _IOWR(ION_IOC_MAGIC, 11, \
-				struct ion_map_gralloc_to_ionhandle_data)
+#define ION_IOC_CUSTOM		_IOWR(ION_IOC_MAGIC, 6,  struct ion_custom_data)
+#define ION_IOC_MAP_CACHEABLE	_IOWR(ION_IOC_MAGIC, 7,  struct ion_fd_data)
+#define ION_IOC_FLUSH_CACHED	_IOWR(ION_IOC_MAGIC, 8,  struct ion_cached_user_buf_data)
+#define ION_IOC_INVAL_CACHED	_IOWR(ION_IOC_MAGIC, 9,  struct ion_cached_user_buf_data)
+#define ION_IOC_MAP_GRALLOC	_IOWR(ION_IOC_MAGIC, 10, struct ion_map_gralloc_to_ionhandle_data)
 #endif /* _LINUX_ION_H */
