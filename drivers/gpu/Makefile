@@ -1,1 +1,1 @@
-obj-y			+= ion/
+obj-y			+= ion/ pvr/
