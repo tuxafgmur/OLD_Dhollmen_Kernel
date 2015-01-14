@@ -1,10 +1,9 @@
 Dhollmen Kernel
 
 Copyright by their respective authors.
+Code not attributable to another one is from my own authorship.
 
 Credits to Kernel-Team, Samsung, Google, CyanogenMod and everyone who has contributed.
-
-Only code not attributable to another is my own authorship.
 
 *** HOW TO COMPILE ***
 
@@ -14,9 +13,9 @@ export KERNELDIR=$DIRE/Dhollmen_Kernel
 export ARCH=arm
 
 # Select toolchain you like to use
-export CROSS_DIR=/opt/toolchains/Linaro-arm-eabi-4.7/bin
+export CROSS_DIR=/opt/toolchains/Linaro-arm-eabi-4.8/bin
 # or
-export CROSS_DIR=/opt/toolchains/Google-arm-eabi-4.7/bin
+export CROSS_DIR=/opt/toolchains/Google-arm-eabi-4.8/bin
 
 export CROSS_COMPILE=$CROSS_DIR/arm-eabi-
 export ARM_CROSS_COMPILE=$CROSS_COMPILE
@@ -39,23 +38,14 @@ cp ./arch/arm/configs/dhollmen_P51XX_defconfig .config
 cp ./arch/arm/configs/dhollmen_P31XX_defconfig .config
 
 # Compile
-make ARCH=arm -j<n>      ##  n = CPU cores + 1
+make ARCH=arm -j<n>      ##  <n> --> CPU cores + 1
 
-# Copy kernel image and modules
-rm -fr $DIRE/Modules/*
+# Copy kernel image
 cp ./arch/arm/boot/zImage $DIRE/Zimage/
-find . -type f -name *.ko -exec cp {} $DIRE/Modules/ \;
-
-rm -rf $DIRE/eurasia_km
-cp -a  ./pvrsgx $DIRE/eurasia_km
-
-cd   $DIRE/eurasia_km/eurasiacon/build/linux2/omap4430_android/
-make TARGET_PRODUCT="blaze_tablet" BUILD=release TARGET_SGX=540 PLATFORM_VERSION=4.4
 
 # Copy and strip modules
-cp  ../../../binary2_540_120_omap4430_android_release/target/pvrsrvkm_sgx540_120.ko \
-    $DIRE/Modules
-
+rm -f $DIRE/Modules/*
+find . -type f -name *.ko -exec cp {} $DIRE/Modules/ \;
 $"$CROSS_COMPILE"strip --strip-unneeded $DIRE/Modules/*.ko
 
 cd $DIRE
