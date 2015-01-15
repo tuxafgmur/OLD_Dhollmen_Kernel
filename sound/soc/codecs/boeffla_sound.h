@@ -1,9 +1,9 @@
 /*
- * Author: andip71, 10.02.2014
- *
+ * Author: andip71, 22.09.2014
+ * 
  * Modifications: Yank555.lu 20.08.2013
  *
- * Version 1.6.6
+ * Version 1.6.7
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -13,7 +13,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
  */
+
 
 /*****************************************/
 // External function declarations
@@ -22,13 +24,14 @@
 void Boeffla_sound_hook_wm8994_pcm_probe(struct snd_soc_codec *codec_pointer);
 unsigned int Boeffla_sound_hook_wm8994_write(unsigned int reg, unsigned int value);
 
+
 /*****************************************/
 // Definitions
 /*****************************************/
 
 // Boeffla sound general
 #define BOEFFLA_SOUND_DEFAULT 	0
-#define BOEFFLA_SOUND_VERSION 	"1.6.6"
+#define BOEFFLA_SOUND_VERSION 	"1.6.7"
 
 // Debug mode
 #define DEBUG_DEFAULT 		1
@@ -125,9 +128,9 @@ unsigned int Boeffla_sound_hook_wm8994_write(unsigned int reg, unsigned int valu
 
 // Stereo expansion
 #define STEREO_EXPANSION_GAIN_DEFAULT	0
-#define STEREO_EXPANSION_GAIN_OFF	0
-#define STEREO_EXPANSION_GAIN_MIN	0
-#define STEREO_EXPANSION_GAIN_MAX	31
+#define STEREO_EXPANSION_GAIN_OFF		0
+#define STEREO_EXPANSION_GAIN_MIN		0
+#define STEREO_EXPANSION_GAIN_MAX		31
 
 // headphone levels
 #define HEADPHONE_DEFAULT 	57

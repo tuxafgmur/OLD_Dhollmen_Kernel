@@ -1,12 +1,12 @@
 /*
- * Author: andip71, 10.02.2014
- *
+ * Author: andip71, 22.09.2014
+ * 
  * Modifications: Yank555.lu 20.08.2013
  *
- * Version 1.6.6
+ * Version 1.6.7
  *
  * credits: Supercurio for ideas and partially code from his Voodoo
- * 	    		sound implementation,
+ * 	    	sound implementation,
  *          Yank555 for great support on problem analysis and new ideas,
  *          Gokhanmoral for further modifications to the original code
  * 			AndreiLux for his modified detection routines
@@ -19,13 +19,19 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
  */
+       
 
 /*
  * Change log:
+ * 
+ * 1.6.7 (22.09.2014)
+ *   - Improved sysfs input validation
  *
  * 1.6.5 (14.01.2014)
  *   - Allow speaker level minimum of 20
+ * 
  */
 
 #include <sound/soc.h>
@@ -64,41 +70,42 @@ static int debug_level;			// debug level for logging into kernel log
 
 static int headphone_l, headphone_r;	// headphone volume left/right
 
-static int speaker_l, speaker_r;	// speaker volume left/right
+static int speaker_l, speaker_r;		// speaker volume left/right
 
-static int speaker_tuning;  		// activates speaker eq
+static int speaker_tuning;  	// activates speaker eq
 
-static int eq;   			// activates headphone eq
+static int eq;   				// activates headphone eq
 
 static int eq_gains[5];			// gain information for headphone eq (speaker is static)
 
 static unsigned int eq_bands[5][4];	// frequency setup for headphone eq (speaker is static)
 
 static int dac_direct;			// activate dac_direct for headphone eq
-static int dac_oversampling;		// activate 128bit oversampling for headphone eq
+static int dac_oversampling;	// activate 128bit oversampling for headphone eq
 static int fll_tuning;			// activate fll tuning to avoid jitter
 static int stereo_expansion_gain;	// activate stereo expansion effect if greater than zero
 static int mono_downmix;		// activate mono downmix
 static int privacy_mode;		// activate privacy mode
 
-static int mic_level_general;		// microphone sensivity for general recording purposes
+static int mic_level_general;	// microphone sensivity for general recording purposes
 static int mic_level_call;		// microphone sensivity for call only
 
-static unsigned int debug_register;	// current register to show in debug register interface
+static unsigned int debug_register;		// current register to show in debug register interface
 
 // internal state variables
 static bool is_call;			// is currently a call active?
 static bool is_headphone;		// is headphone connected?
 static bool is_fmradio;			// is stock fm radio app active?
-static bool is_eq;			// is an equalizer (headphone or speaker tuning) active?
-static bool is_eq_headphone;		// is equalizer for headphone or speaker currently?
-static bool is_mic_controlled;		// is microphone sensivity controlled by boeffla-sound or not?
-static bool is_mono_downmix;		// is mono downmix active?
+static bool is_eq;				// is an equalizer (headphone or speaker tuning) active?
+static bool is_eq_headphone;	// is equalizer for headphone or speaker currently?
+static bool is_mic_controlled;	// is microphone sensivity controlled by boeffla-sound or not?
+static bool is_mono_downmix;	// is mono downmix active?
 
 static int regdump_bank;		// current bank configured for register dump
 static unsigned int regcache[REGDUMP_BANKS * REGDUMP_REGISTERS + 1];	// register cache to highlight changes in dump
 
 static int mic_level;			// internal mic level
+
 
 /*****************************************/
 // Internal function declarations
@@ -142,6 +149,7 @@ static unsigned int get_mic_level(int reg_index, unsigned int val);
 
 static void reset_boeffla_sound(void);
 
+
 /*****************************************/
 // Boeffla sound hook functions for
 // original wm8994 alsa driver
@@ -169,6 +177,7 @@ void Boeffla_sound_hook_wm8994_pcm_probe(struct snd_soc_codec *codec_pointer)
 		printk("Boeffla-sound: boeffla sound enabled during startup\n");
 	}
 }
+
 
 unsigned int Boeffla_sound_hook_wm8994_write(unsigned int reg, unsigned int val)
 {
@@ -225,6 +234,8 @@ unsigned int Boeffla_sound_hook_wm8994_write(unsigned int reg, unsigned int val)
 			break;
 		}
 
+// Do not touch dac direct at all when P4NOTE
+#ifndef CONFIG_MACH_P4NOTE
 		// dac_direct left channel
 		case WM8994_OUTPUT_MIXER_1:
 		{
@@ -238,6 +249,7 @@ unsigned int Boeffla_sound_hook_wm8994_write(unsigned int reg, unsigned int val)
 			newval = get_dac_direct_r(val);
 			break;
 		}
+#endif
 
 		// mono downmix
 		case WM8994_AIF1_DAC1_FILTERS_1:
@@ -347,6 +359,7 @@ unsigned int Boeffla_sound_hook_wm8994_write(unsigned int reg, unsigned int val)
 	return newval;
 }
 
+
 /*****************************************/
 // Internal functions copied over from
 // original wm8994 alsa driver,
@@ -394,6 +407,7 @@ static int wm8994_readable(struct snd_soc_codec *codec, unsigned int reg)
 	return wm8994_access_masks[reg].readable != 0;
 }
 
+
 static int wm8994_volatile(struct snd_soc_codec *codec, unsigned int reg)
 {
 	if (reg >= WM8994_CACHE_SIZE)
@@ -416,6 +430,7 @@ static int wm8994_volatile(struct snd_soc_codec *codec, unsigned int reg)
 	}
 }
 
+
 static int wm8994_write(struct snd_soc_codec *codec, unsigned int reg,
 	unsigned int value)
 {
@@ -436,6 +451,7 @@ static int wm8994_write(struct snd_soc_codec *codec, unsigned int reg,
 
 	return wm8994_reg_write(codec->control_data, reg, value);
 }
+
 
 static unsigned int wm8994_read(struct snd_soc_codec *codec,
 				unsigned int reg)
@@ -470,6 +486,7 @@ static unsigned int wm8994_read(struct snd_soc_codec *codec,
 	return val;
 }
 
+
 /*****************************************/
 // Internal helper functions
 /*****************************************/
@@ -479,7 +496,7 @@ bool check_for_dapm(enum snd_soc_dapm_type dapm_type, char* widget_name)
 	struct snd_soc_dapm_widget *w;
 
 	/* Iterate widget list and find power mode of given widget per its name */
-	list_for_each_entry(w, &codec->card->widgets, list)
+	list_for_each_entry(w, &codec->card->widgets, list) 
 	{
 		if (w->dapm != &codec->dapm)
 			continue;
@@ -492,6 +509,7 @@ bool check_for_dapm(enum snd_soc_dapm_type dapm_type, char* widget_name)
 	return false;
 }
 
+
 bool check_for_fmradio(void)
 {
 // if no fm radio built in, always set to false
@@ -502,14 +520,17 @@ bool check_for_fmradio(void)
 #endif
 }
 
+
 bool check_for_call(void)
 {
 	return check_for_dapm(snd_soc_dapm_spk, "RCV");
 }
 
+
 bool check_for_headphone(void)
 {
-	// headphone detection
+// different headphone detection for s3 devices and note devices
+#ifndef CONFIG_MACH_P4NOTE
 	if( wm8994->micdet[0].jack != NULL )
 	{
 		if ((wm8994->micdet[0].jack->status & SND_JACK_HEADPHONE) ||
@@ -518,7 +539,11 @@ bool check_for_headphone(void)
 	}
 
 	return false;
+#else
+	return check_for_dapm(snd_soc_dapm_hp, "HP");
+#endif
 }
+
 
 static bool debug (int level)
 {
@@ -529,6 +554,7 @@ static bool debug (int level)
 
 	return false;
 }
+
 
 /*****************************************/
 // Internal set/get/restore functions
@@ -555,17 +581,20 @@ static void set_headphone(void)
 
 }
 
+
 static unsigned int get_headphone_l(unsigned int val)
 {
 	// return register value for left headphone volume back
         return (val & ~WM8994_HPOUT1L_VOL_MASK) | headphone_l;
 }
 
+
 static unsigned int get_headphone_r(unsigned int val)
 {
 	// return register value for right headphone volume back
         return (val & ~WM8994_HPOUT1R_VOL_MASK) | headphone_r;
 }
+
 
 // Speaker volume
 static void set_speaker(void)
@@ -600,6 +629,7 @@ static unsigned int get_speaker_l(unsigned int val)
 	return (val & ~WM8994_SPKOUTL_VOL_MASK) | speaker_l;
 }
 
+
 static unsigned int get_speaker_r(unsigned int val)
 {
 	// if privacy mode is on, we set value to zero, otherwise to configured speaker volume
@@ -608,6 +638,7 @@ static unsigned int get_speaker_r(unsigned int val)
 
 	return (val & ~WM8994_SPKOUTR_VOL_MASK) | speaker_r;
 }
+
 
 // Equalizer on/off
 
@@ -745,6 +776,7 @@ static void set_eq_gains(void)
 	}
 }
 
+
 // Equalizer bands
 
 static void set_eq_bands()
@@ -842,6 +874,7 @@ static void set_eq_bands()
 	}
 }
 
+
 // EQ saturation prevention
 
 static void set_eq_satprevention(void)
@@ -881,6 +914,7 @@ static void set_eq_satprevention(void)
 			printk("Boeffla-sound: set_eq_satprevention to off\n");
 	}
 }
+
 
 static unsigned int get_eq_satprevention(int reg_index, unsigned int val)
 {
@@ -955,6 +989,7 @@ static unsigned int get_eq_satprevention(int reg_index, unsigned int val)
 	return val;
 }
 
+
 // Speaker boost (for speaker tuning)
 
 static void set_speaker_boost(void)
@@ -990,10 +1025,13 @@ static void set_speaker_boost(void)
 	}
 }
 
+
 // DAC direct
 
 static void set_dac_direct(void)
 {
+// do not touch dac direct at all if P4NOTE
+#ifndef CONFIG_MACH_P4NOTE
 	unsigned int val;
 
 	// get current values for output mixers 1 and 2 (l + r) from audio hub
@@ -1015,6 +1053,8 @@ static void set_dac_direct(void)
 		else
 			printk("Boeffla-sound: set_dac_direct off\n");
 	}
+#endif
+
 }
 
 static unsigned int get_dac_direct_l(unsigned int val)
@@ -1038,6 +1078,7 @@ static unsigned int get_dac_direct_r(unsigned int val)
 	// disable dac_direct: enable bypass for both channels, mute output mixer
 	return((val & ~WM8994_DAC1R_TO_HPOUT1R) | WM8994_DAC1R_TO_MIXOUTR);
 }
+
 
 // DAC oversampling
 
@@ -1067,6 +1108,7 @@ static void set_dac_oversampling()
 	// write value back to audio hub
 	wm8994_write(codec, WM8994_OVERSAMPLING, val);
 }
+
 
 // FLL tuning
 
@@ -1099,6 +1141,7 @@ static void set_fll_tuning(void)
 	wm8994_write(codec, WM8994_FLL1_CONTROL_4, val);
 }
 
+
 // Stereo expansion
 
 static void set_stereo_expansion(void)
@@ -1129,13 +1172,19 @@ static void set_stereo_expansion(void)
 	wm8994_write(codec, WM8994_AIF1_DAC1_FILTERS_2, val);
 }
 
+
 // Mono downmix
 
 static void set_mono_downmix(void)
 {
 	unsigned int val;
 
+// P4Note has stereo speakers, so also allow mono without headphones attached
+#ifndef CONFIG_MACH_P4NOTE 
 	if (!is_call && is_headphone && (mono_downmix == ON))
+#else
+	if (!is_call  && (mono_downmix == ON))
+#endif  
 	{
 		if (!is_mono_downmix)
 		{
@@ -1164,6 +1213,7 @@ static void set_mono_downmix(void)
 
 }
 
+
 static unsigned int get_mono_downmix(unsigned int val)
 {
 
@@ -1175,6 +1225,7 @@ static unsigned int get_mono_downmix(unsigned int val)
 
 	return val & ~WM8994_AIF1DAC1_MONO;
 }
+
 
 // MIC level
 
@@ -1205,6 +1256,7 @@ static void set_mic_level(void)
 		printk("Boeffla-sound: set_mic_level %d\n", mic_level);
 }
 
+
 static unsigned int get_mic_level(int reg_index, unsigned int val)
 {
 
@@ -1230,6 +1282,7 @@ static unsigned int get_mic_level(int reg_index, unsigned int val)
 	// we should never reach this point ideally, but in error case return original value
 	return val;
 }
+
 
 // Initialization functions
 
@@ -1304,6 +1357,7 @@ static void initialize_global_variables(void)
 		printk("Boeffla-sound: initialize_global_variables completed\n");
 }
 
+
 static void reset_boeffla_sound(void)
 {
 	// print debug info
@@ -1351,6 +1405,8 @@ static void reset_boeffla_sound(void)
 		printk("Boeffla-sound: reset_boeffla_sound completed\n");
 }
 
+
+
 /*****************************************/
 // sysfs interface functions
 /*****************************************/
@@ -1363,6 +1419,7 @@ static ssize_t boeffla_sound_show(struct device *dev, struct device_attribute *a
 	return sprintf(buf, "Boeffla sound status: %d\n", boeffla_sound);
 }
 
+
 static ssize_t boeffla_sound_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
@@ -1371,6 +1428,9 @@ static ssize_t boeffla_sound_store(struct device *dev, struct device_attribute *
 
 	// read values from input buffer
 	ret = sscanf(buf, "%d", &val);
+
+    if (ret != 1)
+        return -EINVAL;
 
 	// store if valid data and only if status has changed, reset all values
 	if (((val == OFF) || (val == ON))&& (val != boeffla_sound))
@@ -1387,6 +1447,7 @@ static ssize_t boeffla_sound_store(struct device *dev, struct device_attribute *
 	return count;
 }
 
+
 // Headphone volume
 
 static ssize_t headphone_volume_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1394,6 +1455,7 @@ static ssize_t headphone_volume_show(struct device *dev, struct device_attribute
 	// print current values
 	return sprintf(buf, "Headphone volume:\nLeft: %d\nRight: %d\n", headphone_l, headphone_r);
 }
+
 
 static ssize_t headphone_volume_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1408,6 +1470,9 @@ static ssize_t headphone_volume_store(struct device *dev, struct device_attribut
 
 	// read values from input buffer
 	ret = sscanf(buf, "%d %d", &val_l, &val_r);
+
+    if (ret != 2)
+        return -EINVAL;
 
 	// check whether values are within the valid ranges and adjust accordingly
 	if (val_l > HEADPHONE_MAX)
@@ -1436,6 +1501,7 @@ static ssize_t headphone_volume_store(struct device *dev, struct device_attribut
 	return count;
 }
 
+
 // Speaker volume
 
 static ssize_t speaker_volume_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1444,6 +1510,7 @@ static ssize_t speaker_volume_show(struct device *dev, struct device_attribute *
 	return sprintf(buf, "Speaker volume:\nLeft: %d\nRight: %d\n", speaker_l, speaker_r);
 
 }
+
 
 static ssize_t speaker_volume_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1458,6 +1525,9 @@ static ssize_t speaker_volume_store(struct device *dev, struct device_attribute 
 
 	// read values from input buffer
 	ret = sscanf(buf, "%d %d", &val_l, &val_r);
+
+    if (ret != 2)
+        return -EINVAL;
 
 	// check whether values are within the valid ranges and adjust accordingly
 	if (val_l > SPEAKER_MAX)
@@ -1486,6 +1556,7 @@ static ssize_t speaker_volume_store(struct device *dev, struct device_attribute 
 	return count;
 }
 
+
 // Speaker tuning
 
 static ssize_t speaker_tuning_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1506,6 +1577,9 @@ static ssize_t speaker_tuning_store(struct device *dev, struct device_attribute 
 
 	// read value from input buffer, check validity and update audio hub
 	ret = sscanf(buf, "%d", &val);
+
+    if (ret != 1)
+        return -EINVAL;
 
 	if ((val == ON) || (val == OFF))
 	{
@@ -1528,6 +1602,7 @@ static ssize_t eq_show(struct device *dev, struct device_attribute *attr, char *
 	return sprintf(buf, "EQ: %d\n", eq);
 }
 
+
 static ssize_t eq_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
@@ -1541,6 +1616,9 @@ static ssize_t eq_store(struct device *dev, struct device_attribute *attr,
 	// read values from input buffer and update audio hub
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if (((val >= EQ_OFF) && (val <= EQ_NOSATPREVENT)) && (val != eq))
 		eq = val;
 	set_eq();
@@ -1552,6 +1630,7 @@ static ssize_t eq_store(struct device *dev, struct device_attribute *attr,
 	return count;
 }
 
+
 // Equalizer gains
 
 static ssize_t eq_gains_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1560,6 +1639,7 @@ static ssize_t eq_gains_show(struct device *dev, struct device_attribute *attr, 
 	return sprintf(buf, "EQ gains: %d %d %d %d %d\n",
 			eq_gains[0], eq_gains[1], eq_gains[2], eq_gains[3], eq_gains[4]);
 }
+
 
 static ssize_t eq_gains_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1574,6 +1654,9 @@ static ssize_t eq_gains_store(struct device *dev, struct device_attribute *attr,
 
 	// read values from input buffer
 	ret = sscanf(buf, "%d %d %d %d %d", &gains[0], &gains[1], &gains[2], &gains[3], &gains[4]);
+
+    if (ret != 5)
+        return -EINVAL;
 
 	// check validity of gain values and adjust
 	for (i=0; i<=4; i++)
@@ -1598,6 +1681,7 @@ static ssize_t eq_gains_store(struct device *dev, struct device_attribute *attr,
 	return count;
 }
 
+
 // Equalizer bands
 
 static ssize_t eq_bands_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1612,6 +1696,7 @@ static ssize_t eq_bands_show(struct device *dev, struct device_attribute *attr, 
 			eq_bands[4][0], eq_bands[4][1], 0, eq_bands[4][3]);
 }
 
+
 static ssize_t eq_bands_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
@@ -1624,6 +1709,9 @@ static ssize_t eq_bands_store(struct device *dev, struct device_attribute *attr,
 
 	// read values from input buffer
 	ret = sscanf(buf, "%d %d %d %d %d", &band, &v1, &v2, &v3, &v4);
+
+    if (ret != 5)
+        return -EINVAL;
 
 	// check input data for validity, terminate if not valid
 	if ((band < 1) || (band > 5))
@@ -1645,12 +1733,20 @@ static ssize_t eq_bands_store(struct device *dev, struct device_attribute *attr,
 	return count;
 }
 
+
 // DAC direct
 
 static ssize_t dac_direct_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
+// For P4NOTE, dac direct always needs to be enabled, so the setting is
+// returned as blank = setting not active
+#ifndef CONFIG_MACH_P4NOTE
 	return sprintf(buf, "DAC direct: %d\n", dac_direct);
+#else
+	return 0;
+#endif
 }
+
 
 static ssize_t dac_direct_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1665,6 +1761,9 @@ static ssize_t dac_direct_store(struct device *dev, struct device_attribute *att
 	// read values from input buffer, check validity and update audio hub
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if ((val == ON) || (val == OFF))
 	{
 		dac_direct = val;
@@ -1678,12 +1777,14 @@ static ssize_t dac_direct_store(struct device *dev, struct device_attribute *att
 	return count;
 }
 
+
 // DAC oversampling
 
 static ssize_t dac_oversampling_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "DAC oversampling: %d\n", dac_oversampling);
 }
+
 
 static ssize_t dac_oversampling_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1698,6 +1799,9 @@ static ssize_t dac_oversampling_store(struct device *dev, struct device_attribut
 	// read values from input buffer, check validity and update audio hub
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if ((val == ON) || (val == OFF))
 	{
 		dac_oversampling = val;
@@ -1711,12 +1815,14 @@ static ssize_t dac_oversampling_store(struct device *dev, struct device_attribut
 	return count;
 }
 
+
 // FLL tuning
 
 static ssize_t fll_tuning_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "FLL tuning: %d\n", fll_tuning);
 }
+
 
 static ssize_t fll_tuning_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1731,6 +1837,9 @@ static ssize_t fll_tuning_store(struct device *dev, struct device_attribute *att
 	// read values from input buffer, check validity and update audio hub
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if ((val == ON) || (val == OFF))
 	{
 		fll_tuning = val;
@@ -1744,12 +1853,14 @@ static ssize_t fll_tuning_store(struct device *dev, struct device_attribute *att
 	return count;
 }
 
+
 // Stereo expansion
 
 static ssize_t stereo_expansion_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "Stereo expansion: %d\n", stereo_expansion_gain);
 }
+
 
 static ssize_t stereo_expansion_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1764,6 +1875,9 @@ static ssize_t stereo_expansion_store(struct device *dev, struct device_attribut
 	// read values from input buffer, check validity and update audio hub
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if ((val >= STEREO_EXPANSION_GAIN_MIN) && (val <= STEREO_EXPANSION_GAIN_MAX))
 	{
 		stereo_expansion_gain = val;
@@ -1777,12 +1891,14 @@ static ssize_t stereo_expansion_store(struct device *dev, struct device_attribut
 	return count;
 }
 
+
 // Mono downmix
 
 static ssize_t mono_downmix_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "Mono downmix: %d\n", mono_downmix);
 }
+
 
 static ssize_t mono_downmix_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1796,6 +1912,9 @@ static ssize_t mono_downmix_store(struct device *dev, struct device_attribute *a
 
 	// read values from input buffer
 	ret = sscanf(buf, "%d", &val);
+
+    if (ret != 1)
+        return -EINVAL;
 
 	// update only if new value is valid and has changed
 	if (((val == ON) || (val == OFF)) && (val != mono_downmix))
@@ -1811,12 +1930,14 @@ static ssize_t mono_downmix_store(struct device *dev, struct device_attribute *a
 	return count;
 }
 
+
 // Privacy mode
 
 static ssize_t privacy_mode_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "Privacy mode: %d\n", privacy_mode);
 }
+
 
 static ssize_t privacy_mode_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1831,6 +1952,9 @@ static ssize_t privacy_mode_store(struct device *dev, struct device_attribute *a
 	// read values from input buffer, check validity and update audio hub
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if ((val == ON) || (val == OFF))
 	{
 		privacy_mode = val;
@@ -1844,12 +1968,14 @@ static ssize_t privacy_mode_store(struct device *dev, struct device_attribute *a
 	return count;
 }
 
+
 // Microphone levels
 
 static ssize_t mic_level_general_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "Mic level general %d\n", mic_level_general);
 }
+
 
 static ssize_t mic_level_general_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1863,6 +1989,9 @@ static ssize_t mic_level_general_store(struct device *dev, struct device_attribu
 
 	// read value for mic level from input buffer
 	ret = sscanf(buf, "%d", &val);
+
+    if (ret != 1)
+        return -EINVAL;
 
 	// check validity of data
 	if ((val >= MICLEVEL_MIN) && (val <= MICLEVEL_MAX))
@@ -1897,6 +2026,7 @@ static ssize_t mic_level_call_show(struct device *dev, struct device_attribute *
 	return sprintf(buf, "Mic level call %d\n", mic_level_call);
 }
 
+
 static ssize_t mic_level_call_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
@@ -1909,6 +2039,9 @@ static ssize_t mic_level_call_store(struct device *dev, struct device_attribute 
 
 	// read value for mic level from input buffer
 	ret = sscanf(buf, "%d", &val);
+
+    if (ret != 1)
+        return -EINVAL;
 
 	// check validity of data
 	if ((val >= MICLEVEL_MIN) && (val <= MICLEVEL_MAX))
@@ -1938,6 +2071,7 @@ static ssize_t mic_level_call_store(struct device *dev, struct device_attribute 
 	return count;
 }
 
+
 // Debug level
 
 static ssize_t debug_level_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1946,6 +2080,7 @@ static ssize_t debug_level_show(struct device *dev, struct device_attribute *att
 	// (this exceptionally also works when boeffla-sound is disabled)
 	return sprintf(buf, "Debug level: %d\n", debug_level);
 }
+
 
 static ssize_t debug_level_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -1956,11 +2091,15 @@ static ssize_t debug_level_store(struct device *dev, struct device_attribute *at
 	// check data and store if valid
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if ((val >= 0) && (val <= 2))
 		debug_level = val;
 
 	return count;
 }
+
 
 // Debug info
 
@@ -2054,12 +2193,14 @@ static ssize_t debug_info_show(struct device *dev, struct device_attribute *attr
 	return strlen(buf);
 }
 
+
 static ssize_t debug_info_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
 	// this function has no function, but can be misused for some debugging/testing
 	return count;
 }
+
 
 // Debug register
 
@@ -2072,6 +2213,7 @@ static ssize_t debug_reg_show(struct device *dev, struct device_attribute *attr,
 	return sprintf(buf, "%d -> %d", debug_register, val);
 }
 
+
 static ssize_t debug_reg_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
@@ -2082,11 +2224,15 @@ static ssize_t debug_reg_store(struct device *dev, struct device_attribute *attr
 	// read values from input buffer and update audio hub (if requested via key)
 	ret = sscanf(buf, "%d %d %d", &debug_register, &val1, &val2);
 
+    if (ret != 3)
+        return -EINVAL;
+
 	if (val1 == DEBUG_REGISTER_KEY)
 		wm8994_write(codec, debug_register, val2);
 
 	return count;
 }
+
 
 // Debug dump
 
@@ -2112,6 +2258,7 @@ static ssize_t debug_dump_show(struct device *dev, struct device_attribute *attr
 	return strlen(buf);
 }
 
+
 static ssize_t debug_dump_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
@@ -2121,11 +2268,15 @@ static ssize_t debug_dump_store(struct device *dev, struct device_attribute *att
 	// read value from input buffer and set bank accordingly
 	ret = sscanf(buf, "%d", &val);
 
+    if (ret != 1)
+        return -EINVAL;
+
 	if ((val >= 0) && (val < REGDUMP_BANKS))
 		regdump_bank = val;
 
 	return count;
 }
+
 
 // Change delay
 
@@ -2135,6 +2286,7 @@ static ssize_t change_delay_show(struct device *dev, struct device_attribute *at
 	return sprintf(buf, "Boeffla change delay: %d\n", change_delay);
 }
 
+
 static ssize_t change_delay_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
@@ -2143,6 +2295,9 @@ static ssize_t change_delay_store(struct device *dev, struct device_attribute *a
 
 	// read values from input buffer
 	ret = sscanf(buf, "%d", &val);
+
+    if (ret != 1)
+        return -EINVAL;
 
 	// store if valid data and only if status has changed, reset all values
 	if ((val >= MIN_CHANGE_DELAY) && (val <= MAX_CHANGE_DELAY))
@@ -2160,6 +2315,7 @@ static ssize_t change_delay_store(struct device *dev, struct device_attribute *a
 	return -EINVAL;
 }
 
+
 // Version information
 
 static ssize_t version_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -2167,6 +2323,8 @@ static ssize_t version_show(struct device *dev, struct device_attribute *attr, c
 	// return version information
 	return sprintf(buf, "%s\n", BOEFFLA_SOUND_VERSION);
 }
+
+
 
 /*****************************************/
 // Initialize boeffla sound sysfs folder
@@ -2232,6 +2390,7 @@ static struct miscdevice boeffla_sound_control_device = {
 	.name = "boeffla_sound",
 };
 
+
 /*****************************************/
 // Driver init and exit functions
 /*****************************************/
@@ -2266,6 +2425,7 @@ static int boeffla_sound_init(void)
 	return 0;
 }
 
+
 static void boeffla_sound_exit(void)
 {
 	// remove boeffla sound control device
@@ -2275,6 +2435,7 @@ static void boeffla_sound_exit(void)
 	// Print debug info
 	printk("Boeffla-sound: engine stopped\n");
 }
+
 
 /* define driver entry points */
 
