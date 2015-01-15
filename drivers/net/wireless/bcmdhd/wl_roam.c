@@ -81,8 +81,6 @@ int get_roamscan_channel_list(struct net_device *dev, unsigned char channels[])
 	if (roamscan_mode) {
 		for (n = 0; n < n_roam_cache; n++) {
 			channels[n] = roam_cache[n].chanspec & WL_CHANSPEC_CHAN_MASK;
-
-			WL_DBG(("%s: channel[%d] - [%02d] \n", __FUNCTION__, n, channels[n]));
 		}
 	}
 
@@ -132,8 +130,6 @@ int set_roamscan_channel_list(struct net_device *dev,
 		}
 		roam_cache[i].chanspec = chanspec;
 		channel_list.channels[i] = chanspec;
-
-		WL_DBG(("%s: channel[%d] - [%02d] \n", __FUNCTION__, i, channels[i]));
 	}
 
 	n_roam_cache = n;
@@ -225,7 +221,6 @@ int get_roam_channel_list(int target_chan,
 	else
 		band = band5G;
 	*channels = (target_chan & WL_CHANSPEC_CHAN_MASK) | band | bw;
-	WL_DBG((" %s: %02d 0x%04X\n", __FUNCTION__, target_chan, *channels));
 	++channels;
 
 #if defined(CUSTOMER_HW4) && defined(WES_SUPPORT)
@@ -233,12 +228,10 @@ int get_roam_channel_list(int target_chan,
 		for (i = 0; i < n_roam_cache; i++) {
 			if ((roam_cache[i].chanspec & WL_CHANSPEC_CHAN_MASK) != target_chan) {
 				*channels = roam_cache[i].chanspec & WL_CHANSPEC_CHAN_MASK;
-				WL_DBG((" %s: %02d\n", __FUNCTION__, *channels));
 				if (*channels <= 14)
 					*channels |= band2G | bw;
 				else
 					*channels |= band5G | bw;
-
 				channels++;
 				n++;
 			}
@@ -262,10 +255,6 @@ int get_roam_channel_list(int target_chan,
 				*channels |= band2G | bw;
 			else
 				*channels |= band5G | bw;
-
-			WL_DBG((" %s: %02d 0x%04X\n", __FUNCTION__,
-				ch & WL_CHANSPEC_CHAN_MASK, *channels));
-
 			channels++; n++;
 		}
 	}
@@ -276,12 +265,7 @@ int get_roam_channel_list(int target_chan,
 void print_roam_cache(void)
 {
 	int i;
-
-	WL_DBG((" %d cache\n", n_roam_cache));
-
 	for (i = 0; i < n_roam_cache; i++) {
 		roam_cache[i].ssid[roam_cache[i].ssid_len] = 0;
-		WL_DBG(("0x%02X %02d %s\n", roam_cache[i].chanspec,
-			roam_cache[i].ssid_len, roam_cache[i].ssid));
 	}
 }

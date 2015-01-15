@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhd_cdc.c 394202 2013-04-01 15:15:20Z $
+ * $Id: dhd_cdc.c 364003 2012-10-22 02:22:16Z $
  *
  * BDC is like CDC, except it includes a header for data packets to convey
  * packet priority over the bus, and flags (e.g. to indicate checksum status
@@ -59,11 +59,11 @@
 
 #ifdef PROP_TXSTATUS
 typedef struct dhd_wlfc_commit_info {
-	uint8					needs_hdr;
-	uint8					ac_fifo_credit_spent;
+	uint8			needs_hdr;
+	uint8			ac_fifo_credit_spent;
 	ewlfc_packet_state_t	pkt_type;
 	wlfc_mac_descriptor_t*	mac_entry;
-	void*					p;
+	void*			p;
 } dhd_wlfc_commit_info_t;
 #endif /* PROP_TXSTATUS */
 
@@ -89,8 +89,6 @@ dhdcdc_msg(dhd_pub_t *dhd)
 	dhd_prot_t *prot = dhd->prot;
 	int len = ltoh32(prot->msg.len) + sizeof(cdc_ioctl_t);
 
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
-
 	DHD_OS_WAKE_LOCK(dhd);
 
 	/* NOTE : cdc->msg.len holds the desired length of the buffer to be
@@ -113,8 +111,6 @@ dhdcdc_cmplt(dhd_pub_t *dhd, uint32 id, uint32 len)
 	int ret;
 	int cdc_len = len + sizeof(cdc_ioctl_t);
 	dhd_prot_t *prot = dhd->prot;
-
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
 
 #if defined(CUSTOMER_HW4)
 	DHD_OS_WAKE_LOCK(dhd);
@@ -141,9 +137,6 @@ dhdcdc_query_ioctl(dhd_pub_t *dhd, int ifidx, uint cmd, void *buf, uint len, uin
 	void *info;
 	int ret = 0, retries = 0;
 	uint32 id, flags = 0;
-
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
-	DHD_CTL(("%s: cmd %d len %d\n", __FUNCTION__, cmd, len));
 
 	/* Respond "bcmerror" and "bcmerrorstr" with local cache */
 	if (cmd == WLC_GET_VAR && buf)
@@ -242,9 +235,6 @@ dhdcdc_set_ioctl(dhd_pub_t *dhd, int ifidx, uint cmd, void *buf, uint len, uint8
 	int ret = 0;
 	uint32 flags, id;
 
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
-	DHD_CTL(("%s: cmd %d len %d\n", __FUNCTION__, cmd, len));
-
 	if (dhd->busstate == DHD_BUS_DOWN) {
 		DHD_ERROR(("%s : bus is down. we have nothing to do\n", __FUNCTION__));
 		return -EIO;
@@ -336,8 +326,6 @@ dhd_prot_ioctl(dhd_pub_t *dhd, int ifidx, wl_ioctl_t * ioc, void * buf, int len)
 	}
 #endif /* NDIS630 */
 
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
-
 	ASSERT(len <= WLC_IOCTL_MAXLEN);
 
 	if (len > WLC_IOCTL_MAXLEN)
@@ -347,9 +335,6 @@ dhd_prot_ioctl(dhd_pub_t *dhd, int ifidx, wl_ioctl_t * ioc, void * buf, int len)
 		DHD_ERROR(("CDC packet is pending!!!! cmd=0x%x (%lu) lastcmd=0x%x (%lu)\n",
 			ioc->cmd, (unsigned long)ioc->cmd, prot->lastcmd,
 			(unsigned long)prot->lastcmd));
-		if ((ioc->cmd == WLC_SET_VAR) || (ioc->cmd == WLC_GET_VAR)) {
-			DHD_TRACE(("iovar cmd=%s\n", (char*)buf));
-		}
 		goto done;
 	}
 
@@ -878,8 +863,6 @@ _dhd_wlfc_pullheader(athost_wl_status_info_t* ctx, void* pktbuf)
 	struct bdc_header *h;
 
 	if (PKTLEN(ctx->osh, pktbuf) < BDC_HEADER_LEN) {
-		WLFC_DBGMESG(("%s: rx data too short (%d < %d)\n", __FUNCTION__,
-		           PKTLEN(ctx->osh, pktbuf), BDC_HEADER_LEN));
 		return BCME_ERROR;
 	}
 	h = (struct bdc_header *)PKTDATA(ctx->osh, pktbuf);
@@ -888,8 +871,6 @@ _dhd_wlfc_pullheader(athost_wl_status_info_t* ctx, void* pktbuf)
 	PKTPULL(ctx->osh, pktbuf, BDC_HEADER_LEN);
 
 	if (PKTLEN(ctx->osh, pktbuf) < (h->dataOffset << 2)) {
-		WLFC_DBGMESG(("%s: rx data too short (%d < %d)\n", __FUNCTION__,
-		           PKTLEN(ctx->osh, pktbuf), (h->dataOffset << 2)));
 		return BCME_ERROR;
 	}
 	/* pull wl-header */
@@ -948,7 +929,6 @@ _dhd_wlfc_rollback_packet_toq(athost_wl_status_info_t* ctx,
 		if (pkt_type == eWLFC_PKTTYPE_SUPPRESSED) {
 			/* wl-header is saved for suppressed packets */
 			if (WLFC_PKTQ_PENQ_HEAD(&entry->psq, ((prec << 1) + 1), p) == NULL) {
-				WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 				rc = BCME_ERROR;
 			}
 		}
@@ -956,7 +936,6 @@ _dhd_wlfc_rollback_packet_toq(athost_wl_status_info_t* ctx,
 			/* remove header first */
 			rc = _dhd_wlfc_pullheader(ctx, p);
 			if (rc != BCME_OK)          {
-				WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 				/* free the hanger slot */
 				dhd_wlfc_hanger_poppkt(ctx->hanger, hslot, &pktout, 1);
 				PKTFREE(ctx->osh, p, TRUE);
@@ -967,14 +946,12 @@ _dhd_wlfc_rollback_packet_toq(athost_wl_status_info_t* ctx,
 			if (pkt_type == eWLFC_PKTTYPE_DELAYED) {
 				/* delay-q packets are going to delay-q */
 				if (WLFC_PKTQ_PENQ_HEAD(&entry->psq, (prec << 1), p) == NULL) {
-					WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 					rc = BCME_ERROR;
 				}
 			}
 			else {
 				/* these are going to SENDQ */
 				if (WLFC_PKTQ_PENQ_HEAD(&ctx->SENDQ, prec, p) == NULL) {
-					WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 					rc = BCME_ERROR;
 				}
 			}
@@ -993,7 +970,6 @@ _dhd_wlfc_rollback_packet_toq(athost_wl_status_info_t* ctx,
 		}
 	}
 	else {
-		WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 		rc = BCME_ERROR;
 	}
 	if (rc != BCME_OK)
@@ -1010,22 +986,12 @@ _dhd_wlfc_flow_control_check(athost_wl_status_info_t* ctx, struct pktq* pq, uint
 	if ((pq->len <= WLFC_FLOWCONTROL_LOWATER) && (ctx->hostif_flow_state[if_id] == ON)) {
 		/* start traffic */
 		ctx->hostif_flow_state[if_id] = OFF;
-		/*
-		WLFC_DBGMESG(("qlen:%02d, if:%02d, ->OFF, start traffic %s()\n",
-		pq->len, if_id, __FUNCTION__));
-		*/
-		WLFC_DBGMESG(("F"));
 		dhd_txflowcontrol(ctx->dhdp, if_id, OFF);
 		ctx->toggle_host_if = 0;
 	}
 	if ((pq->len >= WLFC_FLOWCONTROL_HIWATER) && (ctx->hostif_flow_state[if_id] == OFF)) {
 		/* stop traffic */
 		ctx->hostif_flow_state[if_id] = ON;
-		/*
-		WLFC_DBGMESG(("qlen:%02d, if:%02d, ->ON, stop traffic   %s()\n",
-		pq->len, if_id, __FUNCTION__));
-		*/
-		WLFC_DBGMESG(("N"));
 		dhd_txflowcontrol(ctx->dhdp, if_id, ON);
 		ctx->host_ifidx = if_id;
 		ctx->toggle_host_if = 1;
@@ -1111,7 +1077,6 @@ _dhd_wlfc_enque_suppressed(athost_wl_status_info_t* ctx, int prec, void* p)
 
 	entry = _dhd_wlfc_find_table_entry(ctx, p);
 	if (entry == NULL) {
-		WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 		return BCME_NOTFOUND;
 	}
 	/*
@@ -1121,8 +1086,6 @@ _dhd_wlfc_enque_suppressed(athost_wl_status_info_t* ctx, int prec, void* p)
 	*/
 	if (WLFC_PKTQ_PENQ(&entry->psq, ((prec << 1) + 1), p) == NULL) {
 		ctx->stats.delayq_full_error++;
-		/* WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__)); */
-		WLFC_DBGMESG(("s"));
 		return BCME_ERROR;
 	}
 	/* A packet has been pushed, update traffic availability bitmap, if applicable */
@@ -1148,7 +1111,6 @@ _dhd_wlfc_pretx_pktprocess(athost_wl_status_info_t* ctx,
 	}
 
 	if (entry == NULL) {
-		WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 		return BCME_ERROR;
 	}
 	if (entry->send_tim_signal) {
@@ -1201,10 +1163,6 @@ _dhd_wlfc_pretx_pktprocess(athost_wl_status_info_t* ctx,
 				((wlfc_hanger_t*)(ctx->hanger))->items[hslot].push_time =
 					OSL_SYSUPTIME();
 #endif
-			}
-			else {
-				WLFC_DBGMESG(("%s() hanger_pushpkt() failed, rc: %d\n",
-					__FUNCTION__, rc));
 			}
 		}
 	}
@@ -1360,7 +1318,6 @@ _dhd_wlfc_deque_sendq(athost_wl_status_info_t* ctx, int prec)
 		entry = _dhd_wlfc_find_table_entry(ctx, p);
 
 		if (entry == NULL) {
-			WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 			return p;
 		}
 
@@ -1371,7 +1328,6 @@ _dhd_wlfc_deque_sendq(athost_wl_status_info_t* ctx, int prec)
 			order of delivery.
 			*/
 			if (WLFC_PKTQ_PENQ(&entry->psq, (prec << 1), p) == NULL) {
-				WLFC_DBGMESG(("D"));
 				/* dhd_txcomplete(ctx->dhdp, p, FALSE); */
 				PKTFREE(ctx->osh, p, TRUE);
 				ctx->stats.delayq_full_error++;
@@ -1432,11 +1388,6 @@ _dhd_wlfc_mac_entry_update(athost_wl_status_info_t* ctx, wlfc_mac_descriptor_t* 
 		/* enable after packets are queued-deqeued properly.
 		pktq_flush(dhd->osh, &entry->psq, FALSE, NULL, 0);
 		*/
-		memset(&entry->ea[0], 0, ETHER_ADDR_LEN);
-		entry->transit_count = 0;
-		entry->suppr_transit_count = 0;
-		entry->suppress_count = 0;
-		entry->suppressed = 0;
 	}
 	return rc;
 }
@@ -1448,7 +1399,6 @@ _dhd_wlfc_borrow_credit(athost_wl_status_info_t* ctx, uint8 available_credit_map
 	int rc = BCME_ERROR;
 
 	if (ctx == NULL || available_credit_map == 0) {
-		WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 		return BCME_BADARG;
 	}
 
@@ -1506,17 +1456,11 @@ dhd_wlfc_enque_sendq(void* state, int prec, void* p)
 		/* prec = AC_COUNT is used for bc/mc queue */
 		(prec > AC_COUNT) ||
 		(p == NULL)) {
-		WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 		return BCME_BADARG;
 	}
 	if (FALSE == dhd_prec_enq(ctx->dhdp, &ctx->SENDQ, p, prec)) {
 		ctx->stats.sendq_full_error++;
-		/*
-		WLFC_DBGMESG(("Error: %s():%d, qlen:%d\n",
-		__FUNCTION__, __LINE__, ctx->SENDQ.len));
-		*/
 		WLFC_HOST_FIFO_DROPPEDCTR_INC(ctx, prec);
-		WLFC_DBGMESG(("Q"));
 		PKTFREE(ctx->osh, p, TRUE);
 		return BCME_ERROR;
 	}
@@ -1593,7 +1537,6 @@ dhd_wlfc_commit_packets(void* state, f_commitpkt_t fcommit, void* commit_ctx)
 
 	if ((state == NULL) ||
 		(fcommit == NULL)) {
-		WLFC_DBGMESG(("Error: %s():%d\n", __FUNCTION__, __LINE__));
 		return BCME_BADARG;
 	}
 
@@ -1805,8 +1748,6 @@ dhd_wlfc_txcomplete(dhd_pub_t *dhd, void *txp, bool success)
 		return;
 	}
 	if (!success) {
-		WLFC_DBGMESG(("At: %s():%d, bus_complete() failure for %p, htod_tag:0x%08x\n",
-			__FUNCTION__, __LINE__, txp, DHD_PKTTAG_H2DTAG(PKTTAG(txp))));
 		dhd_wlfc_hanger_poppkt(wlfc->hanger, WLFC_PKTID_HSLOT_GET(DHD_PKTTAG_H2DTAG
 			(PKTTAG(txp))), &p, 1);
 
@@ -1842,7 +1783,7 @@ dhd_wlfc_txcomplete(dhd_pub_t *dhd, void *txp, bool success)
 static int
 dhd_wlfc_compressed_txstatus_update(dhd_pub_t *dhd, uint8* pkt_info, uint8 len)
 {
-	uint8 	status_flag;
+	uint8	status_flag;
 	uint32	status;
 	int		ret;
 	int		remove_from_hanger = 1;
@@ -2241,11 +2182,6 @@ dhd_wlfc_mac_table_update(dhd_pub_t *dhd, uint8* value, uint8 type)
 	uint8 ifid;
 	uint8* ea;
 
-	WLFC_DBGMESG(("%s(), mac [%02x:%02x:%02x:%02x:%02x:%02x],%s,idx:%d,id:0x%02x\n",
-		__FUNCTION__, value[2], value[3], value[4], value[5], value[6], value[7],
-		((type == WLFC_CTL_TYPE_MACDESC_ADD) ? "ADD":"DEL"),
-		WLFC_MAC_DESC_GET_LOOKUP_INDEX(value[0]), value[0]));
-
 	table = wlfc->destination_entries.nodes;
 	table_index = WLFC_MAC_DESC_GET_LOOKUP_INDEX(value[0]);
 	ifid = value[1];
@@ -2351,11 +2287,9 @@ dhd_wlfc_interface_update(dhd_pub_t *dhd, uint8* value, uint8 type)
 		if (table[if_id].occupied) {
 			if (type == WLFC_CTL_TYPE_INTERFACE_OPEN) {
 				table[if_id].state = WLFC_STATE_OPEN;
-				/* WLFC_DBGMESG(("INTERFACE[%d] OPEN\n", if_id)); */
 			}
 			else {
 				table[if_id].state = WLFC_STATE_CLOSE;
-				/* WLFC_DBGMESG(("INTERFACE[%d] CLOSE\n", if_id)); */
 			}
 			return BCME_OK;
 		}
@@ -2543,8 +2477,6 @@ dhd_wlfc_enable(dhd_pub_t *dhd)
 	int i;
 	athost_wl_status_info_t* wlfc;
 
-	DHD_TRACE(("Enter %s\n", __FUNCTION__));
-
 	if (!dhd->wlfc_enabled || dhd->wlfc_state)
 		return BCME_OK;
 
@@ -2610,7 +2542,6 @@ dhd_wlfc_cleanup(dhd_pub_t *dhd)
 	void *pkt = NULL;
 	struct pktq *txq = NULL;
 
-	DHD_TRACE(("Enter %s\n", __FUNCTION__));
 	if (dhd->wlfc_state == NULL)
 		return;
 	/* flush bus->txq */
@@ -2625,8 +2556,6 @@ dhd_wlfc_cleanup(dhd_pub_t *dhd)
 	for (i = 0; i < total_entries; i++) {
 		if (table[i].occupied) {
 			if (table[i].psq.len) {
-				WLFC_DBGMESG(("%s(): DELAYQ[%d].len = %d\n",
-					__FUNCTION__, i, table[i].psq.len));
 				/* release packets held in DELAYQ */
 				pktq_flush(wlfc->osh, &table[i].psq, TRUE, NULL, 0);
 			}
@@ -2687,13 +2616,6 @@ dhd_wlfc_deinit(dhd_pub_t *dhd)
 	{
 		int i;
 		wlfc_hanger_t* h = (wlfc_hanger_t*)wlfc->hanger;
-		for (i = 0; i < h->max_items; i++) {
-			if (h->items[i].state != WLFC_HANGER_ITEM_STATE_FREE) {
-				WLFC_DBGMESG(("%s() pkt[%d] = 0x%p, FIFO_credit_used:%d\n",
-					__FUNCTION__, i, h->items[i].pkt,
-					DHD_PKTTAG_CREDITCHECK(PKTTAG(h->items[i].pkt))));
-			}
-		}
 	}
 #endif
 	/* delete hanger */
@@ -2728,8 +2650,6 @@ dhd_prot_hdrpush(dhd_pub_t *dhd, int ifidx, void *pktbuf)
 	struct bdc_header *h;
 #endif /* BDC */
 
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
-
 #ifdef BDC
 	/* Push BDC header used to convey priority for buses that don't */
 
@@ -2755,8 +2675,6 @@ dhd_prot_hdrpull(dhd_pub_t *dhd, int *ifidx, void *pktbuf, uchar *reorder_buf_in
 #ifdef BDC
 	struct bdc_header *h;
 #endif
-
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
 
 #ifdef BDC
 	if (reorder_info_len)
@@ -2906,7 +2824,6 @@ dhd_prot_init(dhd_pub_t *dhd)
 {
 	int ret = 0;
 	wlc_rev_info_t revinfo;
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
 
 	/* Get the device rev info */
 	memset(&revinfo, 0, sizeof(revinfo));

@@ -21,7 +21,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: linux_osl.c 398870 2013-04-26 09:42:18Z $
+ * $Id: linux_osl.c 361207 2012-10-06 05:59:08Z $
  */
 
 #define LINUX_PORT
@@ -34,6 +34,10 @@
 #include <bcmutils.h>
 #include <linux/delay.h>
 #include <pcicfg.h>
+
+#ifdef BCMASSERT_LOG
+#include <bcm_assert_log.h>
+#endif
 
 #include <linux/fs.h>
 
@@ -177,8 +181,7 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 {
 	osl_t *osh;
 
-	if (!(osh = kmalloc(sizeof(osl_t), GFP_ATOMIC)))
-		return osh;
+	osh = kmalloc(sizeof(osl_t), GFP_ATOMIC);
 
 	ASSERT(osh);
 
@@ -217,11 +220,7 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 	if (!bcm_static_buf) {
 		if (!(bcm_static_buf = (bcm_static_buf_t *)dhd_os_prealloc(osh, 3, STATIC_BUF_SIZE+
 			STATIC_BUF_TOTAL_LEN))) {
-			printk("can not alloc static buf!\n");
 		}
-		else
-			printk("alloc static buf at %x!\n", (unsigned int)bcm_static_buf);
-
 		sema_init(&bcm_static_buf->static_sem, 1);
 
 		bcm_static_buf->buf_ptr = (unsigned char *)bcm_static_buf + STATIC_BUF_SIZE;
@@ -306,8 +305,6 @@ osl_ctfpool_add(osl_t *osh)
 
 	skb = osl_alloc_skb(osh->ctfpool->obj_size);
 	if (skb == NULL) {
-		printf("%s: skb alloc of len %d failed\n", __FUNCTION__,
-		       osh->ctfpool->obj_size);
 		CTFPOOL_UNLOCK(osh->ctfpool, flags);
 		return NULL;
 	}
@@ -410,12 +407,6 @@ osl_ctfpool_stats(osl_t *osh, void *b)
 
 	ASSERT((osh != NULL) && (bb != NULL));
 
-	bcm_bprintf(bb, "max_obj %d obj_size %d curr_obj %d refills %d\n",
-	            osh->ctfpool->max_obj, osh->ctfpool->obj_size,
-	            osh->ctfpool->curr_obj, osh->ctfpool->refills);
-	bcm_bprintf(bb, "fast_allocs %d fast_frees %d slow_allocs %d\n",
-	            osh->ctfpool->fast_allocs, osh->ctfpool->fast_frees,
-	            osh->ctfpool->slow_allocs);
 }
 
 static inline struct sk_buff *
@@ -577,8 +568,6 @@ osl_pktfree(osl_t *osh, void *p, bool send)
 	if (send && osh->pub.tx_fn)
 		osh->pub.tx_fn(osh->pub.tx_ctx, p, 0);
 
-	PKTDBG_TRACE(osh, (void *) skb, PKTLIST_PKTFREE);
-
 	while (skb) {
 		nskb = skb->next;
 		skb->next = NULL;
@@ -613,8 +602,6 @@ osl_pktget_static(osl_t *osh, uint len)
 	struct sk_buff *skb;
 
 	if (len > DHD_SKB_MAX_BUFSIZE) {
-		printk("osl_pktget_static: Do we really need this big skb??"
-			" len=%d\n", len);
 		return osl_pktget(osh, len);
 	}
 
@@ -671,7 +658,6 @@ osl_pktget_static(osl_t *osh, uint len)
 #endif
 
 	up(&bcm_static_skb->osl_pkt_sem);
-	printk("osl_pktget_static: all static pkt in use!\n");
 	return osl_pktget(osh, len);
 }
 
@@ -713,28 +699,6 @@ osl_pktfree_static(osl_t *osh, void *p, bool send)
 	return;
 }
 #endif
-
-int osh_pktpadtailroom(osl_t *osh, struct sk_buff* skb, int pad)
-{
-	int err;
-	int ntail;
-
-	ntail = skb->data_len + pad - (skb->end - skb->tail);
-	if (likely(skb_cloned(skb) || ntail > 0)) {
-		err = pskb_expand_head(skb, 0, ntail, GFP_ATOMIC);
-		if (unlikely(err))
-			goto done;
-	}
-
-	err = skb_linearize(skb);
-	if (unlikely(err))
-		goto done;
-
-	memset(skb->data + skb->len, 0, pad);
-
-done:
-	return err;
-}
 
 uint32
 osl_pci_read_config(osl_t *osh, uint offset, uint size)
@@ -840,7 +804,6 @@ osl_malloc(osl_t *osh, uint size)
 			if (i == STATIC_BUF_MAX_NUM)
 			{
 				up(&bcm_static_buf->static_sem);
-				printk("all static buff in use!\n");
 				goto original;
 			}
 
@@ -976,10 +939,12 @@ osl_assert(const char *exp, const char *file, int line)
 	if (!basename)
 		basename = file;
 
+#ifdef BCMASSERT_LOG
 	snprintf(tempbuf, 64, "\"%s\": file \"%s\", line %d\n",
 		exp, basename, line);
 
-	printk("%s", tempbuf);
+	bcm_assert_log(tempbuf);
+#endif
 
 }
 #endif

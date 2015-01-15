@@ -129,8 +129,6 @@ si_kattach(osl_t *osh)
 		}
 
 		ksii_attached = TRUE;
-		SI_MSG(("si_kattach done. ccrev = %d, wd_msticks = %d\n",
-		        ksii.pub.ccrev, wd_msticks));
 	}
 
 	return &ksii.pub;
@@ -185,7 +183,6 @@ si_buscore_prep(si_info_t *sii, uint bustype, uint devid, void *sdh)
 		uint32 regdata;
 		/* wake up wlan function :WAKE_UP goes as HT_AVAIL request in hardware */
 		regdata = bcmsdh_cfg_read_word(sdh, SDIO_FUNC_0, SPID_CONFIG, NULL);
-		SI_MSG(("F0 REG0 rd = 0x%x\n", regdata));
 		regdata |= WAKE_UP;
 
 		bcmsdh_cfg_write_word(sdh, SDIO_FUNC_0, SPID_CONFIG, regdata, &err);
@@ -227,10 +224,6 @@ si_buscore_setup(si_info_t *sii, chipcregs_t *cc, uint bustype, uint32 savewin,
 		sii->pub.pmucaps = R_REG(sii->osh, &cc->pmucapabilities);
 		sii->pub.pmurev = sii->pub.pmucaps & PCAP_REV_MASK;
 	}
-
-	SI_MSG(("Chipc: rev %d, caps 0x%x, chipst 0x%x pmurev %d, pmucaps 0x%x\n",
-		sii->pub.ccrev, sii->pub.cccaps, sii->pub.chipst, sii->pub.pmurev,
-		sii->pub.pmucaps));
 
 	/* figure out bus/orignal core idx */
 	sii->pub.buscoretype = NODEV_CORE_ID;
@@ -394,14 +387,11 @@ si_doattach(si_info_t *sii, uint devid, osl_t *osh, void *regs,
 
 	/* scan for cores */
 	if (CHIPTYPE(sii->pub.socitype) == SOCI_SB) {
-		SI_MSG(("Found chip type SB (0x%08x)\n", w));
 		sb_scan(&sii->pub, regs, devid);
 	} else if (CHIPTYPE(sii->pub.socitype) == SOCI_AI) {
-		SI_MSG(("Found chip type AI (0x%08x)\n", w));
 		/* pass chipc address instead of original core base */
 		ai_scan(&sii->pub, (void *)(uintptr)cc, devid);
 	} else if (CHIPTYPE(sii->pub.socitype) == SOCI_UBUS) {
-		SI_MSG(("Found chip type UBUS (0x%08x), chip id = 0x%4x\n", w, sih->chip));
 		/* pass chipc address instead of original core base */
 		ub_scan(&sii->pub, (void *)(uintptr)cc, devid);
 	} else {

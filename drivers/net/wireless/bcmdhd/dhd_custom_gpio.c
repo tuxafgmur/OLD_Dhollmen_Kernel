@@ -124,8 +124,6 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 {
 	switch (onoff) {
 		case WLAN_RESET_OFF:
-			WL_TRACE(("%s: call customer specific GPIO to insert WLAN RESET\n",
-				__FUNCTION__));
 #ifdef CUSTOMER_HW
 			bcm_wlan_power_off(2);
 #endif /* CUSTOMER_HW */
@@ -136,8 +134,6 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 		break;
 
 		case WLAN_RESET_ON:
-			WL_TRACE(("%s: callc customer specific GPIO to remove WLAN RESET\n",
-				__FUNCTION__));
 #ifdef CUSTOMER_HW
 			bcm_wlan_power_on(2);
 #endif /* CUSTOMER_HW */
@@ -148,16 +144,12 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 		break;
 
 		case WLAN_POWER_OFF:
-			WL_TRACE(("%s: call customer specific GPIO to turn off WL_REG_ON\n",
-				__FUNCTION__));
 #ifdef CUSTOMER_HW
 			bcm_wlan_power_off(1);
 #endif /* CUSTOMER_HW */
 		break;
 
 		case WLAN_POWER_ON:
-			WL_TRACE(("%s: call customer specific GPIO to turn on WL_REG_ON\n",
-				__FUNCTION__));
 #ifdef CUSTOMER_HW
 			bcm_wlan_power_on(1);
 			/* Lets customer power to get stable */
@@ -174,7 +166,6 @@ dhd_custom_get_mac_address(unsigned char *buf)
 {
 	int ret = 0;
 
-	WL_TRACE(("%s Enter\n", __FUNCTION__));
 	if (!buf)
 		return -EINVAL;
 

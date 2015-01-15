@@ -22,7 +22,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmsdh.c 373329 2012-12-07 04:46:09Z $
+ * $Id: bcmsdh.c 347614 2012-07-27 10:24:51Z $
  */
 
 /**
@@ -44,6 +44,8 @@
 #include <sbsdio.h>	/* SDIO device core hardware definitions. */
 
 #include <sdio.h>	/* SDIO Device and Protocol Specs */
+
+#include <dhd_sec_feature.h>
 
 #define SDIOH_API_ACCESS_RETRY_LIMIT	2
 const uint bcmsdh_msglevel = BCMSDH_ERROR_VAL;
@@ -157,17 +159,9 @@ bcmsdh_intr_enable(void *sdh)
 {
 	bcmsdh_info_t *bcmsdh = (bcmsdh_info_t *)sdh;
 	SDIOH_API_RC status;
-#ifdef BCMSPI_ANDROID
-	uint32 data;
-#endif /* BCMSPI_ANDROID */
 	ASSERT(bcmsdh);
 
 	status = sdioh_interrupt_set(bcmsdh->sdioh, TRUE);
-#ifdef BCMSPI_ANDROID
-	data = bcmsdh_cfg_read_word(sdh, 0, 4, NULL);
-	data |= 0xE0E70000;
-	bcmsdh_cfg_write_word(sdh, 0, 4, data, NULL);
-#endif /* BCMSPI_ANDROID */
 	return (SDIOH_API_SUCCESS(status) ? 0 : BCME_ERROR);
 }
 
@@ -176,17 +170,9 @@ bcmsdh_intr_disable(void *sdh)
 {
 	bcmsdh_info_t *bcmsdh = (bcmsdh_info_t *)sdh;
 	SDIOH_API_RC status;
-#ifdef BCMSPI_ANDROID
-	uint32 data;
-#endif /* BCMSPI_ANDROID */
 	ASSERT(bcmsdh);
 
 	status = sdioh_interrupt_set(bcmsdh->sdioh, FALSE);
-#ifdef BCMSPI_ANDROID
-	data = bcmsdh_cfg_read_word(sdh, 0, 4, NULL);
-	data &= ~0xE0E70000;
-	bcmsdh_cfg_write_word(sdh, 0, 4, data, NULL);
-#endif /* BCMSPI_ANDROID */
 	return (SDIOH_API_SUCCESS(status) ? 0 : BCME_ERROR);
 }
 
@@ -298,9 +284,6 @@ bcmsdh_cfg_write(void *sdh, uint fnc_num, uint32 addr, uint8 data, int *err)
 #endif
 	if (err)
 		*err = SDIOH_API_SUCCESS(status) ? 0 : BCME_SDIO_ERROR;
-
-	BCMSDH_INFO(("%s:fun = %d, addr = 0x%x, uint8data = 0x%x\n", __FUNCTION__,
-	            fnc_num, addr, data));
 }
 
 uint32
@@ -320,9 +303,6 @@ bcmsdh_cfg_read_word(void *sdh, uint fnc_num, uint32 addr, int *err)
 
 	if (err)
 		*err = (SDIOH_API_SUCCESS(status) ? 0 : BCME_SDIO_ERROR);
-
-	BCMSDH_INFO(("%s:fun = %d, addr = 0x%x, uint32data = 0x%x\n", __FUNCTION__,
-	            fnc_num, addr, data));
 
 	return data;
 }
@@ -344,8 +324,6 @@ bcmsdh_cfg_write_word(void *sdh, uint fnc_num, uint32 addr, uint32 data, int *er
 	if (err)
 		*err = (SDIOH_API_SUCCESS(status) ? 0 : BCME_SDIO_ERROR);
 
-	BCMSDH_INFO(("%s:fun = %d, addr = 0x%x, uint32data = 0x%x\n", __FUNCTION__, fnc_num,
-	             addr, data));
 }
 
 int
@@ -422,8 +400,6 @@ bcmsdh_reg_read(void *sdh, uint32 addr, uint size)
 	SDIOH_API_RC status;
 	uint32 word = 0;
 
-	BCMSDH_INFO(("%s:fun = 1, addr = 0x%x, ", __FUNCTION__, addr));
-
 	if (!bcmsdh)
 		bcmsdh = l_bcmsdh;
 
@@ -440,8 +416,6 @@ bcmsdh_reg_read(void *sdh, uint32 addr, uint size)
 		SDIOH_READ, SDIO_FUNC_1, addr, &word, size);
 
 	bcmsdh->regfail = !(SDIOH_API_SUCCESS(status));
-
-	BCMSDH_INFO(("uint32data = 0x%x\n", word));
 
 	/* if ok, return appropriately masked word */
 	if (SDIOH_API_SUCCESS(status)) {
@@ -469,9 +443,6 @@ bcmsdh_reg_write(void *sdh, uint32 addr, uint size, uint32 data)
 	bcmsdh_info_t *bcmsdh = (bcmsdh_info_t *)sdh;
 	SDIOH_API_RC status;
 	int err = 0;
-
-	BCMSDH_INFO(("%s:fun = 1, addr = 0x%x, uint%ddata = 0x%x\n",
-	             __FUNCTION__, addr, size*8, data));
 
 	if (!bcmsdh)
 		bcmsdh = l_bcmsdh;
@@ -516,9 +487,6 @@ bcmsdh_recv_buf(void *sdh, uint32 addr, uint fn, uint flags,
 	ASSERT(bcmsdh);
 	ASSERT(bcmsdh->init_success);
 
-	BCMSDH_INFO(("%s:fun = %d, addr = 0x%x, size = %d\n",
-	             __FUNCTION__, fn, addr, nbytes));
-
 	/* Async not implemented yet */
 	ASSERT(!(flags & SDIO_REQ_ASYNC));
 	if (flags & SDIO_REQ_ASYNC)
@@ -553,9 +521,6 @@ bcmsdh_send_buf(void *sdh, uint32 addr, uint fn, uint flags,
 
 	ASSERT(bcmsdh);
 	ASSERT(bcmsdh->init_success);
-
-	BCMSDH_INFO(("%s:fun = %d, addr = 0x%x, size = %d\n",
-	            __FUNCTION__, fn, addr, nbytes));
 
 	/* Async not implemented yet */
 	ASSERT(!(flags & SDIO_REQ_ASYNC));
