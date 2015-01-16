@@ -22,7 +22,7 @@ config F2FS_STAT_FS
 	  mounted as f2fs. Each file shows the whole f2fs information.
 
 	  /sys/kernel/debug/f2fs/status includes:
-	    - major file system information managed by f2fs currently
+	    - major filesystem information managed by f2fs currently
 	    - average SIT information about whole segments
 	    - current memory footprint consumed by f2fs.
 
@@ -32,7 +32,7 @@ config F2FS_FS_XATTR
 	default y
 	help
 	  Extended attributes are name:value pairs associated with inodes by
-	  the kernel or by users
+	  the kernel or by users.
 
 config F2FS_FS_POSIX_ACL
 	bool "F2FS Access Control Lists"
@@ -51,10 +51,10 @@ config F2FS_FS_SECURITY
 	default y
 	help
 	  Security labels provide an access control facility to support Linux
-	  Security Models (LSMs) accepted by SELinux.
-
-	  This option enables an extended attribute handler for file security
-	  labels, so that it requires extended attribute support.
+	  Security Models (LSMs) accepted by AppArmor, SELinux, Smack and TOMOYO
+	  Linux. This option enables an extended attribute handler for file
+	  security labels in the f2fs filesystem, so that it requires enabling
+	  the extended attribute support in advance.
 
 	  If you are not using a security module, say N.
 
@@ -63,6 +63,6 @@ config F2FS_CHECK_FS
 	depends on F2FS_FS
 	default n
 	help
-	  Enables BUG_ONs which check the file system consistency in runtime.
+	  Enables BUG_ONs which check the filesystem consistency in runtime.
 
 	  Enabling this option reduces performance.

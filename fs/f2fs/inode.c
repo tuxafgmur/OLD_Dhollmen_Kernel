@@ -12,24 +12,27 @@
 #include <linux/f2fs_fs.h>
 #include <linux/buffer_head.h>
 #include <linux/writeback.h>
-#include <linux/bitops.h>
 
 #include "f2fs.h"
 #include "node.h"
 
+#include <trace/events/f2fs.h>
+
 void f2fs_set_inode_flags(struct inode *inode)
 {
 	unsigned int flags = F2FS_I(inode)->i_flags;
-	unsigned int new_fl = 0;
+
+	inode->i_flags &= ~(S_SYNC | S_APPEND | S_IMMUTABLE |
+			S_NOATIME | S_DIRSYNC);
 
 	if (flags & FS_SYNC_FL)
-		new_fl |= S_SYNC;
+		inode->i_flags |= S_SYNC;
 	if (flags & FS_APPEND_FL)
-		new_fl |= S_APPEND;
+		inode->i_flags |= S_APPEND;
 	if (flags & FS_IMMUTABLE_FL)
-		new_fl |= S_IMMUTABLE;
+		inode->i_flags |= S_IMMUTABLE;
 	if (flags & FS_NOATIME_FL)
-		new_fl |= S_NOATIME;
+		inode->i_flags |= S_NOATIME;
 	if (flags & FS_DIRSYNC_FL)
 		inode->i_flags |= S_DIRSYNC;
 }
@@ -65,7 +68,7 @@ static void __set_inode_rdev(struct inode *inode, struct f2fs_inode *ri)
 
 static int do_read_inode(struct inode *inode)
 {
-	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 	struct f2fs_inode_info *fi = F2FS_I(inode);
 	struct page *node_page;
 	struct f2fs_inode *ri;
@@ -74,6 +77,7 @@ static int do_read_inode(struct inode *inode)
 	if (check_nid_range(sbi, inode->i_ino)) {
 		f2fs_msg(inode->i_sb, KERN_ERR, "bad inode number: %lu",
 			 (unsigned long) inode->i_ino);
+		WARN_ON(1);
 		return -EINVAL;
 	}
 
@@ -84,9 +88,9 @@ static int do_read_inode(struct inode *inode)
 	ri = F2FS_INODE(node_page);
 
 	inode->i_mode = le16_to_cpu(ri->i_mode);
-	inode->i_uid  = le32_to_cpu(ri->i_uid);
-	inode->i_gid  = le32_to_cpu(ri->i_gid);
-	inode->i_nlink = le32_to_cpu(ri->i_links);
+	inode->i_uid = le32_to_cpu(ri->i_uid);
+	inode->i_gid = le32_to_cpu(ri->i_gid);
+	set_nlink(inode, le32_to_cpu(ri->i_links));
 	inode->i_size = le64_to_cpu(ri->i_size);
 	inode->i_blocks = le64_to_cpu(ri->i_blocks);
 
@@ -127,6 +131,7 @@ struct inode *f2fs_iget(struct super_block *sb, unsigned long ino)
 		return ERR_PTR(-ENOMEM);
 
 	if (!(inode->i_state & I_NEW)) {
+		trace_f2fs_iget(inode);
 		return inode;
 	}
 	if (ino == F2FS_NODE_INO(sbi) || ino == F2FS_META_INO(sbi))
@@ -163,10 +168,12 @@ make_now:
 		goto bad_inode;
 	}
 	unlock_new_inode(inode);
+	trace_f2fs_iget(inode);
 	return inode;
 
 bad_inode:
 	iget_failed(inode);
+	trace_f2fs_iget_exit(inode, ret);
 	return ERR_PTR(ret);
 }
 
@@ -210,7 +217,7 @@ void update_inode(struct inode *inode, struct page *node_page)
 
 void update_inode_page(struct inode *inode)
 {
-	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 	struct page *node_page;
 retry:
 	node_page = get_node_page(sbi, inode->i_ino);
@@ -230,7 +237,7 @@ retry:
 
 int f2fs_write_inode(struct inode *inode, struct writeback_control *wbc)
 {
-	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 
 	if (inode->i_ino == F2FS_NODE_INO(sbi) ||
 			inode->i_ino == F2FS_META_INO(sbi))
@@ -258,15 +265,17 @@ int f2fs_write_inode(struct inode *inode, struct writeback_control *wbc)
  */
 void f2fs_evict_inode(struct inode *inode)
 {
-	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	nid_t xnid = F2FS_I(inode)->i_xattr_nid;
 
+	trace_f2fs_evict_inode(inode);
 	truncate_inode_pages(&inode->i_data, 0);
 
 	if (inode->i_ino == F2FS_NODE_INO(sbi) ||
 			inode->i_ino == F2FS_META_INO(sbi))
-		goto no_delete;
+		goto out_clear;
 
-	f2fs_bug_on(get_dirty_dents(inode));
+	f2fs_bug_on(sbi, get_dirty_dents(inode));
 	remove_dirty_dir_inode(inode);
 
 	if (inode->i_nlink || is_bad_inode(inode))
@@ -285,6 +294,12 @@ void f2fs_evict_inode(struct inode *inode)
 
 no_delete:
 	invalidate_mapping_pages(NODE_MAPPING(sbi), inode->i_ino, inode->i_ino);
+	if (xnid)
+		invalidate_mapping_pages(NODE_MAPPING(sbi), xnid, xnid);
+	if (is_inode_flag_set(F2FS_I(inode), FI_APPEND_WRITE))
+		add_dirty_inode(sbi, inode->i_ino, APPEND_INO);
+	if (is_inode_flag_set(F2FS_I(inode), FI_UPDATE_WRITE))
+		add_dirty_inode(sbi, inode->i_ino, UPDATE_INO);
+out_clear:
 	end_writeback(inode);
-
 }
