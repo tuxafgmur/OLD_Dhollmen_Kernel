@@ -40,6 +40,7 @@ struct wb_writeback_work {
 	unsigned int for_kupdate:1;
 	unsigned int range_cyclic:1;
 	unsigned int for_background:1;
+	unsigned int for_sync:1; 	/* sync(2) WB_SYNC_ALL writeback */
 
 	struct list_head list;		/* pending work list */
 	struct completion *done;	/* set if the caller waits */
@@ -352,11 +353,6 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 	assert_spin_locked(&inode_wb_list_lock);
 	assert_spin_locked(&inode->i_lock);
 
-	if (!atomic_read(&inode->i_count))
-		WARN_ON(!(inode->i_state & (I_WILL_FREE|I_FREEING)));
-	else
-		WARN_ON(inode->i_state & I_WILL_FREE);
-
 	if (inode->i_state & I_SYNC) {
 		/*
 		 * If this inode is locked for writeback and we are not doing
@@ -390,9 +386,11 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 	/*
 	 * Make sure to wait on the data before writing out the metadata.
 	 * This is important for filesystems that modify metadata on data
-	 * I/O completion.
+	 * I/O completion. We don't do it for sync(2) writeback because it has a
+	 * separate, external IO completion path and ->sync_fs for guaranteeing
+	 * inode metadata is written back correctly.
 	 */
-	if (wbc->sync_mode == WB_SYNC_ALL) {
+	if (wbc->sync_mode == WB_SYNC_ALL && !wbc->for_sync) {
 		int err = filemap_fdatawait(mapping);
 		if (ret == 0)
 			ret = err;
@@ -611,8 +609,6 @@ void writeback_inodes_wb(struct bdi_writeback *wb,
 static void __writeback_inodes_sb(struct super_block *sb,
 		struct bdi_writeback *wb, struct writeback_control *wbc)
 {
-	WARN_ON(!rwsem_is_locked(&sb->s_umount));
-
 	spin_lock(&inode_wb_list_lock);
 	if (!wbc->for_kupdate || list_empty(&wb->b_io))
 		queue_io(wb, wbc->older_than_this);
@@ -663,6 +659,7 @@ static long wb_writeback(struct bdi_writeback *wb,
 		.older_than_this	= NULL,
 		.for_kupdate		= work->for_kupdate,
 		.for_background		= work->for_background,
+		.for_sync 		= work->for_sync,
 		.range_cyclic		= work->range_cyclic,
 	};
 	unsigned long oldest_jif;
@@ -1128,8 +1125,6 @@ static void wait_sb_inodes(struct super_block *sb)
 	 * We need to be protected against the filesystem going from
 	 * r/o to r/w or vice versa.
 	 */
-	WARN_ON(!rwsem_is_locked(&sb->s_umount));
-
 	spin_lock(&inode_sb_list_lock);
 
 	/*
@@ -1196,7 +1191,6 @@ void writeback_inodes_sb_nr(struct super_block *sb, unsigned long nr)
 	if (sb->s_bdi == &noop_backing_dev_info)
 		return;
 
-	WARN_ON(!rwsem_is_locked(&sb->s_umount));
 	bdi_queue_work(sb->s_bdi, &work);
 	wait_for_completion(&done);
 }
@@ -1272,12 +1266,11 @@ void sync_inodes_sb(struct super_block *sb)
 		.nr_pages	= LONG_MAX,
 		.range_cyclic	= 0,
 		.done		= &done,
+		.for_sync	= 1,
 	};
 
 	if (sb->s_bdi == &noop_backing_dev_info)
 		return;
-
-	WARN_ON(!rwsem_is_locked(&sb->s_umount));
 
 	bdi_queue_work(sb->s_bdi, &work);
 	wait_for_completion(&done);
