@@ -167,9 +167,33 @@ static ssize_t store_governor(struct device *dev,
 		return count;
 }
 
+static ssize_t store_frequency_limit(struct device *dev,
+				     struct device_attribute *attr, const char *buf,
+				     size_t count)
+{
+	unsigned long freq_limit;
+
+	kstrtoul(buf, 0, &freq_limit);
+
+	/*
+	 * We can use the frequency list table, but this a specific patch,
+	 * thus the hardcoded values serve as documentation.
+	 */
+	if ((freq_limit != 153600000L) &&
+		(freq_limit != 307200000L) &&
+			(freq_limit != 384000000L) &&
+				(freq_limit != 512000000L)) {
+		pr_info("PVR: frequency limit value out of range, set to %lu\n", SYS_SGX_CLOCK_SPEED);
+		freq_limit = SYS_SGX_CLOCK_SPEED;
+	}
+
+	freq_limit = sgxfreq_set_freq_limit(freq_limit);
+	return count;
+}
+
 static DEVICE_ATTR(frequency_list, 0444, show_frequency_list, NULL);
 static DEVICE_ATTR(frequency_request, 0444, show_frequency_request, NULL);
-static DEVICE_ATTR(frequency_limit, 0444, show_frequency_limit, NULL);
+static DEVICE_ATTR(frequency_limit, 0644, show_frequency_limit, store_frequency_limit);
 static DEVICE_ATTR(frequency, 0444, show_frequency, NULL);
 static DEVICE_ATTR(governor_list, 0444, show_governor_list, NULL);
 static DEVICE_ATTR(governor, 0644, show_governor, store_governor);
@@ -314,7 +338,7 @@ int sgxfreq_init(struct device *dev)
 	rcu_read_unlock();
 
 	mutex_init(&sfd.freq_mutex);
-	sfd.freq_limit = sfd.freq_list[sfd.freq_cnt - 1];
+	sfd.freq_limit = SYS_SGX_CLOCK_SPEED;
 	sgxfreq_set_freq_request(sfd.freq_list[sfd.freq_cnt - 1]);
 	sfd.sgx_data.clk_on = false;
 	sfd.sgx_data.active = false;

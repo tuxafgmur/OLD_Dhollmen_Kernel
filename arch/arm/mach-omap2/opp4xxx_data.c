@@ -361,7 +361,7 @@ static struct omap_opp_def __initdata omap443x_opp_def_list[] = {
 #ifdef CONFIG_OMAP4430_TOP_GPU
 	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", true,
 			384000000, OMAP4430_VDD_CORE_OPP100_UV),
-	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", false,
+	OPP_INITIALIZER("gpu", "dpll_per_m7x2_ck", "core", true,
 			512000000, OMAP4430_VDD_CORE_OPP100_OV_UV),
 #endif
 	/* FDIF OPP1 - OPP25 */
