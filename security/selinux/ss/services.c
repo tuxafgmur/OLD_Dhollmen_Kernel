@@ -467,7 +467,6 @@ static void security_dump_masked_av(struct context *scontext,
 {
 	struct common_datum *common_dat;
 	struct class_datum *tclass_dat;
-	struct audit_buffer *ab;
 	char *tclass_name;
 	char *scontext_name = NULL;
 	char *tcontext_name = NULL;
@@ -501,30 +500,6 @@ static void security_dump_masked_av(struct context *scontext,
 	if (context_struct_to_string(tcontext,
 				     &tcontext_name, &length) < 0)
 		goto out;
-
-	/* audit a message */
-	ab = audit_log_start(current->audit_context,
-			     GFP_ATOMIC, AUDIT_SELINUX_ERR);
-	if (!ab)
-		goto out;
-
-	audit_log_format(ab, "op=security_compute_av reason=%s "
-			 "scontext=%s tcontext=%s tclass=%s perms=",
-			 reason, scontext_name, tcontext_name, tclass_name);
-
-	for (index = 0; index < 32; index++) {
-		u32 mask = (1 << index);
-
-		if ((mask & permissions) == 0)
-			continue;
-
-		audit_log_format(ab, "%s%s",
-				 need_comma ? "," : "",
-				 permission_names[index]
-				 ? permission_names[index] : "????");
-		need_comma = true;
-	}
-	audit_log_end(ab);
 out:
 	/* release scontext/tcontext */
 	kfree(tcontext_name);
@@ -719,24 +694,6 @@ static int security_validtrans_handle_fail(struct context *ocontext,
 					   struct context *tcontext,
 					   u16 tclass)
 {
-	char *o = NULL, *n = NULL, *t = NULL;
-	u32 olen, nlen, tlen;
-
-	if (context_struct_to_string(ocontext, &o, &olen))
-		goto out;
-	if (context_struct_to_string(ncontext, &n, &nlen))
-		goto out;
-	if (context_struct_to_string(tcontext, &t, &tlen))
-		goto out;
-	audit_log(current->audit_context, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-		  "security_validate_transition:  denied for"
-		  " oldcontext=%s newcontext=%s taskcontext=%s tclass=%s",
-		  o, n, t, sym_name(&policydb, SYM_CLASSES, tclass-1));
-out:
-	kfree(o);
-	kfree(n);
-	kfree(t);
-
 	if (!selinux_enforcing)
 		return 0;
 	return -EPERM;
@@ -866,25 +823,6 @@ int security_bounded_transition(u32 old_sid, u32 new_sid)
 		index = type->bounds;
 	}
 
-	if (rc) {
-		char *old_name = NULL;
-		char *new_name = NULL;
-		u32 length;
-
-		if (!context_struct_to_string(old_context,
-					      &old_name, &length) &&
-		    !context_struct_to_string(new_context,
-					      &new_name, &length)) {
-			audit_log(current->audit_context,
-				  GFP_ATOMIC, AUDIT_SELINUX_ERR,
-				  "op=security_bounded_transition "
-				  "result=denied "
-				  "oldcontext=%s newcontext=%s",
-				  old_name, new_name);
-		}
-		kfree(new_name);
-		kfree(old_name);
-	}
 out:
 	read_unlock(&policy_rwlock);
 
@@ -1230,6 +1168,10 @@ static int security_context_to_sid_core(const char *scontext, u32 scontext_len,
 	struct context context;
 	int rc = 0;
 
+	/* An empty security context is not valid. */
+	if (!scontext_len)
+		return -EINVAL;
+
 	if (!ss_initialized) {
 		int i;
 
@@ -1333,25 +1275,6 @@ static int compute_sid_handle_invalid_context(
 	u16 tclass,
 	struct context *newcontext)
 {
-	char *s = NULL, *t = NULL, *n = NULL;
-	u32 slen, tlen, nlen;
-
-	if (context_struct_to_string(scontext, &s, &slen))
-		goto out;
-	if (context_struct_to_string(tcontext, &t, &tlen))
-		goto out;
-	if (context_struct_to_string(newcontext, &n, &nlen))
-		goto out;
-	audit_log(current->audit_context, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-		  "security_compute_sid:  invalid context %s"
-		  " for scontext=%s"
-		  " tcontext=%s"
-		  " tclass=%s",
-		  n, s, t, sym_name(&policydb, SYM_CLASSES, tclass-1));
-out:
-	kfree(s);
-	kfree(t);
-	kfree(n);
 	if (!selinux_enforcing)
 		return 0;
 	return -EACCES;
@@ -2408,16 +2331,6 @@ int security_set_bools(int len, int *values)
 		goto out;
 
 	for (i = 0; i < len; i++) {
-		if (!!values[i] != policydb.bool_val_to_struct[i]->state) {
-			audit_log(current->audit_context, GFP_ATOMIC,
-				AUDIT_MAC_CONFIG_CHANGE,
-				"bool=%s val=%d old_val=%d auid=%u ses=%u",
-				sym_name(&policydb, SYM_BOOLS, i),
-				!!values[i],
-				policydb.bool_val_to_struct[i]->state,
-				audit_get_loginuid(current),
-				audit_get_sessionid(current));
-		}
 		if (values[i])
 			policydb.bool_val_to_struct[i]->state = 1;
 		else
@@ -2541,14 +2454,8 @@ int security_sid_mls_copy(u32 sid, u32 mls_sid, u32 *new_sid)
 	/* Check the validity of the new context. */
 	if (!policydb_context_isvalid(&policydb, &newcon)) {
 		rc = convert_context_handle_invalid_context(&newcon);
-		if (rc) {
-			if (!context_struct_to_string(&newcon, &s, &len)) {
-				audit_log(current->audit_context, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-					  "security_sid_mls_copy: invalid context %s", s);
-				kfree(s);
-			}
+		if (rc)
 			goto out_unlock;
-		}
 	}
 
 	rc = sidtab_context_to_sid(&sidtab, &newcon, new_sid);
@@ -2914,25 +2821,18 @@ int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
 	int match = 0;
 
 	if (!rule) {
-		audit_log(actx, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-			  "selinux_audit_rule_match: missing rule\n");
 		return -ENOENT;
 	}
 
 	read_lock(&policy_rwlock);
 
 	if (rule->au_seqno < latest_granting) {
-		audit_log(actx, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-			  "selinux_audit_rule_match: stale rule\n");
 		match = -ESTALE;
 		goto out;
 	}
 
 	ctxt = sidtab_search(&sidtab, sid);
 	if (!ctxt) {
-		audit_log(actx, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-			  "selinux_audit_rule_match: unrecognized SID %d\n",
-			  sid);
 		match = -ENOENT;
 		goto out;
 	}
