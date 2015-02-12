@@ -61,11 +61,7 @@ static int mmc_queue_thread(void *d)
 
 		spin_lock_irq(q->queue_lock);
 		set_current_state(TASK_INTERRUPTIBLE);
-		if ((mq->card->quirks & MMC_QUIRK_MOVINAND_TLC)
-			&& (mq->mqrq_prev->req))
-			req = NULL;
-		else
-			req = blk_fetch_request(q);
+		req = blk_fetch_request(q);
 		/* set nopacked_period if next request is RT class */
 		if (req && IS_RT_CLASS_REQ(req))
 			mmc_set_nopacked_period(mq, HZ);
@@ -154,7 +150,7 @@ static void mmc_queue_setup_discard(struct request_queue *q,
 
 	queue_flag_set_unlocked(QUEUE_FLAG_DISCARD, q);
 	q->limits.max_discard_sectors = max_discard;
-	if (card->erased_byte == 0)
+	if (card->erased_byte == 0 && !mmc_can_discard(card))
 		q->limits.discard_zeroes_data = 1;
 	q->limits.discard_granularity = card->pref_erase << 9;
 	/* granularity must not be greater than max. discard */

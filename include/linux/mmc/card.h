@@ -92,7 +92,7 @@ struct mmc_ext_csd {
 	u8			raw_trim_mult;		/* 232 */
 	u8			raw_sectors[4];		/* 212 - 4 bytes */
 	unsigned int            feature_support;
-#define MMC_DISCARD_FEATURE    BIT(0)                  /* CMD38 feature */
+#define MMC_DISCARD_FEATURE     BIT(0)                  /* CMD38 feature */
 };
 
 struct sd_scr {
@@ -102,8 +102,8 @@ struct sd_scr {
 #define SD_SCR_BUS_WIDTH_1	(1<<0)
 #define SD_SCR_BUS_WIDTH_4	(1<<2)
 	unsigned char		cmds;
-#define SD_SCR_CMD20_SUPPORT   (1<<0)
-#define SD_SCR_CMD23_SUPPORT   (1<<1)
+#define SD_SCR_CMD20_SUPPORT    (1<<0)
+#define SD_SCR_CMD23_SUPPORT    (1<<1)
 };
 
 struct sd_ssr {
@@ -205,8 +205,7 @@ struct mmc_card {
 #define MMC_QUIRK_DISABLE_CD	(1<<5)		/* disconnect CD/DAT[3] resistor */
 #define MMC_QUIRK_INAND_CMD38	(1<<6)		/* iNAND devices have broken CMD38 */
 #define MMC_QUIRK_BLK_NO_CMD23	(1<<7)		/* Avoid CMD23 for regular multiblock */
-#define MMC_QUIRK_MOVINAND_TLC (1<<31)		/* Check the moviNAND TLC */
-
+#define MMC_QUIRK_SEC_ERASE_TRIM_BROKEN (1<<10) /* Skip secure for erase/trim */
 	unsigned int    poweroff_notify_state;	/* eMMC4.5 notify feature */
 #define MMC_NO_POWER_NOTIFICATION	0
 #define MMC_POWERED_ON			1
