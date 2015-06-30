@@ -46,12 +46,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern "C" {
 #endif
 
-
 /*!
  *****************************************************************************
  *	Power management
  *****************************************************************************/
- 
+
 typedef struct _PVRSRV_POWER_DEV_TAG_
 {
 	PFN_PRE_POWER					pfnPrePower;
@@ -69,11 +68,11 @@ typedef struct _PVRSRV_POWER_DEV_TAG_
 
 typedef enum _PVRSRV_INIT_SERVER_STATE_
 {
-	PVRSRV_INIT_SERVER_Unspecified		= -1,	
-	PVRSRV_INIT_SERVER_RUNNING			= 0,	
-	PVRSRV_INIT_SERVER_RAN				= 1,	
-	PVRSRV_INIT_SERVER_SUCCESSFUL		= 2,	
-	PVRSRV_INIT_SERVER_NUM				= 3,	
+	PVRSRV_INIT_SERVER_Unspecified		= -1,
+	PVRSRV_INIT_SERVER_RUNNING			= 0,
+	PVRSRV_INIT_SERVER_RAN				= 1,
+	PVRSRV_INIT_SERVER_SUCCESSFUL		= 2,
+	PVRSRV_INIT_SERVER_NUM				= 3,
 	PVRSRV_INIT_SERVER_FORCE_I32 = 0x7fffffff
 
 } PVRSRV_INIT_SERVER_STATE, *PPVRSRV_INIT_SERVER_STATE;
@@ -83,8 +82,6 @@ IMG_BOOL PVRSRVGetInitServerState(PVRSRV_INIT_SERVER_STATE	eInitServerState);
 
 IMG_IMPORT
 PVRSRV_ERROR PVRSRVSetInitServerState(PVRSRV_INIT_SERVER_STATE	eInitServerState, IMG_BOOL bState);
-
-
 
 IMG_IMPORT
 PVRSRV_ERROR PVRSRVPowerLock(IMG_UINT32	ui32CallerID,

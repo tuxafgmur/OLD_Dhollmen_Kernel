@@ -50,7 +50,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	FUNCTION:   MMU_Initialise
 
 	PURPOSE:    Initialise the mmu module.
-	                	
+
 	PARAMETERS:	None
 	RETURNS:	PVRSRV_ERROR
 ******************************************************************************/
@@ -62,21 +62,20 @@ MMU_Initialise (PVRSRV_DEVICE_NODE *psDeviceNode, MMU_CONTEXT **ppsMMUContext, I
 	FUNCTION:   MMU_Finalise
 
 	PURPOSE:    Finalise the mmu module, deallocate all resources.
-	                	
+
 	PARAMETERS:	None.
 	RETURNS:	None.
 ******************************************************************************/
 IMG_VOID
 MMU_Finalise (MMU_CONTEXT *psMMUContext);
 
-
 /*
 ******************************************************************************
 	FUNCTION:   MMU_InsertHeap
 
-	PURPOSE:    Inserts shared heap into the specified context 
+	PURPOSE:    Inserts shared heap into the specified context
 				from the kernel context
-	                	
+
 	PARAMETERS:	None.
 	RETURNS:	None.
 ******************************************************************************/
@@ -90,7 +89,7 @@ MMU_InsertHeap(MMU_CONTEXT *psMMUContext, MMU_HEAP *psMMUHeap);
     PURPOSE:    Create an mmu device.
 
     PARAMETERS: In: psMMUContext -
-                In: psDevArena - 
+                In: psDevArena -
 				Out: ppsVMArena
     RETURNS:	MMU_HEAP
 ******************************************************************************/
@@ -105,9 +104,9 @@ MMU_Create (MMU_CONTEXT *psMMUContext,
 	FUNCTION:   MMU_Delete
 
 	PURPOSE:    Delete an mmu device.
-	                	
+
 	PARAMETERS:	In:  pMMUHeap - The mmu to delete.
-	RETURNS:	
+	RETURNS:
 ******************************************************************************/
 IMG_VOID
 MMU_Delete (MMU_HEAP *pMMUHeap);
@@ -118,7 +117,7 @@ MMU_Delete (MMU_HEAP *pMMUHeap);
     PURPOSE:    Allocate space in an mmu's virtual address space.
     PARAMETERS:	In:  pMMUHeap - MMU to allocate on.
                 In:  uSize - Size in bytes to allocate.
-                Out: pActualSize - If non null receives actual size allocated. 
+                Out: pActualSize - If non null receives actual size allocated.
                 In:  uFlags - Allocation flags.
                 In:  uDevVAddrAlignment - Required alignment.
                 Out: pDevVAddr - Receives base address of allocation.
@@ -153,11 +152,11 @@ MMU_Free (MMU_HEAP *pMMUHeap,
 
 	PURPOSE:    Enable an mmu. Establishes pages tables and takes the mmu out
 	            of bypass and waits for the mmu to acknowledge enabled.
-	                	
+
 	PARAMETERS:	In:  pMMUHeap - the mmu
 	RETURNS:	None
 ******************************************************************************/
-IMG_VOID 
+IMG_VOID
 MMU_Enable (MMU_HEAP *pMMUHeap);
 
 /*
@@ -165,11 +164,11 @@ MMU_Enable (MMU_HEAP *pMMUHeap);
 	FUNCTION:   MMU_Disable
 
 	PURPOSE:    Disable an mmu, takes the mmu into bypass.
-	                	
+
 	PARAMETERS:	In:  pMMUHeap - the mmu
 	RETURNS:	None
 ******************************************************************************/
-IMG_VOID 
+IMG_VOID
 MMU_Disable (MMU_HEAP *pMMUHeap);
 
 /*
@@ -184,7 +183,7 @@ MMU_Disable (MMU_HEAP *pMMUHeap);
 	            In:  SysPAddr - the system physical address of the page to map.
 	            In:  uSize - size of memory range in bytes
                 In:  ui32MemFlags - page table flags.
-	            In:  hUniqueTag - A unique ID for use as a tag identifier 
+	            In:  hUniqueTag - A unique ID for use as a tag identifier
 	RETURNS:	None
 ******************************************************************************/
 IMG_VOID
@@ -210,7 +209,7 @@ MMU_MapPages (MMU_HEAP *pMMUHeap,
 				In:  ui32NumPhysChunks - Number of physical chunks
 				In:  pabMapChunk - Mapping array
                 In:  ui32MemFlags - page table flags.
-	            In:  hUniqueTag - A unique ID for use as a tag identifier 
+	            In:  hUniqueTag - A unique ID for use as a tag identifier
 	RETURNS:	None
 ******************************************************************************/
 IMG_VOID
@@ -230,7 +229,7 @@ MMU_MapPagesSparse (MMU_HEAP *pMMUHeap,
 
 	PURPOSE:    Create a mapping for a range of pages from a CPU virtual
                 adddress to a specified device virtual address.
-	                	
+
 	PARAMETERS: In:  pMMUHeap - the mmu.
                 In:  MapBaseDevVAddr - A page aligned device virtual address
                                        to start mapping from.
@@ -260,7 +259,7 @@ MMU_MapShadow (MMU_HEAP          * pMMUHeap,
 
 	PURPOSE:    Create a mapping for a range of pages from a CPU virtual
                 adddress to a specified device virtual address.
-	                	
+
 	PARAMETERS: In:  pMMUHeap - the mmu.
                 In:  MapBaseDevVAddr - A page aligned device virtual address
                                        to start mapping from.
@@ -295,7 +294,7 @@ MMU_MapShadowSparse (MMU_HEAP          * pMMUHeap,
 	FUNCTION:   MMU_UnmapPages
 
 	PURPOSE:    unmaps pages and invalidates virtual address.
-	                	
+
 	PARAMETERS:	In:  psMMUHeap - the mmu.
 	            In:  sDevVAddr - the device virtual address.
 	            In:  ui32PageCount - page count.
@@ -311,9 +310,9 @@ MMU_UnmapPages (MMU_HEAP *psMMUHeap,
 ******************************************************************************
 	FUNCTION:   MMU_MapScatter
 
-	PURPOSE:    Create a mapping for a list of pages to a specified device 
+	PURPOSE:    Create a mapping for a list of pages to a specified device
 				virtual address.
-	                	
+
 	PARAMETERS:	In:  pMMUHeap - the mmu.
 	            In:  DevVAddr - the device virtual address.
 	            In:  psSysAddr - the list of physical addresses of the pages to
@@ -328,7 +327,6 @@ MMU_MapScatter (MMU_HEAP *pMMUHeap,
 				IMG_UINT32 ui32MemFlags,
 				IMG_HANDLE hUniqueTag);
 
-
 /*
 ******************************************************************************
     FUNCTION:   MMU_GetPhysPageAddr
@@ -336,13 +334,12 @@ MMU_MapScatter (MMU_HEAP *pMMUHeap,
     PURPOSE:    extracts physical address from MMU page tables
 
     PARAMETERS: In:  pMMUHeap - the mmu
-	PARAMETERS: In:  sDevVPageAddr - the virtual address to extract physical 
+	PARAMETERS: In:  sDevVPageAddr - the virtual address to extract physical
 					page mapping from
     RETURNS:    IMG_DEV_PHYADDR
 ******************************************************************************/
 IMG_DEV_PHYADDR
 MMU_GetPhysPageAddr(MMU_HEAP *pMMUHeap, IMG_DEV_VIRTADDR sDevVPageAddr);
-
 
 /*
 ******************************************************************************
@@ -356,13 +353,12 @@ MMU_GetPhysPageAddr(MMU_HEAP *pMMUHeap, IMG_DEV_VIRTADDR sDevVPageAddr);
 IMG_DEV_PHYADDR
 MMU_GetPDDevPAddr(MMU_CONTEXT *pMMUContext);
 
-
 #ifdef SUPPORT_SGX_MMU_BYPASS
 /*
 ******************************************************************************
     FUNCTION:   EnableHostAccess
 
-    PURPOSE:    Enables Host accesses to device memory, by passing the device 
+    PURPOSE:    Enables Host accesses to device memory, by passing the device
     			MMU address translation
 
     PARAMETERS: In: psMMUContext
@@ -371,12 +367,11 @@ MMU_GetPDDevPAddr(MMU_CONTEXT *pMMUContext);
 IMG_VOID
 EnableHostAccess (MMU_CONTEXT *psMMUContext);
 
-
 /*
 ******************************************************************************
     FUNCTION:   DisableHostAccess
 
-    PURPOSE:    Disables Host accesses to device memory, by passing the device 
+    PURPOSE:    Disables Host accesses to device memory, by passing the device
     			MMU address translation
 
     PARAMETERS: In: psMMUContext
@@ -447,7 +442,7 @@ PVRSRV_ERROR MMU_UnmapExtSystemCacheRegs(PVRSRV_DEVICE_NODE *psDeviceNode);
 /*
 ******************************************************************************
 	FUNCTION:   MMU_IsHeapShared
-	
+
 	PURPOSE:    Is this heap shared?
 	PARAMETERS: In: pMMU_Heap
 	RETURNS:    true if heap is shared
@@ -481,7 +476,6 @@ IMG_VOID MMU_GetCacheFlushRange(MMU_CONTEXT *pMMUContext, IMG_UINT32 *pui32Range
 IMG_VOID MMU_GetPDPhysAddr(MMU_CONTEXT *pMMUContext, IMG_DEV_PHYADDR *psDevPAddr);
 
 #endif
-
 
 IMG_VOID MMU_CheckFaultAddr(PVRSRV_SGXDEV_INFO *psDevInfo, IMG_UINT32 ui32PDDevPAddr, IMG_UINT32 ui32RegVal);
 

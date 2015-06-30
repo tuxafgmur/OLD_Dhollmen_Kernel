@@ -118,7 +118,6 @@ typedef struct _RESMAN_ITEM_
 	RESMAN_FREE_FN			pfnFreeResource;/*!< resman item free callback */
 } RESMAN_ITEM;
 
-
 /* resman context structure */
 typedef struct _RESMAN_CONTEXT_
 {
@@ -134,14 +133,12 @@ typedef struct _RESMAN_CONTEXT_
 
 } RESMAN_CONTEXT;
 
-
 /* resman list structure */
 typedef struct
 {
 	RESMAN_CONTEXT	*psContextList; /*!< resman context list */
 
 } RESMAN_LIST, *PRESMAN_LIST;	/* PRQA S 3205 */
-
 
 PRESMAN_LIST	gpsResList = IMG_NULL;
 
@@ -156,7 +153,6 @@ static IMPLEMENT_LIST_REVERSE(RESMAN_ITEM)
 static IMPLEMENT_LIST_REMOVE(RESMAN_CONTEXT)
 static IMPLEMENT_LIST_INSERT(RESMAN_CONTEXT)
 
-
 #define PRINT_RESLIST(x, y, z)
 
 /******************************************************** Forword references */
@@ -170,18 +166,12 @@ static PVRSRV_ERROR FreeResourceByCriteria(PRESMAN_CONTEXT	psContext,
 										   IMG_UINT32		ui32Param,
 										   IMG_BOOL			bExecuteCallback);
 
-
 #ifdef DEBUG
 	static IMG_VOID ValidateResList(PRESMAN_LIST psResList);
 	#define VALIDATERESLIST() ValidateResList(gpsResList)
 #else
 	#define VALIDATERESLIST()
 #endif
-
-
-
-
-
 
 /*!
 ******************************************************************************
@@ -216,7 +206,6 @@ PVRSRV_ERROR ResManInit(IMG_VOID)
 	return PVRSRV_OK;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -235,7 +224,6 @@ IMG_VOID ResManDeInit(IMG_VOID)
 		gpsResList = IMG_NULL;
 	}
 }
-
 
 /*!
 ******************************************************************************
@@ -299,7 +287,6 @@ PVRSRV_ERROR PVRSRVResManConnect(IMG_HANDLE			hPerProc,
 	return PVRSRV_OK;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -351,7 +338,7 @@ IMG_VOID PVRSRVResManDisconnect(PRESMAN_CONTEXT psResManContext,
 		FreeResourceByCriteria(psResManContext, RESMAN_CRITERIA_RESTYPE, RESMAN_TYPE_TRANSFER_CONTEXT, 0, 0, IMG_TRUE);
 		FreeResourceByCriteria(psResManContext, RESMAN_CRITERIA_RESTYPE, RESMAN_TYPE_SHARED_PB_DESC_CREATE_LOCK, 0, 0, IMG_TRUE);
 		FreeResourceByCriteria(psResManContext, RESMAN_CRITERIA_RESTYPE, RESMAN_TYPE_SHARED_PB_DESC, 0, 0, IMG_TRUE);
-		
+
 		/* COMMON types: */
 		FreeResourceByCriteria(psResManContext, RESMAN_CRITERIA_RESTYPE, RESMAN_TYPE_SYNC_INFO, 0, 0, IMG_TRUE);
 		FreeResourceByCriteria(psResManContext, RESMAN_CRITERIA_RESTYPE, RESMAN_TYPE_DEVICECLASSMEM_MAPPING, 0, 0, IMG_TRUE);
@@ -382,7 +369,6 @@ IMG_VOID PVRSRVResManDisconnect(PRESMAN_CONTEXT psResManContext,
 	OSFreeMem(PVRSRV_OS_PAGEABLE_HEAP, sizeof(RESMAN_CONTEXT), psResManContext, IMG_NULL);
 	/*not nulling pointer, copy on stack*/
 
-
 	/* Check resource list */
 	VALIDATERESLIST();
 
@@ -392,7 +378,6 @@ IMG_VOID PVRSRVResManDisconnect(PRESMAN_CONTEXT psResManContext,
 	/* Release resource list sync object */
 	RELEASE_SYNC_OBJ;
 }
-
 
 /*!
 ******************************************************************************
@@ -525,7 +510,6 @@ PVRSRV_ERROR ResManFreeResByPtr(RESMAN_ITEM	*psResItem, IMG_BOOL bForceCleanup)
 	return(eError);
 }
 
-
 /*!
 ******************************************************************************
  @Function	 	ResManFreeResByCriteria
@@ -575,7 +559,6 @@ PVRSRV_ERROR ResManFreeResByCriteria(PRESMAN_CONTEXT	psResManContext,
 
 	return eError;
 }
-
 
 /*!
 ******************************************************************************
@@ -649,7 +632,6 @@ static IMG_BOOL ResManFindResourceByPtr_AnyVaCb(RESMAN_ITEM *psCurItem, va_list 
 
 	return (IMG_BOOL)(psCurItem == psItem);
 }
-
 
 /*!
 ******************************************************************************
@@ -807,7 +789,6 @@ static PVRSRV_ERROR FreeResourceByPtr(RESMAN_ITEM	*psItem,
 					pvParam - address of resource to be free
 					ui32Param - size of resource to be free
 
-
  @Return   		psCurItem if matched, IMG_NULL otherwise.
 **************************************************************************/
 static IMG_VOID* FreeResourceByCriteria_AnyVaCb(RESMAN_ITEM *psCurItem, va_list va)
@@ -905,7 +886,6 @@ static PVRSRV_ERROR FreeResourceByCriteria(PRESMAN_CONTEXT	psResManContext,
 	return eError;
 }
 
-
 #ifdef DEBUG
 /*!
 ******************************************************************************
@@ -978,7 +958,6 @@ static IMG_VOID ValidateResList(PRESMAN_LIST psResList)
 	}
 }
 #endif /* DEBUG */
-
 
 /******************************************************************************
  End of file (resman.c)

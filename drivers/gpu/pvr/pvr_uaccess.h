@@ -85,4 +85,3 @@ static inline unsigned long pvr_copy_from_user(void *pvTo, const void __user *pv
 #define	pvr_get_user	get_user
 
 #endif /* __PVR_UACCESS_H__ */
-

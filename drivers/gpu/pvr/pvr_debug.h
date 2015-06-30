@@ -42,9 +42,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __PVR_DEBUG_H__
 #define __PVR_DEBUG_H__
 
-
 #include "img_types.h"
-
 
 #if defined (__cplusplus)
 extern "C" {
@@ -114,7 +112,6 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVDebugAssertFail(const IMG_CHAR *pszFile,
 
 #endif /* defined(LINUX) && defined(__KERNEL__) */
 
-
 			#if defined(LINUX) && defined(__KERNEL__)
 				#define PVR_DBG_BREAK BUG()
 			#else
@@ -127,7 +124,6 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVDebugAssertFail(const IMG_CHAR *pszFile,
 	#define PVR_DBG_BREAK
 
 #endif /* defined(PVRSRV_NEED_PVR_ASSERT) */
-
 
 /* PVR_DPF() handling */
 
@@ -206,7 +202,6 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVDebugPrintf(IMG_UINT32 ui32DebugLevel,
 
 #endif /* defined(PVRSRV_NEED_PVR_DPF) */
 
-
 /* PVR_TRACE() handling */
 
 #if defined(PVRSRV_NEED_PVR_TRACE)
@@ -222,7 +217,6 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVTrace(const IMG_CHAR* pszFormat, ... )
 
 #endif /* defined(PVRSRV_NEED_PVR_TRACE) */
 
-
 #if defined (__cplusplus)
 }
 #endif
@@ -232,4 +226,3 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVTrace(const IMG_CHAR* pszFormat, ... )
 /******************************************************************************
  End of file (pvr_debug.h)
 ******************************************************************************/
-

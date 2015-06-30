@@ -943,7 +943,6 @@ PVRSRV_ERROR ReallocHandleArray(PVRSRV_HANDLE_BASE *psBase, IMG_UINT32 ui32NewCo
 			{
 				struct sHandle *psHandle = psIndex->psHandle + ui32SubIndex;
 
-
 				psHandle->ui32Index = ui32SubIndex + ui32Index;
 				psHandle->eType = PVRSRV_HANDLE_TYPE_NONE;
 				psHandle->eInternalFlag = INTERNAL_HANDLE_FLAG_NONE;
@@ -1486,7 +1485,7 @@ static PVRSRV_ERROR AllocHandle(PVRSRV_HANDLE_BASE *psBase, IMG_HANDLE *phHandle
 
 	if (psBase->ui32FreeHandCount == 0 && HANDLES_BATCHED(psBase))
 	{
-		 PVR_DPF((PVR_DBG_WARNING, "AllocHandle: Handle batch size (%u) was too small, allocating additional space", psBase->ui32HandBatchSize)); 
+		 PVR_DPF((PVR_DBG_WARNING, "AllocHandle: Handle batch size (%u) was too small, allocating additional space", psBase->ui32HandBatchSize));
 	}
 
 	/* Ensure there is a free handle */
@@ -1723,7 +1722,7 @@ PVRSRV_ERROR PVRSRVAllocHandle(PVRSRV_HANDLE_BASE *psBase, IMG_HANDLE *phHandle,
 				eError = PVRSRV_OK;
 				goto exit_ok;
 			}
-			
+
 #if defined (SUPPORT_SID_INTERFACE)
 			PVR_DBG_BREAK
 #endif
@@ -1732,7 +1731,7 @@ PVRSRV_ERROR PVRSRVAllocHandle(PVRSRV_HANDLE_BASE *psBase, IMG_HANDLE *phHandle,
 	}
 
 	eError = AllocHandle(psBase, phHandle, pvData, eType, eFlag, IMG_NULL);
-	
+
 exit_ok:
 	if (HANDLES_BATCHED(psBase) && (eError == PVRSRV_OK))
 	{

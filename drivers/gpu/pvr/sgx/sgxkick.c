@@ -193,7 +193,6 @@ PVRSRV_ERROR SGXDoKickKM(IMG_HANDLE hDevHandle, SGX_CCB_KICK *psCCBKick)
 		}
 	}
 
-
 #if defined(SUPPORT_SGX_GENERALISED_SYNCOBJECTS)
 	/* SRC and DST sync dependencies */
 	psTACmd->ui32NumTASrcSyncs = psCCBKick->ui32NumTASrcSyncs;
@@ -395,8 +394,8 @@ PVRSRV_ERROR SGXDoKickKM(IMG_HANDLE hDevHandle, SGX_CCB_KICK *psCCBKick)
 			}
 		}
 	}
-	
-	/* 
+
+	/*
 		NOTE: THIS MUST BE THE LAST THING WRITTEN TO THE TA COMMAND!
 		Set the ready for so the uKernel will process the command.
 	*/
@@ -657,7 +656,7 @@ PVRSRV_ERROR SGXDoKickKM(IMG_HANDLE hDevHandle, SGX_CCB_KICK *psCCBKick)
 					sizeof(IMG_UINT32),
 					0,
 					MAKEUNIQUETAG(psCCBMemInfo));
-			
+
 			if (psCCBKick->bTADependency)
 			{
 				psSyncInfo->psSyncData->ui32LastOpDumpVal++;
@@ -781,13 +780,13 @@ PVRSRV_ERROR SGXDoKickKM(IMG_HANDLE hDevHandle, SGX_CCB_KICK *psCCBKick)
 			psSyncInfo = (PVRSRV_KERNEL_SYNC_INFO *)psCCBKick->hTA3DSyncInfo;
 			psSyncInfo->psSyncData->ui32ReadOpsPending--;
 		}
-	
+
 		if (psCCBKick->hTASyncInfo)
 		{
 			psSyncInfo = (PVRSRV_KERNEL_SYNC_INFO *)psCCBKick->hTASyncInfo;
 			psSyncInfo->psSyncData->ui32ReadOpsPending--;
 		}
-	
+
 		if (psCCBKick->h3DSyncInfo)
 		{
 			psSyncInfo = (PVRSRV_KERNEL_SYNC_INFO *)psCCBKick->h3DSyncInfo;
@@ -806,9 +805,7 @@ PVRSRV_ERROR SGXDoKickKM(IMG_HANDLE hDevHandle, SGX_CCB_KICK *psCCBKick)
 		return eError;
 	}
 
-
 #if defined(NO_HARDWARE)
-
 
 	/* TA/3D dependency */
 	if (psCCBKick->hTA3DSyncInfo)

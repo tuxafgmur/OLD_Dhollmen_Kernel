@@ -46,7 +46,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "servicesint.h"
 #include "bridged_support.h"
 
-
 /*
  * Derive the internal OS specific memory handle from a secure
  * handle.
@@ -91,7 +90,7 @@ PVRSRVLookupOSMemHandle(PVRSRV_HANDLE_BASE *psHandleBase, IMG_HANDLE *phOSMemHan
 		{
 			PVRSRV_KERNEL_SYNC_INFO *psSyncInfo = (PVRSRV_KERNEL_SYNC_INFO *)hMHandleInt;
 			PVRSRV_KERNEL_MEM_INFO *psMemInfo = psSyncInfo->psSyncDataMemInfoKM;
-			
+
 			*phOSMemHandle = psMemInfo->sMemBlk.hOSMemHandle;
 
 			break;

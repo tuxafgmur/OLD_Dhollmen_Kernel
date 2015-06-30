@@ -80,7 +80,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     @Description    Apply a callback function to all the elements of a list.
 
     @Input          psHead - the head of the list to be processed.
-    @Input          pfnCallBack - the function to be applied to each element 
+    @Input          pfnCallBack - the function to be applied to each element
                         of the list.
 
     @Return         None
@@ -98,7 +98,6 @@ IMG_VOID List_##TYPE##_ForEach(TYPE *psHead, IMG_VOID(*pfnCallBack)(TYPE* psNode
 	}\
 }
 
-
 #define DECLARE_LIST_FOR_EACH_VA(TYPE) \
 IMG_VOID List_##TYPE##_ForEach_va(TYPE *psHead, IMG_VOID(*pfnCallBack)(TYPE* psNode, va_list va), ...)
 
@@ -115,16 +114,15 @@ IMG_VOID List_##TYPE##_ForEach_va(TYPE *psHead, IMG_VOID(*pfnCallBack)(TYPE* psN
 	}\
 }
 
-
 /*!
 ******************************************************************************
     @Function       List_##TYPE##_Any
 
-    @Description    Applies a callback function to the elements of a list until 
+    @Description    Applies a callback function to the elements of a list until
                     the function returns a non null value, then returns it.
 
     @Input          psHead - the head of the list to be processed.
-    @Input          pfnCallBack - the function to be applied to each element 
+    @Input          pfnCallBack - the function to be applied to each element
                     of the list.
 
     @Return         None
@@ -147,7 +145,6 @@ IMG_VOID* List_##TYPE##_Any(TYPE *psHead, IMG_VOID* (*pfnCallBack)(TYPE* psNode)
 	}\
 	return pResult;\
 }
-
 
 /*with variable arguments, that will be passed as a va_list to the callback function*/
 
@@ -192,7 +189,6 @@ RTYPE List_##TYPE##_##RTYPE##_Any(TYPE *psHead, RTYPE (*pfnCallBack)(TYPE* psNod
 	return result;\
 }
 
-
 #define DECLARE_LIST_ANY_VA_2(TYPE, RTYPE, CONTINUE) \
 RTYPE List_##TYPE##_##RTYPE##_Any_va(TYPE *psHead, RTYPE(*pfnCallBack)(TYPE* psNode, va_list va), ...)
 
@@ -212,7 +208,6 @@ RTYPE List_##TYPE##_##RTYPE##_Any_va(TYPE *psHead, RTYPE(*pfnCallBack)(TYPE* psN
 	}\
 	return result;\
 }
-
 
 /*!
 ******************************************************************************
@@ -270,7 +265,7 @@ IMG_VOID List_##TYPE##_Insert(TYPE **ppsHead, TYPE *psNewNode)\
     @Description    Reverse a list in place
 
     @Input          ppsHead - The pointer to the pointer to the head node.
-					
+
     @Return         None
 ******************************************************************************/
 #define DECLARE_LIST_REVERSE(TYPE) \

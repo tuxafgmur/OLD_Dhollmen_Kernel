@@ -53,7 +53,6 @@ extern "C" {
  * Bridge Cmd Ids
  */
 
-
 #ifdef __linux__
 
 		#include <linux/ioctl.h>
@@ -79,7 +78,6 @@ extern "C" {
 
 	#define PVRSRV_BRIDGE_BASE                  PVRSRV_IOC_GID
 #endif /* __linux__ */
-
 
 /*
  * Note *REMEMBER* to update PVRSRV_BRIDGE_LAST_CMD (below) if you add any new
@@ -277,7 +275,6 @@ extern "C" {
 /* For sgx_bridge.h (msvdx_bridge.h should probably use these defines too) */
 #define PVRSRV_BRIDGE_LAST_NON_DEVICE_CMD		(PVRSRV_BRIDGE_SYNC_OPS_CMD_LAST+1)
 
-
 /******************************************************************************
  * Bridge flags
  *****************************************************************************/
@@ -296,7 +293,6 @@ typedef struct PVRSRV_BRIDGE_RETURN_TAG
 	IMG_VOID *pvData;
 
 }PVRSRV_BRIDGE_RETURN;
-
 
 /******************************************************************************
  *	bridge packaging structure
@@ -317,11 +313,9 @@ typedef struct PVRSRV_BRIDGE_PACKAGE_TAG
 #endif
 }PVRSRV_BRIDGE_PACKAGE;
 
-
 /******************************************************************************
  * Input structures for IOCTL/DRVESC
  *****************************************************************************/
-
 
 /******************************************************************************
  *	'bridge in' connect to services
@@ -343,7 +337,6 @@ typedef struct PVRSRV_BRIDGE_IN_ACQUIRE_DEVICEINFO_TAG
 
 } PVRSRV_BRIDGE_IN_ACQUIRE_DEVICEINFO;
 
-
 /******************************************************************************
  *	'bridge in' enum class
  *****************************************************************************/
@@ -352,7 +345,6 @@ typedef struct PVRSRV_BRIDGE_IN_ENUMCLASS_TAG
 	IMG_UINT32			ui32BridgeFlags; /* Must be first member of structure */
 	PVRSRV_DEVICE_CLASS sDeviceClass;
 } PVRSRV_BRIDGE_IN_ENUMCLASS;
-
 
 /******************************************************************************
  *	'bridge in' close display class device
@@ -367,7 +359,6 @@ typedef struct PVRSRV_BRIDGE_IN_CLOSE_DISPCLASS_DEVICE_TAG
 #endif
 } PVRSRV_BRIDGE_IN_CLOSE_DISPCLASS_DEVICE;
 
-
 /******************************************************************************
  *	'bridge in' enum display class formats
  *****************************************************************************/
@@ -380,7 +371,6 @@ typedef struct PVRSRV_BRIDGE_IN_ENUM_DISPCLASS_FORMATS_TAG
 	IMG_HANDLE			hDeviceKM;
 #endif
 } PVRSRV_BRIDGE_IN_ENUM_DISPCLASS_FORMATS;
-
 
 /******************************************************************************
  *	'bridge in' get display class sysbuffer
@@ -395,7 +385,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_DISPCLASS_SYSBUFFER_TAG
 #endif
 } PVRSRV_BRIDGE_IN_GET_DISPCLASS_SYSBUFFER;
 
-
 /******************************************************************************
  *	'bridge in' display class info
  *****************************************************************************/
@@ -408,7 +397,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_DISPCLASS_INFO_TAG
 	IMG_HANDLE			hDeviceKM;
 #endif
 } PVRSRV_BRIDGE_IN_GET_DISPCLASS_INFO;
-
 
 /******************************************************************************
  *	'bridge in' close buffer class device
@@ -423,7 +411,6 @@ typedef struct PVRSRV_BRIDGE_IN_CLOSE_BUFFERCLASS_DEVICE_TAG
 #endif
 } PVRSRV_BRIDGE_IN_CLOSE_BUFFERCLASS_DEVICE;
 
-
 /******************************************************************************
  *	'bridge in' close buffer class device
  *****************************************************************************/
@@ -436,7 +423,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_BUFFERCLASS_INFO_TAG
 	IMG_HANDLE			hDeviceKM;
 #endif
 } PVRSRV_BRIDGE_IN_GET_BUFFERCLASS_INFO;
-
 
 /******************************************************************************
  *	'bridge out' acquire device info
@@ -452,7 +438,6 @@ typedef struct PVRSRV_BRIDGE_IN_RELEASE_DEVICEINFO_TAG
 
 } PVRSRV_BRIDGE_IN_RELEASE_DEVICEINFO;
 
-
 /******************************************************************************
  *	'bridge in' free class devices info.
  *****************************************************************************/
@@ -463,7 +448,6 @@ typedef struct PVRSRV_BRIDGE_IN_FREE_CLASSDEVICEINFO_TAG
 	IMG_VOID*			pvDevInfo;
 
 }PVRSRV_BRIDGE_IN_FREE_CLASSDEVICEINFO;
-
 
 /******************************************************************************
  *	'bridge in' get device memory heap info
@@ -481,7 +465,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_DEVMEM_HEAPINFO_TAG
 
 }PVRSRV_BRIDGE_IN_GET_DEVMEM_HEAPINFO;
 
-
 /******************************************************************************
  *	'bridge in' create device memory context
  *****************************************************************************/
@@ -495,7 +478,6 @@ typedef struct PVRSRV_BRIDGE_IN_CREATE_DEVMEMCONTEXT_TAG
 #endif
 
 }PVRSRV_BRIDGE_IN_CREATE_DEVMEMCONTEXT;
-
 
 /******************************************************************************
  *	'bridge in' destroy device memory context
@@ -512,7 +494,6 @@ typedef struct PVRSRV_BRIDGE_IN_DESTROY_DEVMEMCONTEXT_TAG
 #endif
 
 }PVRSRV_BRIDGE_IN_DESTROY_DEVMEMCONTEXT;
-
 
 /******************************************************************************
  *	'bridge in' alloc device memory
@@ -662,7 +643,6 @@ typedef struct PVRSRV_BRIDGE_IN_CREATECOMMANDQUEUE_TAG
 
 }PVRSRV_BRIDGE_IN_CREATECOMMANDQUEUE;
 
-
 /******************************************************************************
  *	'bridge in' destroy Cmd Q
  *****************************************************************************/
@@ -678,7 +658,6 @@ typedef struct PVRSRV_BRIDGE_IN_DESTROYCOMMANDQUEUE_TAG
 
 }PVRSRV_BRIDGE_IN_DESTROYCOMMANDQUEUE;
 
-
 /******************************************************************************
  *	'bridge in' get full map data
  *****************************************************************************/
@@ -692,7 +671,6 @@ typedef struct PVRSRV_BRIDGE_IN_MHANDLE_TO_MMAP_DATA_TAG
 #endif
 } PVRSRV_BRIDGE_IN_MHANDLE_TO_MMAP_DATA;
 
-
 /******************************************************************************
  *	'bridge in' get full map data
  *****************************************************************************/
@@ -705,7 +683,6 @@ typedef struct PVRSRV_BRIDGE_IN_RELEASE_MMAP_DATA_TAG
 	IMG_HANDLE			hMHandle;	 /* Handle associated with the memory that needs to be mapped */
 #endif
 } PVRSRV_BRIDGE_IN_RELEASE_MMAP_DATA;
-
 
 /******************************************************************************
  *	'bridge in' reserve vm
@@ -755,7 +732,6 @@ typedef struct PVRSRV_BRIDGE_OUT_RESERVE_DEV_VIRTMEM_TAG
 
 }PVRSRV_BRIDGE_OUT_RESERVE_DEV_VIRTMEM;
 
-
 /******************************************************************************
  *	'bridge in' free vm
  *****************************************************************************/
@@ -771,7 +747,6 @@ typedef struct PVRSRV_BRIDGE_IN_FREE_DEV_VIRTMEM_TAG
 	PVRSRV_CLIENT_SYNC_INFO sClientSyncInfo;
 
 }PVRSRV_BRIDGE_IN_FREE_DEV_VIRTMEM;
-
 
 /******************************************************************************
  *	'bridge in' map dev memory allocation to another heap
@@ -789,7 +764,6 @@ typedef struct PVRSRV_BRIDGE_IN_MAP_DEV_MEMORY_TAG
 
 }PVRSRV_BRIDGE_IN_MAP_DEV_MEMORY;
 
-
 /******************************************************************************
  *	'bridge out' map dev memory allocation to another heap
  *****************************************************************************/
@@ -806,7 +780,6 @@ typedef struct PVRSRV_BRIDGE_OUT_MAP_DEV_MEMORY_TAG
 
 }PVRSRV_BRIDGE_OUT_MAP_DEV_MEMORY;
 
-
 /******************************************************************************
  *	'bridge in' unmap dev memory allocation
  *****************************************************************************/
@@ -822,7 +795,6 @@ typedef struct PVRSRV_BRIDGE_IN_UNMAP_DEV_MEMORY_TAG
 	PVRSRV_CLIENT_SYNC_INFO sClientSyncInfo;
 
 }PVRSRV_BRIDGE_IN_UNMAP_DEV_MEMORY;
-
 
 /******************************************************************************
  *	'bridge in' map pages
@@ -868,7 +840,6 @@ typedef struct PVRSRV_BRIDGE_IN_MAP_DEVICECLASS_MEMORY_TAG
 
 }PVRSRV_BRIDGE_IN_MAP_DEVICECLASS_MEMORY;
 
-
 /******************************************************************************
  *	'bridge out' map device class buffer pages
  *****************************************************************************/
@@ -887,7 +858,6 @@ typedef struct PVRSRV_BRIDGE_OUT_MAP_DEVICECLASS_MEMORY_TAG
 
 }PVRSRV_BRIDGE_OUT_MAP_DEVICECLASS_MEMORY;
 
-
 /******************************************************************************
  *	'bridge in' unmap device class buffer pages
  *****************************************************************************/
@@ -903,7 +873,6 @@ typedef struct PVRSRV_BRIDGE_IN_UNMAP_DEVICECLASS_MEMORY_TAG
 	PVRSRV_CLIENT_SYNC_INFO sClientSyncInfo;
 
 }PVRSRV_BRIDGE_IN_UNMAP_DEVICECLASS_MEMORY;
-
 
 /******************************************************************************
  *	'bridge in' pdump memory poll
@@ -942,7 +911,6 @@ typedef struct PVRSRV_BRIDGE_IN_PDUMP_SYNCPOL_TAG
 
 }PVRSRV_BRIDGE_IN_PDUMP_SYNCPOL;
 
-
 /******************************************************************************
  *	'bridge in' pdump dump memory
  *****************************************************************************/
@@ -962,7 +930,6 @@ typedef struct PVRSRV_BRIDGE_IN_PDUMP_DUMPMEM_TAG
 
 }PVRSRV_BRIDGE_IN_PDUMP_DUMPMEM;
 
-
 /******************************************************************************
  *	'bridge in' pdump dump sync
  *****************************************************************************/
@@ -979,7 +946,6 @@ typedef struct PVRSRV_BRIDGE_IN_PDUMP_DUMPSYNC_TAG
 	IMG_UINT32 ui32Bytes;
 
 }PVRSRV_BRIDGE_IN_PDUMP_DUMPSYNC;
-
 
 /******************************************************************************
  *	'bridge in' pdump dump reg
@@ -1059,7 +1025,6 @@ typedef struct PVRSRV_BRIDGE_IN_PDUMP_COMMENT_TAG
 
 }PVRSRV_BRIDGE_IN_PDUMP_COMMENT;
 
-
 /******************************************************************************
  *	'bridge in' pdump set frame
  *****************************************************************************/
@@ -1069,7 +1034,6 @@ typedef struct PVRSRV_BRIDGE_IN_PDUMP_SETFRAME_TAG
 	IMG_UINT32 ui32Frame;
 
 }PVRSRV_BRIDGE_IN_PDUMP_SETFRAME;
-
 
 /******************************************************************************
  *	'bridge in' pdump dump bitmap
@@ -1100,7 +1064,6 @@ typedef struct PVRSRV_BRIDGE_IN_PDUMP_BITMAP_TAG
 	IMG_UINT32 ui32Flags;
 
 }PVRSRV_BRIDGE_IN_PDUMP_BITMAP;
-
 
 /******************************************************************************
  *	'bridge in' pdump dump read reg
@@ -1175,7 +1138,6 @@ typedef struct PVRSRV_BRIDGE_OUT_ENUMDEVICE_TAG
 
 }PVRSRV_BRIDGE_OUT_ENUMDEVICE;
 
-
 /******************************************************************************
  *	'bridge out' acquire device info
  *****************************************************************************/
@@ -1191,7 +1153,6 @@ typedef struct PVRSRV_BRIDGE_OUT_ACQUIRE_DEVICEINFO_TAG
 
 } PVRSRV_BRIDGE_OUT_ACQUIRE_DEVICEINFO;
 
-
 /******************************************************************************
  *	'bridge out' enum. class devices
  *****************************************************************************/
@@ -1202,7 +1163,6 @@ typedef struct PVRSRV_BRIDGE_OUT_ENUMCLASS_TAG
 	IMG_UINT32 ui32DevID[PVRSRV_MAX_DEVICES];
 
 }PVRSRV_BRIDGE_OUT_ENUMCLASS;
-
 
 /******************************************************************************
  *	'bridge in' open display class devices
@@ -1232,7 +1192,6 @@ typedef struct PVRSRV_BRIDGE_OUT_OPEN_DISPCLASS_DEVICE_TAG
 #endif
 
 }PVRSRV_BRIDGE_OUT_OPEN_DISPCLASS_DEVICE;
-
 
 /******************************************************************************
  *	'bridge in' wrap pages
@@ -1284,7 +1243,6 @@ typedef struct PVRSRV_BRIDGE_IN_UNWRAP_EXT_MEMORY_TAG
 
 }PVRSRV_BRIDGE_IN_UNWRAP_EXT_MEMORY;
 
-
 #define PVRSRV_MAX_DC_DISPLAY_FORMATS			10
 #define PVRSRV_MAX_DC_DISPLAY_DIMENSIONS		10
 #define PVRSRV_MAX_DC_SWAPCHAIN_BUFFERS			4
@@ -1301,7 +1259,6 @@ typedef struct PVRSRV_BRIDGE_OUT_ENUM_DISPCLASS_FORMATS_TAG
 
 }PVRSRV_BRIDGE_OUT_ENUM_DISPCLASS_FORMATS;
 
-
 /******************************************************************************
  *	'bridge in' enum display class dims
  *****************************************************************************/
@@ -1317,7 +1274,6 @@ typedef struct PVRSRV_BRIDGE_IN_ENUM_DISPCLASS_DIMS_TAG
 
 }PVRSRV_BRIDGE_IN_ENUM_DISPCLASS_DIMS;
 
-
 /******************************************************************************
  *	'bridge out' enum display class dims
  *****************************************************************************/
@@ -1329,7 +1285,6 @@ typedef struct PVRSRV_BRIDGE_OUT_ENUM_DISPCLASS_DIMS_TAG
 
 }PVRSRV_BRIDGE_OUT_ENUM_DISPCLASS_DIMS;
 
-
 /******************************************************************************
  *	'bridge out' enum display class dims
  *****************************************************************************/
@@ -1339,7 +1294,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GET_DISPCLASS_INFO_TAG
 	DISPLAY_INFO	sDisplayInfo;
 
 }PVRSRV_BRIDGE_OUT_GET_DISPCLASS_INFO;
-
 
 /******************************************************************************
  *	'bridge out' get display class system buffer
@@ -1354,7 +1308,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GET_DISPCLASS_SYSBUFFER_TAG
 #endif
 
 }PVRSRV_BRIDGE_OUT_GET_DISPCLASS_SYSBUFFER;
-
 
 /******************************************************************************
  *	'bridge in' create swap chain
@@ -1376,7 +1329,6 @@ typedef struct PVRSRV_BRIDGE_IN_CREATE_DISPCLASS_SWAPCHAIN_TAG
 
 } PVRSRV_BRIDGE_IN_CREATE_DISPCLASS_SWAPCHAIN;
 
-
 /******************************************************************************
  *	'bridge out' create swap chain
  *****************************************************************************/
@@ -1391,7 +1343,6 @@ typedef struct PVRSRV_BRIDGE_OUT_CREATE_DISPCLASS_SWAPCHAIN_TAG
 	IMG_UINT32			ui32SwapChainID;
 
 } PVRSRV_BRIDGE_OUT_CREATE_DISPCLASS_SWAPCHAIN;
-
 
 /******************************************************************************
  *	'bridge in' destroy swap chain
@@ -1408,7 +1359,6 @@ typedef struct PVRSRV_BRIDGE_IN_DESTROY_DISPCLASS_SWAPCHAIN_TAG
 #endif
 
 } PVRSRV_BRIDGE_IN_DESTROY_DISPCLASS_SWAPCHAIN;
-
 
 /******************************************************************************
  *	'bridge in' set DST/SRC rect
@@ -1427,7 +1377,6 @@ typedef struct PVRSRV_BRIDGE_IN_SET_DISPCLASS_RECT_TAG
 
 } PVRSRV_BRIDGE_IN_SET_DISPCLASS_RECT;
 
-
 /******************************************************************************
  *	'bridge in' set DST/SRC colourkey
  *****************************************************************************/
@@ -1445,7 +1394,6 @@ typedef struct PVRSRV_BRIDGE_IN_SET_DISPCLASS_COLOURKEY_TAG
 
 } PVRSRV_BRIDGE_IN_SET_DISPCLASS_COLOURKEY;
 
-
 /******************************************************************************
  *	'bridge in' get buffers (from swapchain)
  *****************************************************************************/
@@ -1462,7 +1410,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_DISPCLASS_BUFFERS_TAG
 
 } PVRSRV_BRIDGE_IN_GET_DISPCLASS_BUFFERS;
 
-
 /******************************************************************************
  *	'bridge out' get buffers (from swapchain)
  *****************************************************************************/
@@ -1477,7 +1424,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GET_DISPCLASS_BUFFERS_TAG
 #endif
 	IMG_SYS_PHYADDR		asPhyAddr[PVRSRV_MAX_DC_SWAPCHAIN_BUFFERS];
 } PVRSRV_BRIDGE_OUT_GET_DISPCLASS_BUFFERS;
-
 
 /******************************************************************************
  *	'bridge in' swap to buffer
@@ -1543,7 +1489,6 @@ typedef struct PVRSRV_BRIDGE_IN_SWAP_DISPCLASS_TO_SYSTEM_TAG
 
 } PVRSRV_BRIDGE_IN_SWAP_DISPCLASS_TO_SYSTEM;
 
-
 /******************************************************************************
  *	'bridge in' open buffer class device
  *****************************************************************************/
@@ -1559,7 +1504,6 @@ typedef struct PVRSRV_BRIDGE_IN_OPEN_BUFFERCLASS_DEVICE_TAG
 
 } PVRSRV_BRIDGE_IN_OPEN_BUFFERCLASS_DEVICE;
 
-
 /******************************************************************************
  *	'bridge out' open buffer class device
  *****************************************************************************/
@@ -1574,7 +1518,6 @@ typedef struct PVRSRV_BRIDGE_OUT_OPEN_BUFFERCLASS_DEVICE_TAG
 
 } PVRSRV_BRIDGE_OUT_OPEN_BUFFERCLASS_DEVICE;
 
-
 /******************************************************************************
  *	'bridge out' get buffer class info
  *****************************************************************************/
@@ -1584,7 +1527,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GET_BUFFERCLASS_INFO_TAG
 	BUFFER_INFO			sBufferInfo;
 
 } PVRSRV_BRIDGE_OUT_GET_BUFFERCLASS_INFO;
-
 
 /******************************************************************************
  *	'bridge in' get buffer class buffer
@@ -1601,7 +1543,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_BUFFERCLASS_BUFFER_TAG
 
 } PVRSRV_BRIDGE_IN_GET_BUFFERCLASS_BUFFER;
 
-
 /******************************************************************************
  *	'bridge out' get buffer class buffer
  *****************************************************************************/
@@ -1616,7 +1557,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GET_BUFFERCLASS_BUFFER_TAG
 
 } PVRSRV_BRIDGE_OUT_GET_BUFFERCLASS_BUFFER;
 
-
 /******************************************************************************
  *	'bridge out' get heap info
  *****************************************************************************/
@@ -1627,7 +1567,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GET_DEVMEM_HEAPINFO_TAG
 	PVRSRV_HEAP_INFO	sHeapInfo[PVRSRV_MAX_CLIENT_HEAPS];
 
 } PVRSRV_BRIDGE_OUT_GET_DEVMEM_HEAPINFO;
-
 
 /******************************************************************************
  *	'bridge out' create device memory context
@@ -1645,7 +1584,6 @@ typedef struct PVRSRV_BRIDGE_OUT_CREATE_DEVMEMCONTEXT_TAG
 
 } PVRSRV_BRIDGE_OUT_CREATE_DEVMEMCONTEXT;
 
-
 /******************************************************************************
  *	'bridge out' create device memory context
  *****************************************************************************/
@@ -1659,7 +1597,6 @@ typedef struct PVRSRV_BRIDGE_OUT_CREATE_DEVMEMHEAP_TAG
 #endif
 
 } PVRSRV_BRIDGE_OUT_CREATE_DEVMEMHEAP;
-
 
 /******************************************************************************
  *	'bridge out' alloc device memory
@@ -1676,7 +1613,6 @@ typedef struct PVRSRV_BRIDGE_OUT_ALLOCDEVICEMEM_TAG
 	PVRSRV_CLIENT_SYNC_INFO sClientSyncInfo;
 
 } PVRSRV_BRIDGE_OUT_ALLOCDEVICEMEM;
-
 
 /******************************************************************************
  *	'bridge out' export device memory
@@ -1695,7 +1631,6 @@ typedef struct PVRSRV_BRIDGE_OUT_EXPORTDEVICEMEM_TAG
 
 } PVRSRV_BRIDGE_OUT_EXPORTDEVICEMEM;
 
-
 /******************************************************************************
  *	'bridge out' map ion handle
  *****************************************************************************/
@@ -1712,7 +1647,6 @@ typedef struct _PVRSRV_BRIDGE_OUT_MAP_ION_HANDLE_
 
 } PVRSRV_BRIDGE_OUT_MAP_ION_HANDLE;
 
-
 /******************************************************************************
  *	'bridge out' map meminfo to user mode
  *****************************************************************************/
@@ -1728,7 +1662,6 @@ typedef struct PVRSRV_BRIDGE_OUT_MAPMEMINFOTOUSER_TAG
 
 }PVRSRV_BRIDGE_OUT_MAPMEMINFOTOUSER;
 
-
 /******************************************************************************
  *	'bridge out' get free device memory
  *****************************************************************************/
@@ -1740,7 +1673,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GETFREEDEVICEMEM_TAG
 	IMG_SIZE_T ui32LargestBlock;
 
 } PVRSRV_BRIDGE_OUT_GETFREEDEVICEMEM;
-
 
 //#ifdef LINUX
 /******************************************************************************
@@ -1784,7 +1716,6 @@ typedef struct PVRSRV_BRIDGE_OUT_RELEASE_MMAP_DATA_TAG
 } PVRSRV_BRIDGE_OUT_RELEASE_MMAP_DATA;
 //#endif
 
-
 /******************************************************************************
  *	'bridge in' get misc info
  *****************************************************************************/
@@ -1794,7 +1725,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_MISC_INFO_TAG
 	PVRSRV_MISC_INFO	sMiscInfo;
 
 }PVRSRV_BRIDGE_IN_GET_MISC_INFO;
-
 
 /******************************************************************************
  *	'bridge out' get misc info
@@ -1806,7 +1736,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GET_MISC_INFO_TAG
 
 }PVRSRV_BRIDGE_OUT_GET_MISC_INFO;
 
-
 /******************************************************************************
  *	'bridge in' get misc info
  *****************************************************************************/
@@ -1817,7 +1746,6 @@ typedef struct PVRSRV_BRIDGE_IN_RELEASE_MISC_INFO_TAG
 
 }PVRSRV_BRIDGE_IN_RELEASE_MISC_INFO;
 
-
 /******************************************************************************
  *	'bridge out' get misc info
  *****************************************************************************/
@@ -1827,7 +1755,6 @@ typedef struct PVRSRV_BRIDGE_OUT_RELEASE_MISC_INFO_TAG
 	PVRSRV_MISC_INFO	sMiscInfo;
 
 }PVRSRV_BRIDGE_OUT_RELEASE_MISC_INFO;
-
 
 /******************************************************************************
  *	'bridge out' PDUMP is capturing
@@ -1851,7 +1778,6 @@ typedef struct PVRSRV_BRIDGE_IN_GET_FB_STATS_TAG
 
 } PVRSRV_BRIDGE_IN_GET_FB_STATS;
 
-
 /******************************************************************************
  *	'bridge in' Map CPU Physical to User Space
  *****************************************************************************/
@@ -1868,7 +1794,6 @@ typedef struct PVRSRV_BRIDGE_IN_MAPPHYSTOUSERSPACE_TAG
 
 } PVRSRV_BRIDGE_IN_MAPPHYSTOUSERSPACE;
 
-
 /******************************************************************************
  *	'bridge out' Map CPU Physical to User Space
  *****************************************************************************/
@@ -1879,7 +1804,6 @@ typedef struct PVRSRV_BRIDGE_OUT_MAPPHYSTOUSERSPACE_TAG
 	IMG_PVOID			pvProcess;
 
 } PVRSRV_BRIDGE_OUT_MAPPHYSTOUSERSPACE;
-
 
 /******************************************************************************
  *	'bridge in' Unmap CPU Physical to User Space
@@ -1897,7 +1821,6 @@ typedef struct PVRSRV_BRIDGE_IN_UNMAPPHYSTOUSERSPACE_TAG
 
 } PVRSRV_BRIDGE_IN_UNMAPPHYSTOUSERSPACE;
 
-
 /******************************************************************************
  *	'bridge out' Get user space pointer to Phys to Lin lookup table
  *****************************************************************************/
@@ -1907,7 +1830,6 @@ typedef struct PVRSRV_BRIDGE_OUT_GETPHYSTOUSERSPACEMAP_TAG
 	IMG_UINT32			uiTblSize;
 
 } PVRSRV_BRIDGE_OUT_GETPHYSTOUSERSPACEMAP;
-
 
 #if !defined (SUPPORT_SID_INTERFACE)
 /******************************************************************************
@@ -1921,7 +1843,6 @@ typedef struct PVRSRV_BRIDGE_IN_REGISTER_SIM_PROCESS_TAG
 
 } PVRSRV_BRIDGE_IN_REGISTER_SIM_PROCESS;
 
-
 /******************************************************************************
  *	'bridge out' Register RTSIM process thread
  *****************************************************************************/
@@ -1934,7 +1855,6 @@ typedef struct PVRSRV_BRIDGE_OUT_REGISTER_SIM_PROCESS_TAG
 	IMG_PVOID			pvTblLinAddr;
 
 } PVRSRV_BRIDGE_OUT_REGISTER_SIM_PROCESS;
-
 
 /******************************************************************************
  *	'bridge in' Unregister RTSIM process thread
@@ -1969,7 +1889,6 @@ typedef struct PVRSRV_BRIDGE_IN_INITSRV_DISCONNECT_TAG
 	IMG_UINT32			ui32BridgeFlags; /* Must be first member of structure */
 	IMG_BOOL			bInitSuccesful;
 } PVRSRV_BRIDGE_IN_INITSRV_DISCONNECT;
-
 
 typedef struct PVRSRV_BRIDGE_IN_ALLOC_SHARED_SYS_MEM_TAG
 {
@@ -2252,4 +2171,3 @@ typedef struct PVRSRV_BRIDGE_OUT_MULTI_MANAGE_DEV_MEM_TAG
 /******************************************************************************
  End of file (pvr_bridge.h)
 ******************************************************************************/
-

@@ -51,7 +51,6 @@ extern "C" {
 #include "servicesext.h"
 #include "pdumpdefs.h"
 
-
 /* The comment below is the front page for code-generated doxygen documentation */
 /*!
  ******************************************************************************
@@ -91,7 +90,6 @@ extern "C" {
 #define PVRSRV_MEM_RAM_BACKED_ALLOCATION	(1U<<9)
 #define PVRSRV_MEM_NO_RESMAN				(1U<<10)
 #define PVRSRV_MEM_EXPORTED					(1U<<11)
-
 
 /*
 	Heap Attribute flags
@@ -146,7 +144,6 @@ extern "C" {
 */
 #define PVRSRV_MEM_SPARSE					(1U<<31)
 
-
 /*
  * How much context we lose on a (power) mode change
  */
@@ -154,12 +151,10 @@ extern "C" {
 #define PVRSRV_SEVERE_LOSS_OF_CONTEXT			1		/*!< lose state on power down */
 #define PVRSRV_PRE_STATE_CHANGE_MASK			0x80	/*!< power state change mask */
 
-
 /*
  * Device cookie defines
  */
 #define PVRSRV_DEFAULT_DEV_COOKIE			(1)	 /*!< default device cookie */
-
 
 /*
  * Misc Info. present flags
@@ -180,7 +175,6 @@ extern "C" {
 /* PDUMP defines */
 #define PVRSRV_PDUMP_MAX_FILENAME_SIZE			20
 #define PVRSRV_PDUMP_MAX_COMMENT_SIZE			200
-
 
 /*
 	Flags for PVRSRVChangeDeviceMemoryAttributes call.
@@ -296,7 +290,6 @@ typedef enum
 
 } IMG_MODULE_ID;
 
-
 #define APPHINT_MAX_STRING_SIZE	256
 
 /*!
@@ -311,7 +304,6 @@ typedef enum
 	IMG_INT_TYPE		,
 	IMG_FLAG_TYPE
 }IMG_DATA_TYPE;
-
 
 /******************************************************************************
  * Structure definitions.
@@ -336,7 +328,6 @@ typedef struct _PVRSRV_DEVICE_IDENTIFIER_
 
 } PVRSRV_DEVICE_IDENTIFIER;
 
-
 /******************************************************************************
  * Client dev info
  ******************************************************************************
@@ -350,7 +341,6 @@ typedef struct _PVRSRV_CLIENT_DEV_DATA_
 
 } PVRSRV_CLIENT_DEV_DATA;
 
-
 /*!
  ******************************************************************************
  * Kernel Services connection structure
@@ -362,7 +352,6 @@ typedef struct _PVRSRV_CONNECTION_
 	PVRSRV_CLIENT_DEV_DATA	sClientDevData;	/*!< Client device data */
 	IMG_UINT32 ui32SrvFlags;				/*!< Per-client Services flags */
 }PVRSRV_CONNECTION;
-
 
 /*!
  ******************************************************************************
@@ -440,7 +429,6 @@ typedef struct _PVRSRV_CLIENT_MEM_INFO_
 
 	/* allocation size in bytes */
 	IMG_SIZE_T				uAllocSize;
-
 
 	/* ptr to associated client sync info - NULL if no sync */
 	struct _PVRSRV_CLIENT_SYNC_INFO_	*psClientSyncInfo;
@@ -565,9 +553,6 @@ typedef struct _PVRSRV_HEAP_INFO_
 	IMG_UINT32			ui32Attribs;
 	IMG_UINT32			ui32XTileStride;
 }PVRSRV_HEAP_INFO;
-
-
-
 
 /*
 	Event Object information structure
@@ -712,7 +697,6 @@ typedef struct _PVRSRV_SYNC_TOKEN_
 	} sPrivate;
 } PVRSRV_SYNC_TOKEN;
 
-
 /******************************************************************************
  * PVR Client Event handling in Services
  *****************************************************************************/
@@ -804,7 +788,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDeviceMemHeapInfo(IMG_CONST PVRSRV_DEV_DATA *
 	#define PVRSRVAllocDeviceMem_log(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo, logStr) \
 		PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo)
 #endif
-
 
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVAllocDeviceMem2(IMG_CONST PVRSRV_DEV_DATA	*psDevData,
@@ -986,7 +969,6 @@ PVRSRV_ERROR PVRSRVUnmapIonHandle(const PVRSRV_DEV_DATA *psDevData,
 								  PVRSRV_CLIENT_MEM_INFO *psMemInfo);
 #endif /* defined (SUPPORT_ION) */
 
-
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVAllocDeviceMemSparse(const PVRSRV_DEV_DATA *psDevData,
 #if defined (SUPPORT_SID_INTERFACE)
@@ -1035,7 +1017,6 @@ IMG_IMPORT IMG_BOOL PVRSRVTestAllOpsNotComplete(PPVRSRV_CLIENT_MEM_INFO psMemInf
 
 IMG_IMPORT PVRSRV_SYNCVAL PVRSRVGetPendingOpSyncVal(PPVRSRV_CLIENT_MEM_INFO psMemInfo,
 	PVRSRV_SYNCVAL_MODE eMode);
-
 
 /******************************************************************************
  * Common Device Class Enumeration
@@ -1226,7 +1207,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetBCBuffer(IMG_HANDLE hDevice,
 #endif
 	);
 
-
 /******************************************************************************
  * PDUMP Function prototypes...
  *****************************************************************************/
@@ -1245,7 +1225,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVPDumpMemPol(IMG_CONST PVRSRV_CONNECTION *psConne
 										  IMG_SID    hKernelMemInfo,
 #else
 										  PVRSRV_CLIENT_MEM_INFO *psMemInfo,
-#endif										  
+#endif
 										  IMG_UINT32 ui32Offset,
 										  IMG_UINT32 ui32Value,
 										  IMG_UINT32 ui32Mask,
@@ -1397,7 +1377,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVPDumpRegRead(IMG_CONST PVRSRV_DEV_DATA *psDevDat
 											IMG_UINT32 ui32Size,
 											IMG_UINT32 ui32PDumpFlags);
 
-
 IMG_IMPORT
 IMG_BOOL IMG_CALLCONV PVRSRVPDumpIsCapturingTest(IMG_CONST PVRSRV_CONNECTION *psConnection);
 
@@ -1415,10 +1394,6 @@ IMG_IMPORT IMG_VOID PVRSRVWaitus (IMG_UINT32 ui32Timeus);
 IMG_IMPORT IMG_VOID PVRSRVReleaseThreadQuanta (void);
 IMG_IMPORT IMG_UINT32 IMG_CALLCONV PVRSRVGetCurrentProcessID(void);
 IMG_IMPORT IMG_CHAR * IMG_CALLCONV PVRSRVSetLocale(const IMG_CHAR *pszLocale);
-
-
-
-
 
 IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVCreateAppHintState(IMG_MODULE_ID eModuleID,
 														const IMG_CHAR *pszAppName,
@@ -1446,7 +1421,6 @@ IMG_IMPORT IMG_VOID PVRSRVMemSet(IMG_VOID *pvDest, IMG_UINT8 ui8Value, IMG_SIZE_
 
 struct _PVRSRV_MUTEX_OPAQUE_STRUCT_;
 typedef	struct  _PVRSRV_MUTEX_OPAQUE_STRUCT_ *PVRSRV_MUTEX_HANDLE;
-
 
 #if defined(PVR_DEBUG_MUTEXES)
 
@@ -1481,10 +1455,8 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVUnlockMutex(PVRSRV_MUTEX_HANDLE hMutex);
 
 #endif /* defined(PVR_DEBUG_MUTEXES) */
 
-
 struct _PVRSRV_RECMUTEX_OPAQUE_STRUCT_;
 typedef	struct  _PVRSRV_RECMUTEX_OPAQUE_STRUCT_ *PVRSRV_RECMUTEX_HANDLE;
-
 
 #if defined(PVR_DEBUG_MUTEXES)
 
@@ -1523,13 +1495,10 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVUnlockRecursiveMutex(PVRSRV_RECMUTEX_HAND
 IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVLockProcessGlobalMutex(void);
 IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVUnlockProcessGlobalMutex(void);
 
-
 struct _PVRSRV_SEMAPHORE_OPAQUE_STRUCT_;
 typedef	struct  _PVRSRV_SEMAPHORE_OPAQUE_STRUCT_ *PVRSRV_SEMAPHORE_HANDLE;
 
-
   	#define IMG_SEMAPHORE_WAIT_INFINITE       ((IMG_UINT64)0xFFFFFFFFFFFFFFFFull)
-
 
 #if !defined(USE_CODE)
 
@@ -1573,7 +1542,6 @@ static INLINE IMG_VOID PVRSRVPostSemaphore(PVRSRV_SEMAPHORE_HANDLE hSemaphore, I
 
 #endif /* !defined(USE_CODE) */
 
-
 /* Non-exported APIs */
 #if defined(DEBUG) && (defined(__linux__) || defined(__QNXNTO__) )
 IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMemTracking(IMG_SIZE_T ui32Size, IMG_CHAR *pszFileName, IMG_UINT32 ui32LineNumber);
@@ -1582,7 +1550,7 @@ IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVCallocUserModeMemTracking(IMG_SIZE_T ui3
 
 IMG_IMPORT IMG_VOID  IMG_CALLCONV PVRSRVFreeUserModeMemTracking(IMG_VOID *pvMem);
 
-IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVReallocUserModeMemTracking(IMG_VOID *pvMem, IMG_SIZE_T ui32NewSize, 
+IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVReallocUserModeMemTracking(IMG_VOID *pvMem, IMG_SIZE_T ui32NewSize,
 													  IMG_CHAR *pszFileName, IMG_UINT32 ui32LineNumber);
 #endif
 
@@ -1632,8 +1600,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroySyncInfoModObj(const PVRSRV_CONNECTION *p
 #endif
 	);
 
-
-
 /*!
  ******************************************************************************
 
@@ -1650,8 +1616,8 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroySyncInfoModObj(const PVRSRV_CONNECTION *p
 
 				Note that this API has implied locking semantics, as follows:
 
-				PVRSRVModifyPendingSyncOps() 
-				        -  announces an operation on the buffer is "pending", and 
+				PVRSRVModifyPendingSyncOps()
+				        -  announces an operation on the buffer is "pending", and
 						   conceptually takes a ticket to represent your place in the queue.
 						-  NB: ** exclusive access to the resource is  _NOT_ granted at this time **
 				PVRSRVSyncOpsFlushToModObj()
@@ -1659,7 +1625,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroySyncInfoModObj(const PVRSRV_CONNECTION *p
 						-  the previously "pending" operation can now be regarded as "in progress"
 				PVRSRVModifyCompleteSyncOps()
 				        -  declares that the previously "in progress" operation is now complete. (UNLOCK)
-				
 
  ******************************************************************************/
 IMG_IMPORT
@@ -1837,7 +1802,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVFreeSyncInfo(IMG_CONST PVRSRV_DEV_DATA *psDevDat
  ******************************************************************************/
 IMG_IMPORT
 const IMG_CHAR *PVRSRVGetErrorString(PVRSRV_ERROR eError);
-
 
 /*!
  ******************************************************************************

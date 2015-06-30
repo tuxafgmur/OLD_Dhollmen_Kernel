@@ -47,7 +47,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern "C" {
 #endif
 
-
 IMG_VOID SetSGXDispatchTableEntry(IMG_VOID);
 
 #if defined (__cplusplus)

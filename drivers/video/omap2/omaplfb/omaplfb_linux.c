@@ -81,10 +81,11 @@
 #endif
 #endif
 
-#include "img_defs.h"
-#include "servicesext.h"
-#include "kerneldisplay.h"
+#include "../../../gpu/pvr/img_defs.h"
+#include "../../../gpu/pvr/servicesext.h"
+#include "../../../gpu/pvr/kerneldisplay.h"
 #include "omaplfb.h"
+
 #if defined(SUPPORT_DRI_DRM)
 #include "pvr_drm.h"
 #include "3rdparty_dc_drm_shared.h"
@@ -216,11 +217,6 @@ OMAPLFB_ERROR OMAPLFBGetLibFuncAddr (char *szFunctionName, PFN_DC_GET_PVRJTABLE 
 void OMAPLFBQueueBufferForSwap(OMAPLFB_SWAPCHAIN *psSwapChain, OMAPLFB_BUFFER *psBuffer)
 {
 	int res = queue_work(psSwapChain->psWorkQueue, &psBuffer->sWork);
-
-	if (res == 0)
-	{
-		printk(KERN_WARNING DRIVER_PREFIX ": %s: Device %u: Buffer already on work queue\n", __FUNCTION__, psSwapChain->uiFBDevID);
-	}
 }
 
 static void WorkQueueHandler(struct work_struct *psWork)
@@ -245,8 +241,6 @@ OMAPLFB_ERROR OMAPLFBCreateSwapQueue(OMAPLFB_SWAPCHAIN *psSwapChain)
 #endif
 	if (psSwapChain->psWorkQueue == NULL)
 	{
-		printk(KERN_ERR DRIVER_PREFIX ": %s: Device %u: Couldn't create workqueue\n", __FUNCTION__, psSwapChain->uiFBDevID);
-
 		return (OMAPLFB_ERROR_INIT_FAILURE);
 	}
 
@@ -334,19 +328,11 @@ void OMAPLFBFlip(OMAPLFB_DEVINFO *psDevInfo, OMAPLFB_BUFFER *psBuffer)
 		sFBVar.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
 
 		res = fb_set_var(psDevInfo->psLINFBInfo, &sFBVar);
-		if (res != 0)
-		{
-			printk(KERN_ERR DRIVER_PREFIX ": %s: Device %u: fb_set_var failed (Y Offset: %lu, Error: %d)\n", __FUNCTION__, psDevInfo->uiFBDevID, psBuffer->ulYOffset, res);
-		}
 	}
 #if !defined(PVR_OMAPLFB_DONT_USE_FB_PAN_DISPLAY)
 	else
 	{
 		res = fb_pan_display(psDevInfo->psLINFBInfo, &sFBVar);
-		if (res != 0)
-		{
-			printk(KERN_ERR DRIVER_PREFIX ": %s: Device %u: fb_pan_display failed (Y Offset: %lu, Error: %d)\n", __FUNCTION__, psDevInfo->uiFBDevID, psBuffer->ulYOffset, res);
-		}
 	}
 #endif
 #endif
@@ -732,8 +718,6 @@ OMAPLFB_ERROR OMAPLFBUnblankDisplay(OMAPLFB_DEVINFO *psDevInfo)
 	OMAPLFB_CONSOLE_UNLOCK();
 	if (res != 0 && res != -EINVAL)
 	{
-		printk(KERN_ERR DRIVER_PREFIX
-			": %s: Device %u: fb_blank failed (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, res);
 		return (OMAPLFB_ERROR_GENERIC);
 	}
 
@@ -802,7 +786,6 @@ OMAPLFB_ERROR OMAPLFBEnableLFBEventNotification(OMAPLFB_DEVINFO *psDevInfo)
 	{
 		printk(KERN_ERR DRIVER_PREFIX
 			": %s: Device %u: fb_register_client failed (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, res);
-
 		return (OMAPLFB_ERROR_GENERIC);
 	}
 
@@ -835,8 +818,6 @@ OMAPLFB_ERROR OMAPLFBDisableLFBEventNotification(OMAPLFB_DEVINFO *psDevInfo)
 	res = fb_unregister_client(&psDevInfo->sLINNotifBlock);
 	if (res != 0)
 	{
-		printk(KERN_ERR DRIVER_PREFIX
-			": %s: Device %u: fb_unregister_client failed (%d)\n", __FUNCTION__, psDevInfo->uiFBDevID, res);
 		return (OMAPLFB_ERROR_GENERIC);
 	}
 

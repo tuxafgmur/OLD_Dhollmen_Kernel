@@ -72,7 +72,6 @@ static PVRSRV_ERROR SGXAddTimer(PVRSRV_DEVICE_NODE		*psDeviceNode,
 }
 #endif /* SUPPORT_HW_RECOVERY*/
 
-
 /*!
 ******************************************************************************
 
@@ -98,7 +97,6 @@ static PVRSRV_ERROR SGXUpdateTimingInfo(PVRSRV_DEVICE_NODE	*psDeviceNode)
 	IMG_UINT32		ui32ActivePowManSampleRate;
 	SGX_TIMING_INFORMATION	*psSGXTimingInfo;
 
-
 #if defined(SGX_DYNAMIC_TIMING_INFO)
 	psSGXTimingInfo = &sSGXTimingInfo;
 	SysGetSGXTimingInformation(psSGXTimingInfo);
@@ -122,20 +120,12 @@ static PVRSRV_ERROR SGXUpdateTimingInfo(PVRSRV_DEVICE_NODE	*psDeviceNode)
 					The ukernel timer frequency has changed.
 				*/
 				IMG_HANDLE hNewTimer;
-				
+
 				eError = SGXAddTimer(psDeviceNode, psSGXTimingInfo, &hNewTimer);
 				if (eError == PVRSRV_OK)
 				{
 					eError = OSRemoveTimer(psDevInfo->hTimer);
-					if (eError != PVRSRV_OK)
-					{
-						PVR_DPF((PVR_DBG_ERROR,"SGXUpdateTimingInfo: Failed to remove timer"));
-					}
 					psDevInfo->hTimer = hNewTimer;
-				}
-				else
-				{
-					/* Failed to allocate the new timer, leave the old one. */
 				}
 			}
 		}
@@ -197,7 +187,6 @@ static PVRSRV_ERROR SGXUpdateTimingInfo(PVRSRV_DEVICE_NODE	*psDeviceNode)
 	return PVRSRV_OK;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -218,15 +207,10 @@ static IMG_VOID SGXStartTimer(PVRSRV_SGXDEV_INFO	*psDevInfo)
 	PVRSRV_ERROR	eError;
 
 	eError = OSEnableTimer(psDevInfo->hTimer);
-	if (eError != PVRSRV_OK)
-	{
-		PVR_DPF((PVR_DBG_ERROR,"SGXStartTimer : Failed to enable host timer"));
-	}
 	#else
 	PVR_UNREFERENCED_PARAMETER(psDevInfo);
 	#endif /* SUPPORT_HW_RECOVERY */
 }
-
 
 /*!
 ******************************************************************************
@@ -275,7 +259,6 @@ static IMG_VOID SGXPollForClockGating (PVRSRV_SGXDEV_INFO	*psDevInfo,
 	PDUMPCOMMENT("%s", pszComment);
 	PDUMPREGPOL(SGX_PDUMPREG_NAME, ui32Register, 0, ui32RegisterValue, PDUMP_POLL_OPERATOR_EQUAL);
 }
-
 
 /*!
 ******************************************************************************
@@ -433,7 +416,6 @@ PVRSRV_ERROR SGXPrePowerState (IMG_HANDLE				hDevHandle,
 	return PVRSRV_OK;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -521,7 +503,6 @@ PVRSRV_ERROR SGXPostPowerState (IMG_HANDLE				hDevHandle,
 	return PVRSRV_OK;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -572,10 +553,6 @@ PVRSRV_ERROR SGXPreClockSpeedChange (IMG_HANDLE				hDevHandle,
 			PVRSRV_ERROR	eError;
 
 			eError = OSDisableTimer(psDevInfo->hTimer);
-			if (eError != PVRSRV_OK)
-			{
-				PVR_DPF((PVR_DBG_ERROR,"SGXStartTimer : Failed to enable host timer"));
-			}
 			#endif /* SUPPORT_HW_RECOVERY */
 		}
 	}
@@ -585,7 +562,6 @@ PVRSRV_ERROR SGXPreClockSpeedChange (IMG_HANDLE				hDevHandle,
 
 	return PVRSRV_OK;
 }
-
 
 /*!
 ******************************************************************************
@@ -653,7 +629,6 @@ PVRSRV_ERROR SGXPostClockSpeedChange (IMG_HANDLE				hDevHandle,
 
 	return PVRSRV_OK;
 }
-
 
 /******************************************************************************
  End of file (sgxpower.c)

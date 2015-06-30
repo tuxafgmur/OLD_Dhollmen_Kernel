@@ -75,7 +75,6 @@ typedef struct _SYS_DEVICE_ID_TAG
 
 } SYS_DEVICE_ID;
 
-
 /*
 	the max number of independent local backing stores services supports
 	(grow this number if ever required)
@@ -109,7 +108,7 @@ typedef struct _SYS_DATA_TAG_
 	IMG_UINT32					*pvSOCTimerRegisterKM;		/*!< SOC Timer register (if present) */
 	IMG_VOID					*pvSOCClockGateRegsBase;	/*!< SOC Clock gating registers (if present) */
 	IMG_UINT32					ui32SOCClockGateRegsSize;
-															
+
 	struct _DEVICE_COMMAND_DATA_ *apsDeviceCommandData[SYS_DEVICE_COUNT];
 															/*!< command complete data and callback function store for every command for every device */
 
@@ -128,7 +127,6 @@ typedef struct _SYS_DATA_TAG_
 	PFN_HTIMER_GETUS	pfnHighResTimerGetus;
 	PFN_HTIMER_DESTROY	pfnHighResTimerDestroy;
 } SYS_DATA;
-
 
 /****************************************************************************
  *	common function prototypes
@@ -181,7 +179,6 @@ PVRSRV_ERROR SysOEMFunction (	IMG_UINT32	ui32ID,
 								IMG_VOID	*pvOut,
 								IMG_UINT32	ulOutSize);
 
-
 IMG_DEV_PHYADDR SysCpuPAddrToDevPAddr (PVRSRV_DEVICE_TYPE eDeviceType, IMG_CPU_PHYADDR cpu_paddr);
 IMG_DEV_PHYADDR SysSysPAddrToDevPAddr (PVRSRV_DEVICE_TYPE eDeviceType, IMG_SYS_PHYADDR SysPAddr);
 IMG_SYS_PHYADDR SysDevPAddrToSysPAddr (PVRSRV_DEVICE_TYPE eDeviceType, IMG_DEV_PHYADDR SysPAddr);
@@ -193,7 +190,6 @@ IMG_BOOL SysVerifySysPAddrToDevPAddr (PVRSRV_DEVICE_TYPE eDeviceType, IMG_SYS_PH
 #endif
 
 extern SYS_DATA* gpsSysData;
-
 
 #if !defined(USE_CODE)
 
@@ -226,7 +222,6 @@ static INLINE IMG_VOID SysAcquireData(SYS_DATA **ppsSysData)
 	PVR_ASSERT (gpsSysData != IMG_NULL);
 }
 
-
 /*!
 ******************************************************************************
 
@@ -248,7 +243,6 @@ static INLINE SYS_DATA * SysAcquireDataNoCheck(IMG_VOID)
 	/* return pointer back system information pointer */
 	return gpsSysData;
 }
-
 
 /*!
 ******************************************************************************
@@ -298,7 +292,6 @@ static INLINE IMG_VOID SysDeinitialiseCommon(SYS_DATA *psSysData)
 	OSDestroyResource(&psSysData->sPowerStateChangeResource);
 }
 #endif /* !defined(USE_CODE) */
-
 
 /*
  * SysReadHWReg and SysWriteHWReg differ from OSReadHWReg and OSWriteHWReg

@@ -39,7 +39,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */ /**************************************************************************/
 
-
 #ifndef __PDUMP_INT_H__
 #define __PDUMP_INT_H__
 
@@ -79,7 +78,6 @@ typedef enum
 	PDUMP_WRITE_MODE_PERSISTENT
 } PDUMP_DDWMODE;
 
-
 IMG_UINT32 DbgWrite(PDBG_STREAM psStream, IMG_UINT8 *pui8Data, IMG_UINT32 ui32BCount, IMG_UINT32 ui32Flags);
 
 IMG_UINT32 PDumpOSDebugDriverWrite(	PDBG_STREAM psStream,
@@ -97,4 +95,3 @@ IMG_UINT32 PDumpOSDebugDriverWrite(	PDBG_STREAM psStream,
 /******************************************************************************
  End of file (pdump_int.h)
 ******************************************************************************/
-

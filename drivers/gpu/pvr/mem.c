@@ -43,7 +43,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "services_headers.h"
 #include "pvr_bridge_km.h"
 
-
 static PVRSRV_ERROR
 FreeSharedSysMemCallBack(IMG_PVOID  pvParam,
 						 IMG_UINT32 ui32Param,
@@ -67,7 +66,6 @@ FreeSharedSysMemCallBack(IMG_PVOID  pvParam,
 
 	return PVRSRV_OK;
 }
-
 
 IMG_EXPORT PVRSRV_ERROR
 PVRSRVAllocSharedSysMemoryKM(PVRSRV_PER_PROCESS_DATA	*psPerProc,
@@ -121,9 +119,8 @@ PVRSRVAllocSharedSysMemoryKM(PVRSRV_PER_PROCESS_DATA	*psPerProc,
 
 	*ppsKernelMemInfo = psKernelMemInfo;
 
-	return PVRSRV_OK; 
+	return PVRSRV_OK;
 }
-
 
 IMG_EXPORT PVRSRV_ERROR
 PVRSRVFreeSharedSysMemoryKM(PVRSRV_KERNEL_MEM_INFO *psKernelMemInfo)
@@ -141,7 +138,6 @@ PVRSRVFreeSharedSysMemoryKM(PVRSRV_KERNEL_MEM_INFO *psKernelMemInfo)
 
 	return eError;
 }
-
 
 IMG_EXPORT PVRSRV_ERROR
 PVRSRVDissociateMemFromResmanKM(PVRSRV_KERNEL_MEM_INFO *psKernelMemInfo)

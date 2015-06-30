@@ -53,7 +53,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "mutex.h"
 
-
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
 
 IMG_VOID LinuxInitMutex(PVRSRV_LINUX_MUTEX *psPVRSRVMutex)
@@ -98,9 +97,7 @@ IMG_BOOL LinuxIsLockedMutex(PVRSRV_LINUX_MUTEX *psPVRSRVMutex)
     return (mutex_is_locked(psPVRSRVMutex)) ? IMG_TRUE : IMG_FALSE;
 }
 
-
 #else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)) */
-
 
 IMG_VOID LinuxInitMutex(PVRSRV_LINUX_MUTEX *psPVRSRVMutex)
 {
@@ -153,11 +150,10 @@ IMG_VOID LinuxUnLockMutex(PVRSRV_LINUX_MUTEX *psPVRSRVMutex)
 IMG_BOOL LinuxIsLockedMutex(PVRSRV_LINUX_MUTEX *psPVRSRVMutex)
 {
     IMG_INT32 iCount;
-    
+
     iCount = atomic_read(&psPVRSRVMutex->Count);
 
     return (IMG_BOOL)iCount;
 }
 
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)) */
-

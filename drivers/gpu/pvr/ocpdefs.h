@@ -300,7 +300,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define EUR_CR_OCP_DEBUG_STATUS_CMD_DEBUG_STATE_SHIFT 31
 #define EUR_CR_OCP_DEBUG_STATUS_CMD_DEBUG_STATE_SIGNED 0
 
-
 #endif /* _OCPDEFS_H_ */
 
 /*****************************************************************************

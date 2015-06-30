@@ -139,16 +139,15 @@ static PVRSRV_ERROR FreePerProcessData(PVRSRV_PER_PROCESS_DATA *psPerProc)
 	return PVRSRV_OK;
 }
 
-
 /*!
 ******************************************************************************
 
  @Function	PVRSRVPerProcessData
- 
+
  @Description	Return per-process data area
 
  @Input		ui32PID - process ID
- 
+
  @Return	Pointer to per-process data area, or IMG_NULL on error.
 
 ******************************************************************************/
@@ -163,18 +162,17 @@ PVRSRV_PER_PROCESS_DATA *PVRSRVPerProcessData(IMG_UINT32 ui32PID)
 	return psPerProc;
 }
 
-
 /*!
 ******************************************************************************
 
  @Function	PVRSRVPerProcessDataConnect
- 
+
  @Description	Allocate per-process data area, or increment refcount if one
  				already exists for this PID.
 
  @Input		ui32PID - process ID
  			ppsPerProc - Pointer to per-process data area
- 
+
  @Return	PVRSRV_ERROR
 
 ******************************************************************************/
@@ -262,7 +260,7 @@ PVRSRV_ERROR PVRSRVPerProcessDataConnect(IMG_UINT32	ui32PID, IMG_UINT32 ui32Flag
 			PVR_DPF((PVR_DBG_ERROR, "PVRSRVPerProcessDataConnect: Couldn't set handle options (%d)", eError));
 			goto failure;
 		}
-		
+
 		/* Create a resource manager context for the process */
 		eError = PVRSRVResManConnect(psPerProc, &psPerProc->hResManContext);
 		if (eError != PVRSRV_OK)
@@ -274,7 +272,7 @@ PVRSRV_ERROR PVRSRVPerProcessDataConnect(IMG_UINT32	ui32PID, IMG_UINT32 ui32Flag
 		PVRSRVTimeTraceBufferCreate(ui32PID);
 #endif
 	}
-	
+
 	psPerProc->ui32RefCount++;
 	PVR_DPF((PVR_DBG_MESSAGE,
 			"PVRSRVPerProcessDataConnect: Process 0x%x has ref-count %d",
@@ -287,17 +285,16 @@ failure:
 	return eError;
 }
 
-
 /*!
 ******************************************************************************
 
  @Function	PVRSRVPerProcessDataDisconnect
- 
- @Description	Decrement refcount for per-process data area, 
+
+ @Description	Decrement refcount for per-process data area,
  				and free the resources if necessary.
 
  @Input		ui32PID - process ID
- 
+
  @Return	IMG_VOID
 
 ******************************************************************************/
@@ -343,7 +340,6 @@ IMG_VOID PVRSRVPerProcessDataDisconnect(IMG_UINT32	ui32PID)
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVPerProcessDataDisconnect: Purge of global handle pool failed (%d)", eError));
 	}
 }
-
 
 /*!
 ******************************************************************************

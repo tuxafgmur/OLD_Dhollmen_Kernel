@@ -66,7 +66,7 @@ IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVAcquireDeviceDataKM(IMG_UINT32			uiDevIndex,
 													PVRSRV_DEVICE_TYPE	eDeviceType,
 													IMG_HANDLE			*phDevCookie);
-							
+
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateCommandQueueKM(IMG_SIZE_T ui32QueueSize,
 													 PVRSRV_QUEUE_INFO **ppsQueueInfo);
@@ -95,12 +95,10 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateDeviceMemContextKM(IMG_HANDLE					hDevCook
 														 IMG_BOOL					*pbCreated,
 														 IMG_BOOL					*pbShared);
 
-
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroyDeviceMemContextKM(IMG_HANDLE hDevCookie,
 														  IMG_HANDLE hDevMemContext,
 														  IMG_BOOL *pbDestroyed);
-
 
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDeviceMemHeapInfoKM(IMG_HANDLE				hDevCookie,
@@ -113,7 +111,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDeviceMemHeapInfoKM(IMG_HANDLE				hDevCookie,
 #endif
 															IMG_BOOL 			*pbShared
 					);
-
 
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV _PVRSRVAllocDeviceMemKM(IMG_HANDLE					hDevCookie,
@@ -130,7 +127,6 @@ PVRSRV_ERROR IMG_CALLCONV _PVRSRVAllocDeviceMemKM(IMG_HANDLE					hDevCookie,
 												 IMG_BOOL					*pabMapChunk,
 												 PVRSRV_KERNEL_MEM_INFO		**ppsMemInfo);
 
-
 #if defined(PVRSRV_LOG_MEMORY_ALLOCS)
 	#define PVRSRVAllocDeviceMemKM(devCookie, perProc, devMemHeap, flags, size, alignment, privdata, privdatalength, \
 								   chunksize, numvirtchunks, numphyschunks, mapchunk, memInfo, logStr) \
@@ -145,7 +141,6 @@ PVRSRV_ERROR IMG_CALLCONV _PVRSRVAllocDeviceMemKM(IMG_HANDLE					hDevCookie,
 									chunksize, numvirtchunks, numphyschunks, mapchunk, memInfo)
 #endif
 
-
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVFreeDeviceMemKM(IMG_HANDLE			hDevCookie,
 												PVRSRV_KERNEL_MEM_INFO	*psMemInfo);
@@ -157,7 +152,6 @@ IMG_INT32 IMG_CALLCONV PVRSRVRemapToDevKM(IMG_HANDLE hDevCookie,
 IMG_EXPORT
 IMG_INT32 IMG_CALLCONV PVRSRVUnmapFromDevKM(IMG_HANDLE hDevCookie,
                 PVRSRV_KERNEL_MEM_INFO *psMemInfo);
-
 
 #if defined(SUPPORT_ION)
 IMG_IMPORT
@@ -200,7 +194,7 @@ IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVWrapExtMemoryKM(IMG_HANDLE				hDevCookie,
 												PVRSRV_PER_PROCESS_DATA	*psPerProc,
 												IMG_HANDLE				hDevMemContext,
-												IMG_SIZE_T 				ui32ByteSize, 
+												IMG_SIZE_T 				ui32ByteSize,
 												IMG_SIZE_T				ui32PageOffset,
 												IMG_BOOL				bPhysContig,
 												IMG_SYS_PHYADDR	 		*psSysAddr,
@@ -312,7 +306,6 @@ IMG_IMPORT
 PVRSRV_ERROR PVRSRVGetBCBufferKM(IMG_HANDLE	hDeviceKM,
 								 IMG_UINT32	ui32BufferIndex,
 								 IMG_HANDLE	*phBuffer);
-
 
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVMapDeviceClassMemoryKM(PVRSRV_PER_PROCESS_DATA	*psPerProc,

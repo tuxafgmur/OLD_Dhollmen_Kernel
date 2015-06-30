@@ -73,7 +73,6 @@ static IMG_BOOL VBAppend(IMG_CHAR *pszBuf, IMG_UINT32 ui32BufSiz,
 						 const IMG_CHAR* pszFormat, va_list VArgs)
 						 IMG_FORMAT_PRINTF(3, 0);
 
-
 #if defined(PVRSRV_NEED_PVR_DPF)
 
 #define PVR_MAX_FILEPATH_LEN 256
@@ -112,7 +111,7 @@ static DEFINE_SPINLOCK(gsDebugLockIRQ);
 #endif
 
 #if !defined(PVR_DEBUG_ALWAYS_USE_SPINLOCK)
-#if !defined (USE_SPIN_LOCK) /* to keep QAC happy */ 
+#if !defined (USE_SPIN_LOCK) /* to keep QAC happy */
 #define	USE_SPIN_LOCK (in_interrupt() || !preemptible())
 #endif
 #endif
@@ -318,7 +317,6 @@ IMG_VOID PVRSRVDebugPrintf	(
 	IMG_BOOL bTrace;
 	const IMG_CHAR *pszFileName = pszFullFileName;
 	IMG_CHAR *pszLeafName;
-
 
 	bTrace = (IMG_BOOL)(ui32DebugLevel & DBGPRIV_CALLTRACE) ? IMG_TRUE : IMG_FALSE;
 

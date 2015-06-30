@@ -186,7 +186,6 @@ ExitNotFound:
 	return eError;
 }
 
-
 static PVRSRV_ERROR
 SGXCleanupSharedPBDescKM(PVRSRV_STUB_PBDESC *psStubPBDescIn)
 {
@@ -265,7 +264,6 @@ static PVRSRV_ERROR SGXCleanupSharedPBDescCreateLockCallback(IMG_PVOID pvParam, 
 	return PVRSRV_OK;
 }
 
-
 IMG_EXPORT PVRSRV_ERROR
 SGXUnrefSharedPBDescKM(IMG_HANDLE hSharedPBDesc)
 {
@@ -273,7 +271,6 @@ SGXUnrefSharedPBDescKM(IMG_HANDLE hSharedPBDesc)
 
 	return ResManFreeResByPtr(hSharedPBDesc, CLEANUP_WITH_POLL);
 }
-
 
 IMG_EXPORT PVRSRV_ERROR
 SGXAddSharedPBDescKM(PVRSRV_PER_PROCESS_DATA	*psPerProc,
@@ -366,7 +363,6 @@ SGXAddSharedPBDescKM(PVRSRV_PER_PROCESS_DATA	*psPerProc,
 		eRet = PVRSRV_ERROR_OUT_OF_MEMORY;
 		goto NoAdd;
 	}
-
 
 	psStubPBDesc->ppsSubKernelMemInfos = IMG_NULL;
 

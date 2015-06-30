@@ -64,7 +64,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,22)) */
 #endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,26)) */
 
-
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 #if !defined(LDM_PLATFORM)
 #error "LDM_PLATFORM must be set"
@@ -118,11 +117,11 @@ extern "C" {
 /*****************************************************************************
  * system specific data structures
  *****************************************************************************/
- 
+
 /*****************************************************************************
  * system specific function prototypes
  *****************************************************************************/
- 
+
 IMG_VOID DisableSystemClocks(SYS_DATA *psSysData);
 PVRSRV_ERROR EnableSystemClocks(SYS_DATA *psSysData);
 
@@ -155,7 +154,7 @@ PVRSRV_ERROR EnableSGXClocks(SYS_DATA *psSysData);
 #define	SYS_SPECIFIC_DATA_CLEAR(psSysSpecData, flag) ((IMG_VOID)((psSysSpecData)->ui32SysSpecificData &= ~(flag)))
 
 #define	SYS_SPECIFIC_DATA_TEST(psSysSpecData, flag) (((psSysSpecData)->ui32SysSpecificData & (flag)) != 0)
- 
+
 typedef struct _SYS_SPECIFIC_DATA_TAG_
 {
 	IMG_UINT32	ui32SysSpecificData;
@@ -261,5 +260,3 @@ static INLINE PVRSRV_ERROR SysDvfsDeinitialize(void)
 #endif
 
 #endif	/* __SYSLOCAL_H__ */
-
-

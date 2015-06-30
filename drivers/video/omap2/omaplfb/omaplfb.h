@@ -90,9 +90,7 @@ typedef struct OMAPLFB_BUFFER_TAG
 
 typedef struct OMAPLFB_SWAPCHAIN_TAG
 {
-
 	unsigned int			uiSwapChainID;
-
 	unsigned long       		ulBufferCount;
 
 	OMAPLFB_BUFFER     		*psBuffer;
@@ -102,7 +100,6 @@ typedef struct OMAPLFB_SWAPCHAIN_TAG
 	OMAPLFB_BOOL			bNotVSynced;
 
 	int				iBlankEvents;
-
 	unsigned int            	uiFBDevID;
 } OMAPLFB_SWAPCHAIN;
 
@@ -145,9 +142,7 @@ typedef struct OMAPLFB_FBINFO_TAG
 
 typedef struct OMAPLFB_DEVINFO_TAG
 {
-
 	unsigned int            uiFBDevID;
-
 	unsigned int            uiPVRDevID;
 
 	struct mutex		sCreateSwapChainMutex;
@@ -155,37 +150,29 @@ typedef struct OMAPLFB_DEVINFO_TAG
 	OMAPLFB_BUFFER          sSystemBuffer;
 
 	PVRSRV_DC_DISP2SRV_KMJTABLE	sPVRJTable;
-
 	PVRSRV_DC_SRV2DISP_KMJTABLE	sDCJTable;
 
 	OMAPLFB_FBINFO          sFBInfo;
-
-	OMAPLFB_SWAPCHAIN      *psSwapChain;
+	OMAPLFB_SWAPCHAIN       *psSwapChain;
 
 	unsigned int		uiSwapChainID;
 
 	OMAPLFB_ATOMIC_BOOL     sFlushCommands;
 
-	struct fb_info         *psLINFBInfo;
-
+	struct fb_info          *psLINFBInfo;
 	struct notifier_block   sLINNotifBlock;
 
 	IMG_DEV_VIRTADDR	sDisplayDevVAddr;
 
 	DISPLAY_INFO            sDisplayInfo;
-
 	DISPLAY_FORMAT          sDisplayFormat;
-
 	DISPLAY_DIMS            sDisplayDim;
 
 	OMAPLFB_ATOMIC_BOOL	sBlanked;
-
 	OMAPLFB_ATOMIC_INT	sBlankEvents;
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
-
 	OMAPLFB_ATOMIC_BOOL	sEarlySuspendFlag;
-
 	struct early_suspend    sEarlySuspend;
 #endif
 
@@ -228,10 +215,10 @@ typedef enum _OMAPLFB_ERROR_
 
 typedef enum _OMAPLFB_UPDATE_MODE_
 {
-	OMAPLFB_UPDATE_MODE_UNDEFINED			= 0,
-	OMAPLFB_UPDATE_MODE_MANUAL			= 1,
-	OMAPLFB_UPDATE_MODE_AUTO			= 2,
-	OMAPLFB_UPDATE_MODE_DISABLED			= 3
+	OMAPLFB_UPDATE_MODE_UNDEFINED		= 0,
+	OMAPLFB_UPDATE_MODE_MANUAL		= 1,
+	OMAPLFB_UPDATE_MODE_AUTO		= 2,
+	OMAPLFB_UPDATE_MODE_DISABLED		= 3
 } OMAPLFB_UPDATE_MODE;
 
 #ifndef UNREFERENCED_PARAMETER

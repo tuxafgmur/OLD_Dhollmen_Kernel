@@ -42,7 +42,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PDUMP_KM_H_
 #define _PDUMP_KM_H_
 
-
 /*
  * Include the OS abstraction APIs
  */
@@ -121,7 +120,7 @@ extern IMG_UINT32 g_ui32EveryLineCounter;
 							 		 IMG_BOOL bInitialisePages,
 							 		 IMG_HANDLE hUniqueTag1,
 							 		 IMG_HANDLE hUniqueTag2);
-							 
+
 	PVRSRV_ERROR PDumpMemPTEntriesKM(PDUMP_MMU_ATTRIB *psMMUAttrib,
 									 IMG_HANDLE         hOSMemHandle,
 									 IMG_CPU_VIRTADDR	pvLinAddr,
@@ -323,9 +322,9 @@ extern IMG_UINT32 g_ui32EveryLineCounter;
 								  IMG_UINT32	ui32Flags);
 
 	IMG_VOID PDumpVGXMemToFile(IMG_CHAR *pszFileName,
-							   IMG_UINT32 ui32FileOffset, 
+							   IMG_UINT32 ui32FileOffset,
 							   PVRSRV_KERNEL_MEM_INFO *psMemInfo,
-							   IMG_UINT32 uiAddr, 
+							   IMG_UINT32 uiAddr,
 							   IMG_UINT32 ui32Size,
 							   IMG_UINT32 ui32PDumpFlags,
 							   IMG_HANDLE hUniqueTag);
@@ -336,9 +335,9 @@ extern IMG_UINT32 g_ui32EveryLineCounter;
 	/* New pdump common functions */
 	PVRSRV_ERROR PDumpStoreMemToFile(PDUMP_MMU_ATTRIB *psMMUAttrib,
 							         IMG_CHAR *pszFileName,
-									 IMG_UINT32 ui32FileOffset, 
+									 IMG_UINT32 ui32FileOffset,
 									 PVRSRV_KERNEL_MEM_INFO *psMemInfo,
-									 IMG_UINT32 uiAddr, 
+									 IMG_UINT32 uiAddr,
 									 IMG_UINT32 ui32Size,
 									 IMG_UINT32 ui32PDumpFlags,
 									 IMG_HANDLE hUniqueTag);

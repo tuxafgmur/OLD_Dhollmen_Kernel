@@ -94,7 +94,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * when using gPVRSRVLock.
  * The Linux kernel takes the mm->mmap_sem before calling the mmap
  * entry points (PVRMMap, MMapVOpen, MMapVClose), but the ioctl
- * entry point may take mm->mmap_sem during fault handling, or 
+ * entry point may take mm->mmap_sem during fault handling, or
  * before calling get_user_pages.  If gPVRSRVLock was used in the
  * mmap entry points, a deadlock could result, due to the ioctl
  * and mmap code taking the two locks in different orders.
@@ -110,7 +110,6 @@ static LIST_HEAD(g_sMMapOffsetStructList);
 static IMG_UINT32 g_ui32RegisteredAreas = 0;
 static IMG_UINT32 g_ui32TotalByteSize = 0;
 #endif
-
 
 #if defined(DEBUG_LINUX_MMAP_AREAS)
 static struct proc_dir_entry *g_ProcMMap;
@@ -278,7 +277,7 @@ CreateOffsetStruct(LinuxMemArea *psLinuxMemArea, IMG_UINT32 ui32Offset, IMG_UINT
         PVR_DPF((PVR_DBG_ERROR,"PVRMMapRegisterArea: Couldn't alloc another mapping record from cache"));
         return IMG_NULL;
     }
-    
+
     psOffsetStruct->ui32MMapOffset = ui32Offset;
 
     psOffsetStruct->psLinuxMemArea = psLinuxMemArea;
@@ -309,7 +308,6 @@ CreateOffsetStruct(LinuxMemArea *psLinuxMemArea, IMG_UINT32 ui32Offset, IMG_UINT
     return psOffsetStruct;
 }
 
-
 static IMG_VOID
 DestroyOffsetStruct(PKV_OFFSET_STRUCT psOffsetStruct)
 {
@@ -331,10 +329,9 @@ DestroyOffsetStruct(PKV_OFFSET_STRUCT psOffsetStruct)
              psOffsetStruct->psLinuxMemArea,
              CpuPAddr.uiAddr));
 #endif
-    
+
     KMemCacheFreeWrapper(g_psMemmapCache, psOffsetStruct);
 }
-
 
 /*
  * There are no alignment constraints for mapping requests made by user
@@ -354,15 +351,14 @@ DetermineUsersSizeAndByteOffset(LinuxMemArea *psLinuxMemArea,
 {
     IMG_UINT32 ui32PageAlignmentOffset;
     IMG_CPU_PHYADDR CpuPAddr;
-    
+
     CpuPAddr = LinuxMemAreaToCpuPAddr(psLinuxMemArea, 0);
     ui32PageAlignmentOffset = ADDR_TO_PAGE_OFFSET(CpuPAddr.uiAddr);
-    
+
     *pui32ByteOffset = ui32PageAlignmentOffset;
 
     *pui32RealByteSize = PAGE_ALIGN(psLinuxMemArea->ui32ByteSize + ui32PageAlignmentOffset);
 }
-
 
 /*!
  *******************************************************************************
@@ -527,7 +523,6 @@ exit_unlock:
     return eError;
 }
 
-
 /*!
  *******************************************************************************
 
@@ -653,7 +648,6 @@ FindOffsetStructByOffset(IMG_UINT32 ui32Offset, IMG_UINT32 ui32RealByteSize)
 
     return IMG_NULL;
 }
-
 
 /*
  * Map a memory area into user space.
@@ -812,11 +806,11 @@ DoMapToUser(LinuxMemArea *psLinuxMemArea,
 #endif
 		    {
 			struct page *psPage;
-	
+
 		        PVR_ASSERT(pfn_valid(pfn));
-	
+
 		        psPage = pfn_to_page(pfn);
-	
+
 		        result = VM_INSERT_PAGE(ps_vma,  ulVMAPos, psPage);
 	                if(result != 0)
 	                {
@@ -832,7 +826,6 @@ DoMapToUser(LinuxMemArea *psLinuxMemArea,
 
     return IMG_TRUE;
 }
-
 
 static IMG_VOID
 MMapVOpenNoLock(struct vm_area_struct* ps_vma)
@@ -862,7 +855,6 @@ MMapVOpenNoLock(struct vm_area_struct* ps_vma)
 #endif
 }
 
-
 /*
  * Linux mmap open entry point.
  */
@@ -875,7 +867,6 @@ MMapVOpen(struct vm_area_struct* ps_vma)
 
     LinuxUnLockMutex(&g_sMMapMutex);
 }
-
 
 static IMG_VOID
 MMapVCloseNoLock(struct vm_area_struct* ps_vma)
@@ -993,7 +984,6 @@ static struct vm_operations_struct MMapIOOps =
 #endif
 };
 
-
 /*!
  *******************************************************************************
 
@@ -1023,15 +1013,15 @@ PVRMMap(struct file* pFile, struct vm_area_struct* ps_vma)
     PVR_UNREFERENCED_PARAMETER(pFile);
 
     LinuxLockMutexNested(&g_sMMapMutex, PVRSRV_LOCK_CLASS_MMAP);
-    
+
     ui32ByteSize = ps_vma->vm_end - ps_vma->vm_start;
-    
+
     PVR_DPF((PVR_DBG_MESSAGE, "%s: Received mmap(2) request with ui32MMapOffset 0x%08lx,"
                               " and ui32ByteSize %d(0x%08x)",
             __FUNCTION__,
             ps_vma->vm_pgoff,
             ui32ByteSize, ui32ByteSize));
-   
+
     psOffsetStruct = FindOffsetStructByOffset(ps_vma->vm_pgoff, ui32ByteSize);
 
     if (psOffsetStruct == IMG_NULL)
@@ -1073,7 +1063,7 @@ PVRMMap(struct file* pFile, struct vm_area_struct* ps_vma)
         iRetVal = -EINVAL;
         goto unlock_and_return;
     }
-   
+
     PVR_DPF((PVR_DBG_MESSAGE, "%s: Mapped psLinuxMemArea 0x%p\n",
          __FUNCTION__, psOffsetStruct->psLinuxMemArea));
 
@@ -1085,12 +1075,12 @@ PVRMMap(struct file* pFile, struct vm_area_struct* ps_vma)
      * page requests have already been validated.
      */
     ps_vma->vm_flags |= VM_DONTEXPAND;
-    
+
     /* Don't allow mapping to be inherited across a process fork */
     ps_vma->vm_flags |= VM_DONTCOPY;
 
     ps_vma->vm_private_data = (void *)psOffsetStruct;
-    
+
     switch(psOffsetStruct->psLinuxMemArea->ui32AreaFlags & PVRSRV_HAP_CACHETYPE_MASK)
     {
         case PVRSRV_HAP_CACHED:
@@ -1121,13 +1111,13 @@ PVRMMap(struct file* pFile, struct vm_area_struct* ps_vma)
 
     /* Install open and close handlers for ref-counting */
     ps_vma->vm_ops = &MMapIOOps;
-    
+
     if(!DoMapToUser(psOffsetStruct->psLinuxMemArea, ps_vma, 0))
     {
         iRetVal = -EAGAIN;
         goto unlock_and_return;
     }
-    
+
     PVR_ASSERT(psOffsetStruct->ui32UserVAddr == 0);
 
     psOffsetStruct->ui32UserVAddr = ps_vma->vm_start;
@@ -1155,7 +1145,7 @@ PVRMMap(struct file* pFile, struct vm_area_struct* ps_vma)
 	        DetermineUsersSizeAndByteOffset(psFlushMemArea,
 	                                        &ui32DummyByteSize,
 	                                        &ui32ByteOffset);
-	
+
 	        pvBase = (IMG_VOID *)ps_vma->vm_start + ui32ByteOffset;
 	        ui32FlushSize = psFlushMemArea->ui32ByteSize;
 		}
@@ -1186,7 +1176,6 @@ unlock_and_return:
     return iRetVal;
 }
 
-
 #if defined(DEBUG_LINUX_MMAP_AREAS)
 
 /*
@@ -1194,13 +1183,13 @@ unlock_and_return:
 
  * sfile : seq_file that handles /proc file
  * start : TRUE if it's start, FALSE if it's stop
- *  
+ *
 */
-static void ProcSeqStartstopMMapRegistations(struct seq_file *sfile,IMG_BOOL start) 
+static void ProcSeqStartstopMMapRegistations(struct seq_file *sfile,IMG_BOOL start)
 {
-	if(start) 
+	if(start)
 	{
-	    LinuxLockMutexNested(&g_sMMapMutex, PVRSRV_LOCK_CLASS_MMAP);		
+	    LinuxLockMutexNested(&g_sMMapMutex, PVRSRV_LOCK_CLASS_MMAP);
 	}
 	else
 	{
@@ -1208,21 +1197,20 @@ static void ProcSeqStartstopMMapRegistations(struct seq_file *sfile,IMG_BOOL sta
 	}
 }
 
-
 /*
- * Convert offset (index from KVOffsetTable) to element 
+ * Convert offset (index from KVOffsetTable) to element
  * (called when reading /proc/mmap file)
 
  * sfile : seq_file that handles /proc file
  * off : index into the KVOffsetTable from which to print
- *  
+ *
  * returns void* : Pointer to element that will be dumped
- *  
+ *
 */
 static void* ProcSeqOff2ElementMMapRegistrations(struct seq_file *sfile, loff_t off)
 {
     LinuxMemArea *psLinuxMemArea;
-	if(!off) 
+	if(!off)
 	{
 		return PVR_PROC_SEQ_START_TOKEN;
 	}
@@ -1235,7 +1223,7 @@ static void* ProcSeqOff2ElementMMapRegistrations(struct seq_file *sfile, loff_t 
         {
 	    	off--;
 	    	if (off == 0)
-	    	{				
+	    	{
 				PVR_ASSERT(psOffsetStruct->psLinuxMemArea == psLinuxMemArea);
 				return (void*)psOffsetStruct;
 		    }
@@ -1250,7 +1238,7 @@ static void* ProcSeqOff2ElementMMapRegistrations(struct seq_file *sfile, loff_t 
  * sfile : seq_file that handles /proc file
  * el : actual element
  * off : index into the KVOffsetTable from which to print
- *  
+ *
  * returns void* : Pointer to element to show (0 ends iteration)
 */
 static void* ProcSeqNextMMapRegistrations(struct seq_file *sfile,void* el,loff_t off)
@@ -1258,13 +1246,12 @@ static void* ProcSeqNextMMapRegistrations(struct seq_file *sfile,void* el,loff_t
 	return ProcSeqOff2ElementMMapRegistrations(sfile,off);
 }
 
-
 /*
  * Show MMap element (called when reading /proc/mmap file)
 
  * sfile : seq_file that handles /proc file
  * el : actual element
- *  
+ *
 */
 static void ProcSeqShowMMapRegistrations(struct seq_file *sfile, void *el)
 {
@@ -1273,7 +1260,7 @@ static void ProcSeqShowMMapRegistrations(struct seq_file *sfile, void *el)
 	IMG_UINT32 ui32RealByteSize;
 	IMG_UINT32 ui32ByteOffset;
 
-	if(el == PVR_PROC_SEQ_START_TOKEN) 
+	if(el == PVR_PROC_SEQ_START_TOKEN)
 	{
         seq_printf( sfile,
 #if !defined(DEBUG_LINUX_XML_PROC_FILES)
@@ -1337,7 +1324,6 @@ static void ProcSeqShowMMapRegistrations(struct seq_file *sfile, void *el)
 }
 
 #endif
-
 
 /*!
  *******************************************************************************
@@ -1404,7 +1390,6 @@ exit_unlock:
 
     return eError;
 }
-
 
 /*!
  *******************************************************************************
@@ -1475,7 +1460,6 @@ exit_unlock:
     return eError;
 }
 
-
 /*!
  *******************************************************************************
 
@@ -1540,7 +1524,6 @@ LinuxMMapPerProcessDisconnect(PVRSRV_ENV_PER_PROCESS_DATA *psEnvPerProc)
     LinuxUnLockMutex(&g_sMMapMutex);
 }
 
-
 /*!
  *******************************************************************************
 
@@ -1569,7 +1552,6 @@ PVRSRV_ERROR LinuxMMapPerProcessHandleOptions(PVRSRV_HANDLE_BASE *psHandleBase)
     return eError;
 }
 
-
 /*!
  *******************************************************************************
 
@@ -1593,7 +1575,7 @@ PVRMMapInit(IMG_VOID)
     }
 
 #if defined(DEBUG_LINUX_MMAP_AREAS)
-	g_ProcMMap = CreateProcReadEntrySeq("mmap", NULL, 
+	g_ProcMMap = CreateProcReadEntrySeq("mmap", NULL,
 						  ProcSeqNextMMapRegistrations,
 						  ProcSeqShowMMapRegistrations,
 						  ProcSeqOff2ElementMMapRegistrations,
@@ -1606,7 +1588,6 @@ error:
     PVRMMapCleanup();
     return;
 }
-
 
 /*!
  *******************************************************************************
@@ -1628,7 +1609,7 @@ PVRMMapCleanup(IMG_VOID)
 	LinuxMemArea *psLinuxMemArea, *psTmpMemArea;
 
 	PVR_DPF((PVR_DBG_ERROR, "%s: Memory areas are still registered with MMap", __FUNCTION__));
-	
+
 	PVR_TRACE(("%s: Unregistering memory areas", __FUNCTION__));
  	list_for_each_entry_safe(psLinuxMemArea, psTmpMemArea, &g_sMMapAreaList, sMMapItem)
 	{

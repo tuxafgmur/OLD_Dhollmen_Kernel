@@ -72,7 +72,6 @@ typedef		enum	img_tag_TriStateSwitch
 #endif
 #endif
 
-
 /* Use this in any file, or use attributes under GCC - see below */
 #ifndef PVR_UNREFERENCED_PARAMETER
 #define	PVR_UNREFERENCED_PARAMETER(param) (param) = (param)
@@ -100,7 +99,6 @@ typedef char				TCHAR, *PTCHAR, *PTSTR;
 #endif	/* #if defined(UNICODE) */
 #define _TCHAR_DEFINED
 #endif /* #ifndef _TCHAR_DEFINED */
-
 
 			#if defined(__linux__) || defined(__QNXNTO__) || defined(__METAG)
 

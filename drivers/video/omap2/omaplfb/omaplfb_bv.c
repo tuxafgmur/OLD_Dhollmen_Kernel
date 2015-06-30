@@ -30,12 +30,11 @@
 #include <mach/tiler.h>
 #include <linux/gcbv-iface.h>
 
-#include "img_defs.h"
-#include "servicesext.h"
-#include "kerneldisplay.h"
+#include "../../../gpu/pvr/img_defs.h"
+#include "../../../gpu/pvr/servicesext.h"
+#include "../../../gpu/pvr/kerneldisplay.h"
 #include "omaplfb.h"
 
-static int debugbv = 0;
 extern struct ion_client *gpsIONClient;
 
 /*
@@ -50,7 +49,6 @@ extern struct ion_client *gpsIONClient;
 #define OMAPLFB_CLRBUFF_SZ		OMAPLFB_GCSTRIDE_PIXEL_ALIGN * 4
 
 #define OMAPLFB_COMMAND_COUNT		1
-
 #define	OMAPLFB_VSYNC_SETTLE_COUNT	5
 
 #define	OMAPLFB_MAX_NUM_DEVICES		FB_MAX
@@ -60,19 +58,6 @@ extern struct ion_client *gpsIONClient;
 
 static IMG_BOOL gbBvInterfacePresent;
 static struct bventry gsBvInterface;
-
-static void print_bvparams(struct bvbltparams *bltparams,
-                           unsigned int pSrc1DescInfo, unsigned int pSrc2DescInfo)
-{
-	struct bvphysdesc *physdesc = NULL;
-
-	if (bltparams->dstdesc->auxtype == BVAT_PHYSDESC)
-		physdesc = bltparams->dstdesc->auxptr;
-
-	if (!(bltparams->flags & BVFLAG_BLEND))
-		return;
-
-}
 
 void OMAPLFBGetBltFBsBvHndl(OMAPLFB_FBINFO *psPVRFBInfo, IMG_UINTPTR_T *ppPhysAddr)
 {
@@ -439,13 +424,6 @@ void OMAPLFBDoBlits(OMAPLFB_DEVINFO *psDevInfo, PDC_MEM_INFO *ppsMemInfos, struc
 			entry->bp.src2.desc = NULL;
 		}
 
-		if (debugbv)
-		{
-			iSrc1DescInfo = (unsigned int)entry->src1desc.auxptr;
-			iSrc2DescInfo = (unsigned int)entry->src2desc.auxptr;
-			print_bvparams(&entry->bp, iSrc1DescInfo, iSrc2DescInfo);
-		}
-
 		batchFlags = entry->bp.flags & BVFLAG_BATCH_MASK;
 		switch (batchFlags) {
 		case BVFLAG_BATCH_CONTINUE:
@@ -457,9 +435,6 @@ void OMAPLFBDoBlits(OMAPLFB_DEVINFO *psDevInfo, PDC_MEM_INFO *ppsMemInfos, struc
 		}
 
 		bv_error = bv_entry->bv_blt(&entry->bp);
-		if (bv_error)
-			printk(KERN_ERR "%s: blit failed %d\n",
-					__func__, bv_error);
 
 		if (batchFlags == BVFLAG_BATCH_BEGIN) {
 			/* cache the batch handle */

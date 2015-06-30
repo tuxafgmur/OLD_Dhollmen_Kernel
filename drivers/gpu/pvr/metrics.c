@@ -60,9 +60,7 @@ static volatile IMG_UINT32 *pui32TimerRegister = 0;
 #define PVRSRV_TIMER_TOTAL_IN_MS(X)		((1000*asTimers[X].ui32Total)/ui32TicksPerMS)
 #define PVRSRV_TIMER_COUNT(X)			asTimers[X].ui32Count
 
-
-Temporal_Data asTimers[PVRSRV_NUM_TIMERS]; 
-
+Temporal_Data asTimers[PVRSRV_NUM_TIMERS];
 
 /***********************************************************************************
  Function Name      : PVRSRVTimeNow
@@ -98,7 +96,6 @@ IMG_UINT32 PVRSRVTimeNow(IMG_VOID)
 #endif /* defined(__sh__) */
 }
 
-
 /***********************************************************************************
  Function Name      : PVRSRVGetCPUFreq
  Inputs             : None
@@ -120,7 +117,6 @@ static IMG_UINT32 PVRSRVGetCPUFreq(IMG_VOID)
 
 	return (ui32Time2 - ui32Time1);
 }
-
 
 /***********************************************************************************
  Function Name      : PVRSRVSetupMetricTimers
@@ -146,7 +142,7 @@ IMG_VOID PVRSRVSetupMetricTimers(IMG_VOID *pvDevInfo)
 		/* timer control register */
 		// clock / 1024 when TIMER_DIVISOR = 4
 		// underflow int disabled
-		// we get approx 38 uS per timer tick 
+		// we get approx 38 uS per timer tick
 		*TCR_2 = TIMER_DIVISOR;
 
 		/* reset the timer counter to 0 */
@@ -163,7 +159,6 @@ IMG_VOID PVRSRVSetupMetricTimers(IMG_VOID *pvDevInfo)
 
 	#endif /* defined(__sh__) */
 }
-
 
 /***********************************************************************************
  Function Name      : PVRSRVOutputMetricTotals
@@ -206,4 +201,3 @@ IMG_VOID PVRSRVOutputMetricTotals(IMG_VOID)
 /******************************************************************************
  End of file (metrics.c)
 ******************************************************************************/
-

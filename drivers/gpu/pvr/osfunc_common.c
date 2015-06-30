@@ -44,5 +44,3 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "img_types.h"
 #include "services_headers.h"
 #include "osfunc.h"
-
-

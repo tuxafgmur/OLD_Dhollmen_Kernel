@@ -80,8 +80,6 @@ static atomic_t gsPDumpSuspended = ATOMIC_INIT(0);
 
 static PDBGKM_SERVICE_TABLE gpfnDbgDrv = IMG_NULL;
 
-
-
 IMG_CHAR *pszStreamName[PDUMP_NUM_STREAMS] = {	"ParamStream2",
 												"ScriptStream2",
 												"DriverInfoStream"};
@@ -101,9 +99,6 @@ static PDBG_PDUMP_STATE gsDBGPdumpState = {{IMG_NULL}, 0, IMG_NULL, IMG_NULL, IM
 #define SZ_MSG_SIZE_MAX			PVRSRV_PDUMP_MAX_COMMENT_SIZE-1
 #define SZ_SCRIPT_SIZE_MAX		PVRSRV_PDUMP_MAX_COMMENT_SIZE-1
 #define SZ_FILENAME_SIZE_MAX	PVRSRV_PDUMP_MAX_COMMENT_SIZE-1
-
-
-
 
 static inline IMG_BOOL PDumpSuspended(IMG_VOID)
 {
@@ -375,9 +370,9 @@ IMG_VOID PDumpOSCPUVAddrToDevPAddr(PVRSRV_DEVICE_TYPE eDeviceType,
 
 	/* Caller must now alway supply hOSMemHandle, even though we only (presently)
 	   use it here in the linux implementation */
-	   
+
 	PVR_ASSERT (hOSMemHandle != IMG_NULL);
-	
+
 	sCpuPAddr = OSMemHandleToCpuPAddr(hOSMemHandle, ui32Offset);
 	PVR_ASSERT((sCpuPAddr.uiAddr & (ui32PageSize - 1)) == 0);
 
@@ -472,13 +467,12 @@ IMG_VOID PDumpInit(IMG_VOID)
 	{
 		DBGDrvGetServiceTable(&gpfnDbgDrv);
 
-
 		// If something failed then no point in trying to connect streams
 		if (gpfnDbgDrv == IMG_NULL)
 		{
 			return;
 		}
-		
+
 		/*
 		 * Pass the connection notify callback
 		 */
@@ -559,7 +553,6 @@ init_failed:
 
 	gpfnDbgDrv = IMG_NULL;
 }
-
 
 IMG_VOID PDumpDeInit(IMG_VOID)
 {
@@ -655,7 +648,6 @@ IMG_BOOL PDumpIsLastCaptureFrameKM(IMG_VOID)
 	return gpfnDbgDrv->pfnIsLastCaptureFrame(gsDBGPdumpState.psStream[PDUMP_STREAM_SCRIPT2]);
 }
 
-
 /**************************************************************************
  * Function Name  : PDumpIsCaptureFrameKM
  * Inputs         : None
@@ -694,7 +686,6 @@ PVRSRV_ERROR PDumpOSSetFrameKM(IMG_UINT32 ui32Frame)
 	return PVRSRV_OK;
 }
 
-
 /*****************************************************************************
  FUNCTION	:	PDumpWriteString2
 
@@ -708,7 +699,6 @@ static IMG_BOOL PDumpWriteString2(IMG_CHAR * pszString, IMG_UINT32 ui32Flags)
 {
 	return PDumpWriteILock(gsDBGPdumpState.psStream[PDUMP_STREAM_SCRIPT2], (IMG_UINT8 *) pszString, strlen(pszString), ui32Flags);
 }
-
 
 /*****************************************************************************
  FUNCTION	: PDumpWriteILock
@@ -727,7 +717,6 @@ static IMG_BOOL PDumpWriteILock(PDBG_STREAM psStream, IMG_UINT8 *pui8Data, IMG_U
 		PVR_DPF((PVR_DBG_MESSAGE, "PDumpWriteILock: Failed to write 0x%x bytes to stream 0x%x", ui32Count, (IMG_UINT32)psStream));
 		return IMG_TRUE;
 	}
-
 
 	/*
 		Set the stream marker to split output files

@@ -69,7 +69,6 @@ typedef struct _DEVICE_COMMAND_DATA_
 	IMG_UINT32				ui32MaxSrcSyncCount;	/*!< Maximum number of source syncs */
 } DEVICE_COMMAND_DATA;
 
-
 #if defined(__linux__) && defined(__KERNEL__)
 
 #include "proc.h"
@@ -165,7 +164,6 @@ void* ProcSeqOff2ElementQueue(struct seq_file * sfile, loff_t off)
 	{
 		return PVR_PROC_SEQ_START_TOKEN;
 	}
-
 
 	psSysData = SysAcquireDataNoCheck();
 	if (psSysData != IMG_NULL)
@@ -289,7 +287,6 @@ static IMG_VOID QueueDumpCmdComplete(COMMAND_COMPLETE_DATA *psCmdCompleteData,
 	}
 }
 
-
 static IMG_VOID QueueDumpDebugInfo_ForEachCb(PVRSRV_DEVICE_NODE *psDeviceNode)
 {
 	if (psDeviceNode->sDevId.eDeviceClass == PVRSRV_DEVICE_CLASS_DISPLAY)
@@ -334,14 +331,12 @@ static IMG_VOID QueueDumpDebugInfo_ForEachCb(PVRSRV_DEVICE_NODE *psDeviceNode)
 	}
 }
 
-
 IMG_VOID QueueDumpDebugInfo(IMG_VOID)
 {
 	SYS_DATA	*psSysData;
 	SysAcquireData(&psSysData);
 	List_PVRSRV_DEVICE_NODE_ForEach(psSysData->psDeviceNodeList, &QueueDumpDebugInfo_ForEachCb);
 }
-
 
 /*****************************************************************************
 	Kernel-side functions of User->Kernel transitions
@@ -363,7 +358,6 @@ static IMG_SIZE_T NearestPower2(IMG_SIZE_T ui32Value)
 
 	return ui32Result;
 }
-
 
 /*!
 ******************************************************************************
@@ -481,7 +475,6 @@ ErrorExit:
 
 	return eError;
 }
-
 
 /*!
 ******************************************************************************
@@ -609,7 +602,6 @@ ErrorExit:
 	return eError;
 }
 
-
 /*!
 *****************************************************************************
 
@@ -664,7 +656,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetQueueSpaceKM(PVRSRV_QUEUE_INFO *psQueue,
 
 	return PVRSRV_OK;
 }
-
 
 /*!
 *****************************************************************************
@@ -744,7 +735,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVInsertCommandKM(PVRSRV_QUEUE_INFO	*psQueue,
 	/* PRQA S 3305 END_PTR_ASSIGNMENTS */
 	psCommand->psDstSync		= (PVRSRV_SYNC_OBJECT*)(((IMG_UINTPTR_T)psCommand) + sizeof(PVRSRV_COMMAND));
 
-
 	psCommand->psSrcSync		= (PVRSRV_SYNC_OBJECT*)(((IMG_UINTPTR_T)psCommand->psDstSync)
 								+ (ui32DstSyncCount * sizeof(PVRSRV_SYNC_OBJECT)));
 
@@ -805,7 +795,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVInsertCommandKM(PVRSRV_QUEUE_INFO	*psQueue,
 
 	return PVRSRV_OK;
 }
-
 
 /*!
 *******************************************************************************
@@ -874,7 +863,7 @@ static
 PVRSRV_ERROR CheckIfSyncIsQueued(PVRSRV_SYNC_OBJECT *psSync, COMMAND_COMPLETE_DATA *psCmdData)
 {
 	IMG_UINT32 k;
- 
+
 	if (psCmdData->bInUse)
 	{
 		for (k=0;k<psCmdData->ui32SrcSyncCount;k++)
@@ -1093,7 +1082,6 @@ PVRSRV_ERROR PVRSRVProcessCommand(SYS_DATA			*psSysData,
 	return eError;
 }
 
-
 static IMG_VOID PVRSRVProcessQueues_ForEachCb(PVRSRV_DEVICE_NODE *psDeviceNode)
 {
 	if (psDeviceNode->bReProcessDeviceCommandComplete &&
@@ -1135,7 +1123,7 @@ PVRSRV_ERROR PVRSRVProcessQueues(IMG_BOOL	bFlush)
 	{
 		OSWaitus(1);
 	};
-	
+
 	psQueue = psSysData->psQueueList;
 
 	if(!psQueue)
@@ -1307,9 +1295,6 @@ IMG_VOID PVRSRVCommandCompleteKM(IMG_HANDLE	hCmdCookie,
 	}
 }
 
-
-
-
 /*!
 ******************************************************************************
 
@@ -1396,9 +1381,9 @@ PVRSRV_ERROR PVRSRVRegisterCmdProcListKM(IMG_UINT32		ui32DevIndex,
 				PVR_DPF((PVR_DBG_ERROR,"PVRSRVRegisterCmdProcListKM: Failed to alloc cmd %d", ui32CmdTypeCounter));
 				goto ErrorExit;
 			}
-			
+
 			psDeviceCommandData[ui32CmdTypeCounter].apsCmdCompleteData[ui32CmdCounter] = psCmdCompleteData;
-			
+
 			/* clear memory */
 			OSMemSet(psCmdCompleteData, 0x00, ui32AllocSize);
 
@@ -1425,10 +1410,9 @@ ErrorExit:
 				"PVRSRVRegisterCmdProcListKM: Failed to clean up after error, device 0x%x",
 				ui32DevIndex));
 	}
-	
+
 	return eError;
 }
-
 
 /*!
 ******************************************************************************
@@ -1477,7 +1461,7 @@ PVRSRV_ERROR PVRSRVRemoveCmdProcListKM(IMG_UINT32 ui32DevIndex,
 			for (ui32CmdCounter = 0; ui32CmdCounter < DC_NUM_COMMANDS_PER_TYPE; ui32CmdCounter++)
 			{
 				psCmdCompleteData = psDeviceCommandData[ui32CmdTypeCounter].apsCmdCompleteData[ui32CmdCounter];
-				
+
 				/* free the cmd complete structure array entries */
 				if (psCmdCompleteData != IMG_NULL)
 				{

@@ -50,17 +50,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 #include "sgx_mkif_km.h"
 
-
 #define SGX_MAX_DEV_DATA			24
 #define	SGX_MAX_INIT_MEM_HANDLES	18
-
 
 typedef struct _SGX_BRIDGE_INFO_FOR_SRVINIT
 {
 	IMG_DEV_PHYADDR sPDDevPAddr;
 	PVRSRV_HEAP_INFO asHeapInfo[PVRSRV_MAX_CLIENT_HEAPS];
 } SGX_BRIDGE_INFO_FOR_SRVINIT;
-
 
 typedef enum _SGXMKIF_CMD_TYPE_
 {
@@ -80,7 +77,6 @@ typedef enum _SGXMKIF_CMD_TYPE_
 	SGXMKIF_CMD_FORCE_I32   	= -1,
 
 } SGXMKIF_CMD_TYPE;
-
 
 typedef struct _SGX_BRIDGE_INIT_INFO_
 {
@@ -209,7 +205,6 @@ typedef struct _SGX_BRIDGE_INIT_INFO_
 
 } SGX_BRIDGE_INIT_INFO;
 
-
 typedef struct _SGX_DEVICE_SYNC_LIST_
 {
 	PSGXMKIF_HWDEVICE_SYNC_LIST	psHWDeviceSyncList;
@@ -235,7 +230,6 @@ typedef struct _SGX_DEVICE_SYNC_LIST_
 #endif
 } SGX_DEVICE_SYNC_LIST, *PSGX_DEVICE_SYNC_LIST;
 
-
 typedef struct _SGX_INTERNEL_STATUS_UPDATE_
 {
 	CTL_STATUS				sCtlStatus;
@@ -245,7 +239,6 @@ typedef struct _SGX_INTERNEL_STATUS_UPDATE_
 	IMG_HANDLE				hKernelMemInfo;
 #endif
 } SGX_INTERNEL_STATUS_UPDATE;
-
 
 typedef struct _SGX_CCB_KICK_
 {
@@ -347,13 +340,11 @@ typedef struct _SGX_CCB_KICK_
 	IMG_HANDLE	hDevMemContext;
 } SGX_CCB_KICK;
 
-
 /*!
  ******************************************************************************
  * shared client/kernel device information structure for SGX
  *****************************************************************************/
 #define SGX_KERNEL_USE_CODE_BASE_INDEX		15
-
 
 /*!
  ******************************************************************************
@@ -384,14 +375,12 @@ typedef struct _SGX_INTERNAL_DEVINFO_
 	IMG_BOOL			bForcePTOff;
 } SGX_INTERNAL_DEVINFO;
 
-
 typedef struct _SGX_INTERNAL_DEVINFO_KM_
 {
 	IMG_UINT32			ui32Flags;
 	IMG_HANDLE			hHostCtlKernelMemInfoHandle;
 	IMG_BOOL			bForcePTOff;
 } SGX_INTERNAL_DEVINFO_KM;
-
 
 #if defined(TRANSFER_QUEUE)
 typedef struct _PVRSRV_TRANSFER_SGX_KICK_
@@ -481,7 +470,6 @@ typedef struct _PVRSRV_2D_SGX_KICK_
 } PVRSRV_2D_SGX_KICK, *PPVRSRV_2D_SGX_KICK;
 #endif	/* defined(SGX_FEATURE_2D_HARDWARE) */
 #endif	/* defined(TRANSFER_QUEUE) */
-
 
 #endif /* __SGXINFO_H__ */
 /******************************************************************************

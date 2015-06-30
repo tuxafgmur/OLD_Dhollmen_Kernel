@@ -73,7 +73,7 @@ CopyFromUserWrapper(PVRSRV_PER_PROCESS_DATA *pProcData,
 					IMG_VOID *pvSrc,
 					IMG_UINT32 ui32Size);
 PVRSRV_ERROR
-CopyToUserWrapper(PVRSRV_PER_PROCESS_DATA *pProcData, 
+CopyToUserWrapper(PVRSRV_PER_PROCESS_DATA *pProcData,
 				  IMG_UINT32 ui32BridgeID,
 				  IMG_VOID *pvDest,
 				  IMG_VOID *pvSrc,
@@ -84,7 +84,6 @@ CopyToUserWrapper(PVRSRV_PER_PROCESS_DATA *pProcData,
 #define CopyToUserWrapper(pProcData, ui32BridgeID, pvDest, pvSrc, ui32Size) \
 	OSCopyToUser(pProcData, pvDest, pvSrc, ui32Size)
 #endif
-
 
 #define ASSIGN_AND_RETURN_ON_ERROR(error, src, res)		\
 	do							\
@@ -136,7 +135,6 @@ CommitHandleBatch(PVRSRV_PER_PROCESS_DATA *psPerProc)
 
 	return PVRSRVCommitHandleBatch(psPerProc->psHandleBase);
 }
-
 
 #define COMMIT_HANDLE_BATCH_OR_ERROR(error, psPerProc) 			\
 	ASSIGN_AND_EXIT_ON_ERROR(error, CommitHandleBatch(psPerProc))
@@ -212,7 +210,6 @@ _SetDispatchTableEntry(IMG_UINT32 ui32Index,
 					   BridgeWrapperFunction pfFunction,
 					   const IMG_CHAR *pszFunctionName);
 
-
 /* PRQA S 0884,3410 2*/ /* macro relies on the lack of brackets */
 #define SetDispatchTableEntry(ui32Index, pfFunction) \
 	_SetDispatchTableEntry(PVRSRV_GET_BRIDGE_ID(ui32Index), #ui32Index, (BridgeWrapperFunction)pfFunction, #pfFunction)
@@ -224,7 +221,6 @@ _SetDispatchTableEntry(IMG_UINT32 ui32Index,
 #else
 #define PVRSRV_BRIDGE_ASSERT_CMD(X, Y) PVR_UNREFERENCED_PARAMETER(X)
 #endif
-
 
 #if defined(DEBUG_BRIDGE_KM)
 typedef struct _PVRSRV_BRIDGE_GLOBAL_STATS
@@ -239,7 +235,6 @@ typedef struct _PVRSRV_BRIDGE_GLOBAL_STATS
  * proc entry /proc/pvr/bridge_stats. Ref printLinuxBridgeStats()) */
 extern PVRSRV_BRIDGE_GLOBAL_STATS g_BridgeGlobalStats;
 #endif
-
 
 PVRSRV_ERROR CommonBridgeInit(IMG_VOID);
 

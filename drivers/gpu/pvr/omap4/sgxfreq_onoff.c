@@ -177,4 +177,3 @@ static void onoff_sgx_clk_off(void)
 
 	mutex_unlock(&ood.mutex);
 }
-

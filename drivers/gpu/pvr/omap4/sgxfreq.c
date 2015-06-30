@@ -45,7 +45,6 @@ int on3demand_deinit(void);
 int userspace_init(void);
 int userspace_deinit(void);
 
-
 typedef int sgxfreq_gov_init_t(void);
 sgxfreq_gov_init_t *sgxfreq_gov_init[] = {
 	onoff_init,
@@ -571,7 +570,6 @@ void sgxfreq_notif_sgx_clk_off(void)
 
 	mutex_unlock(&sfd.gov_mutex);
 }
-
 
 void sgxfreq_notif_sgx_active(void)
 {

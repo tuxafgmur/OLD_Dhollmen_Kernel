@@ -104,7 +104,7 @@ LinuxBridgeInit(IMG_VOID)
 #if defined(DEBUG_BRIDGE_KM)
 	{
 		g_ProcBridgeStats = CreateProcReadEntrySeq(
-												  "bridge_stats", 
+												  "bridge_stats",
 												  NULL,
 												  ProcSeqNextBridgeStats,
 												  ProcSeqShowBridgeStats,
@@ -135,11 +135,11 @@ LinuxBridgeDeInit(IMG_VOID)
  *
  * sfile : seq_file that handles /proc file
  * start : TRUE if it's start, FALSE if it's stop
- *  
+ *
  */
-static void ProcSeqStartstopBridgeStats(struct seq_file *sfile,IMG_BOOL start) 
+static void ProcSeqStartstopBridgeStats(struct seq_file *sfile,IMG_BOOL start)
 {
-	if(start) 
+	if(start)
 	{
 		LinuxLockMutexNested(&gPVRSRVLock, PVRSRV_LOCK_CLASS_BRIDGE);
 	}
@@ -149,20 +149,19 @@ static void ProcSeqStartstopBridgeStats(struct seq_file *sfile,IMG_BOOL start)
 	}
 }
 
-
 /*
- * Convert offset (index from KVOffsetTable) to element 
+ * Convert offset (index from KVOffsetTable) to element
  * (called when reading /proc/mmap file)
 
  * sfile : seq_file that handles /proc file
  * off : index into the KVOffsetTable from which to print
- *  
+ *
  * returns void* : Pointer to element that will be dumped
- *  
+ *
 */
 static void* ProcSeqOff2ElementBridgeStats(struct seq_file *sfile, loff_t off)
 {
-	if(!off) 
+	if(!off)
 	{
 		return PVR_PROC_SEQ_START_TOKEN;
 	}
@@ -171,7 +170,6 @@ static void* ProcSeqOff2ElementBridgeStats(struct seq_file *sfile, loff_t off)
 	{
 		return (void*)0;
 	}
-
 
 	return (void*)&g_BridgeDispatchTable[off-1];
 }
@@ -182,7 +180,7 @@ static void* ProcSeqOff2ElementBridgeStats(struct seq_file *sfile, loff_t off)
  * sfile : seq_file that handles /proc file
  * el : actual element
  * off : index into the KVOffsetTable from which to print
- *  
+ *
  * returns void* : Pointer to element to show (0 ends iteration)
 */
 static void* ProcSeqNextBridgeStats(struct seq_file *sfile,void* el,loff_t off)
@@ -190,19 +188,18 @@ static void* ProcSeqNextBridgeStats(struct seq_file *sfile,void* el,loff_t off)
 	return ProcSeqOff2ElementBridgeStats(sfile,off);
 }
 
-
 /*
  * Show MMap element (called when reading /proc/mmap file)
 
  * sfile : seq_file that handles /proc file
  * el : actual element
- *  
+ *
 */
 static void ProcSeqShowBridgeStats(struct seq_file *sfile,void* el)
 {
 	PVRSRV_BRIDGE_DISPATCH_TABLE_ENTRY *psEntry = (	PVRSRV_BRIDGE_DISPATCH_TABLE_ENTRY*)el;
 
-	if(el == PVR_PROC_SEQ_START_TOKEN) 
+	if(el == PVR_PROC_SEQ_START_TOKEN)
 	{
 		seq_printf(sfile,
 						  "Total ioctl call count = %u\n"
@@ -233,7 +230,6 @@ static void ProcSeqShowBridgeStats(struct seq_file *sfile,void* el)
 }
 
 #endif /* DEBUG_BRIDGE_KM */
-
 
 #if defined(SUPPORT_DRI_DRM)
 int
@@ -270,7 +266,7 @@ PVRSRV_BridgeDispatchKM(struct file *pFile, unsigned int unref__ ioctlCmd, unsig
 
 		goto unlock_and_return;
 	}
-	
+
 	/* FIXME - Currently the CopyFromUserWrapper which collects stats about
 	 * how much data is shifted to/from userspace isn't available to us
 	 * here. */
@@ -285,7 +281,7 @@ PVRSRV_BridgeDispatchKM(struct file *pFile, unsigned int unref__ ioctlCmd, unsig
 #endif
 
 	cmd = psBridgePackageKM->ui32BridgeID;
-	
+
 	if(cmd != PVRSRV_BRIDGE_CONNECT_SERVICES)
 	{
 		PVRSRV_ERROR eError;

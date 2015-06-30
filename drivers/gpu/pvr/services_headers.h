@@ -1,7 +1,7 @@
 /*************************************************************************/ /*!
 @Title          Command queues and synchronisation
 @Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
-@Description    Internal structures and definitions for command queues and 
+@Description    Internal structures and definitions for command queues and
                 synchronisation
 @License        Dual MIT/GPLv2
 
@@ -41,7 +41,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */ /**************************************************************************/
 
-
 #ifndef SERVICES_HEADERS_H
 #define SERVICES_HEADERS_H
 
@@ -65,4 +64,3 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "refcount.h"
 
 #endif /* SERVICES_HEADERS_H */
-

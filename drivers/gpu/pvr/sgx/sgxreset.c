@@ -48,7 +48,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "pdump_km.h"
 
-
 /*!
 *******************************************************************************
 
@@ -67,11 +66,11 @@ IMG_VOID SGXInitClocks(PVRSRV_SGXDEV_INFO	*psDevInfo,
 					   IMG_UINT32			ui32PDUMPFlags)
 {
 	IMG_UINT32	ui32RegVal;
-	
+
 #if !defined(PDUMP)
 	PVR_UNREFERENCED_PARAMETER(ui32PDUMPFlags);
 #endif /* PDUMP */
-	
+
 	ui32RegVal = psDevInfo->ui32ClkGateCtl;
 	OSWriteHWReg(psDevInfo->pvRegsBaseKM, EUR_CR_CLKGATECTL, ui32RegVal);
 	PDUMPREGWITHFLAGS(SGX_PDUMPREG_NAME, EUR_CR_CLKGATECTL, ui32RegVal, ui32PDUMPFlags);
@@ -82,7 +81,6 @@ IMG_VOID SGXInitClocks(PVRSRV_SGXDEV_INFO	*psDevInfo,
 	PDUMPREGWITHFLAGS(SGX_PDUMPREG_NAME, EUR_CR_CLKGATECTL2, ui32RegVal, ui32PDUMPFlags);
 #endif
 }
-
 
 /*!
 *******************************************************************************
@@ -138,7 +136,6 @@ static IMG_VOID SGXResetInitBIFContexts(PVRSRV_SGXDEV_INFO	*psDevInfo,
 #endif /* SGX_FEATURE_MULTIPLE_MEM_CONTEXTS */
 }
 
-
 /*!
 *******************************************************************************
 
@@ -160,7 +157,7 @@ static IMG_VOID SGXResetSetupBIFContexts(PVRSRV_SGXDEV_INFO	*psDevInfo,
 #if !defined(PDUMP)
 	PVR_UNREFERENCED_PARAMETER(ui32PDUMPFlags);
 #endif /* PDUMP */
-	
+
 	#if defined(SGX_FEATURE_MULTIPLE_MEM_CONTEXTS)
 	/* Set up EDM for bank 0 to point at kernel context */
 	ui32RegVal = (SGX_BIF_DIR_LIST_INDEX_EDM << EUR_CR_BIF_BANK0_INDEX_EDM_SHIFT);
@@ -192,7 +189,7 @@ static IMG_VOID SGXResetSetupBIFContexts(PVRSRV_SGXDEV_INFO	*psDevInfo,
 		#endif /* SGX_BIF_DIR_LIST_INDEX_EDM */
 
 		ui32RegVal = psDevInfo->sKernelPDDevPAddr.uiAddr >> SGX_MMU_PDE_ADDR_ALIGNSHIFT;
-		
+
 #if defined(FIX_HW_BRN_28011)
 		OSWriteHWReg(psDevInfo->pvRegsBaseKM, EUR_CR_BIF_DIR_LIST_BASE0, ui32RegVal);
 		PDUMPPDREGWITHFLAGS(&psDevInfo->sMMUAttrib, EUR_CR_BIF_DIR_LIST_BASE0, ui32RegVal, ui32PDUMPFlags, PDUMP_PD_UNIQUETAG);
@@ -203,7 +200,6 @@ static IMG_VOID SGXResetSetupBIFContexts(PVRSRV_SGXDEV_INFO	*psDevInfo,
 		PDUMPPDREGWITHFLAGS(&psDevInfo->sMMUAttrib, ui32EDMDirListReg, ui32RegVal, ui32PDUMPFlags, PDUMP_PD_UNIQUETAG);
 	}
 }
-
 
 /*!
 *******************************************************************************
@@ -258,7 +254,6 @@ static IMG_VOID SGXResetSleep(PVRSRV_SGXDEV_INFO	*psDevInfo,
 	OSReadHWReg(psDevInfo->pvRegsBaseKM, ui32ReadRegister);
 #endif
 }
-
 
 #if !defined(SGX_FEATURE_MP)
 /*!
@@ -359,7 +354,6 @@ static IMG_VOID SGXResetSoftReset(PVRSRV_SGXDEV_INFO	*psDevInfo,
 	}
 }
 
-
 /*!
 *******************************************************************************
 
@@ -431,7 +425,6 @@ static IMG_VOID SGXResetInvalDC(PVRSRV_SGXDEV_INFO	*psDevInfo,
 #endif /* SGX_FEATURE_MULTIPLE_MEM_CONTEXTS */
 }
 #endif /* SGX_FEATURE_MP */
-
 
 /*!
 *******************************************************************************
@@ -622,7 +615,7 @@ IMG_VOID SGXReset(PVRSRV_SGXDEV_INFO	*psDevInfo,
 		/* Bring BIF out of reset. */
 		SGXResetSoftReset(psDevInfo, IMG_FALSE, ui32PDUMPFlags, IMG_TRUE);
 		SGXResetSleep(psDevInfo, ui32PDUMPFlags, IMG_FALSE);
-	}	
+	}
 
 	/*
 		Initialise the BIF memory contexts before bringing the rest of SGX out of reset.
@@ -659,7 +652,7 @@ IMG_VOID SGXReset(PVRSRV_SGXDEV_INFO	*psDevInfo,
 
 {
 	IMG_UINT32 ui32RegVal;
-	
+
 	PVR_UNREFERENCED_PARAMETER(bHardwareRecovery);
 
 #if !defined(PDUMP)
@@ -746,7 +739,7 @@ IMG_VOID SGXReset(PVRSRV_SGXDEV_INFO	*psDevInfo,
 	OSWriteHWReg(psDevInfo->pvRegsBaseKM, EUR_CR_MASTER_SOFT_RESET, ui32RegVal);
 	PDUMPCOMMENTWITHFLAGS(ui32PDUMPFlags, "Remove the resets from all of SGX\r\n");
 	PDUMPREGWITHFLAGS(SGX_PDUMPREG_NAME, EUR_CR_MASTER_SOFT_RESET, ui32RegVal, ui32PDUMPFlags);
-	
+
 	SGXResetSleep(psDevInfo, ui32PDUMPFlags, IMG_TRUE);
 
 	PDUMPCOMMENTWITHFLAGS(ui32PDUMPFlags, "Turn on the slave cores' clock gating\r\n");
@@ -761,7 +754,7 @@ IMG_VOID SGXReset(PVRSRV_SGXDEV_INFO	*psDevInfo,
 	/* disable prefetch */
 	ui32RegVal = (1<<EUR_CR_MASTER_BIF_MMU_CTRL_ADDR_HASH_MODE_SHIFT);
 	#else
-	ui32RegVal = (1<<EUR_CR_MASTER_BIF_MMU_CTRL_ADDR_HASH_MODE_SHIFT) | EUR_CR_MASTER_BIF_MMU_CTRL_PREFETCHING_ON_MASK; 
+	ui32RegVal = (1<<EUR_CR_MASTER_BIF_MMU_CTRL_ADDR_HASH_MODE_SHIFT) | EUR_CR_MASTER_BIF_MMU_CTRL_PREFETCHING_ON_MASK;
 	#endif
 	#if !defined(FIX_HW_BRN_31620) && !defined(FIX_HW_BRN_31671)
 	/* enable the DC TLB */
@@ -776,7 +769,7 @@ IMG_VOID SGXReset(PVRSRV_SGXDEV_INFO	*psDevInfo,
 	/* disable prefetch */
 	ui32RegVal = (1<<EUR_CR_BIF_MMU_CTRL_ADDR_HASH_MODE_SHIFT);
 	#else
-	ui32RegVal = (1<<EUR_CR_BIF_MMU_CTRL_ADDR_HASH_MODE_SHIFT) | EUR_CR_BIF_MMU_CTRL_PREFETCHING_ON_MASK; 
+	ui32RegVal = (1<<EUR_CR_BIF_MMU_CTRL_ADDR_HASH_MODE_SHIFT) | EUR_CR_BIF_MMU_CTRL_PREFETCHING_ON_MASK;
 	#endif
 	#if !defined(FIX_HW_BRN_31620) && !defined(FIX_HW_BRN_31671)
 	/* enable the DC TLB */
@@ -797,11 +790,10 @@ IMG_VOID SGXReset(PVRSRV_SGXDEV_INFO	*psDevInfo,
 
 	SGXResetInitBIFContexts(psDevInfo, ui32PDUMPFlags);
 	SGXResetSetupBIFContexts(psDevInfo, ui32PDUMPFlags);
-	
-	PDUMPCOMMENTWITHFLAGS(ui32PDUMPFlags, "End of SGX MP reset sequence\r\n");
-}	
-#endif /* SGX_FEATURE_MP */
 
+	PDUMPCOMMENTWITHFLAGS(ui32PDUMPFlags, "End of SGX MP reset sequence\r\n");
+}
+#endif /* SGX_FEATURE_MP */
 
 /******************************************************************************
  End of file (sgxreset.c)

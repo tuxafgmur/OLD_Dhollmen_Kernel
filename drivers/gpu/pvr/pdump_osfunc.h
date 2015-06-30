@@ -45,8 +45,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern "C" {
 #endif
 
-
-/* 
+/*
  * Some OSes (WinXP,CE) allocate the string on the stack, but some
  * (Linux,Symbian) use a global variable/lock instead.
  * Would be good to use the same across all OSes.
@@ -80,7 +79,6 @@ extern "C" {
 	IMG_HANDLE	hScript = (IMG_HANDLE)pszScript;
 
 #else /* WIN32 or QNX */
-
 
 	/*
 	 * Linux
@@ -149,7 +147,6 @@ extern "C" {
 
 #endif /* WIN32 or QNX */
 
-
 /*
  * Define macro for processing variable args list in OS-independent
  * manner. See e.g. PDumpComment().
@@ -158,8 +155,6 @@ extern "C" {
 #define PDUMP_va_list	va_list
 #define PDUMP_va_start	va_start
 #define PDUMP_va_end	va_end
-
-
 
 /*!
  * @name	PDumpOSGetStream

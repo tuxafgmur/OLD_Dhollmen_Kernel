@@ -280,7 +280,7 @@ PVRSRV_ERROR IonImportBufferAndAquirePhysAddr(IMG_HANDLE hIonDev,
 
 	/* Create data for free callback */
 	psImportData->psIonClient = psIonClient;
-	psImportData->psIonHandle = psIonHandle;	
+	psImportData->psIonHandle = psIonHandle;
 
 	psScatterList = ion_map_dma(psIonClient, psIonHandle);
 	if (psScatterList == NULL)
@@ -346,7 +346,6 @@ exitFailImport:
 	kfree(psImportData);
 	return eError;
 }
-
 
 IMG_VOID IonUnimportBufferAndReleasePhysAddr(IMG_HANDLE hPriv)
 {

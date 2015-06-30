@@ -110,7 +110,6 @@ PVRSRV_PER_PROCESS_DATA *PVRSRVFindPerProcessData(IMG_VOID)
 	return PVRSRVPerProcessData(OSGetCurrentProcessIDKM());
 }
 
-
 #ifdef INLINE_IS_PRAGMA
 #pragma inline(PVRSRVProcessPrivateData)
 #endif
@@ -119,7 +118,6 @@ IMG_HANDLE PVRSRVProcessPrivateData(PVRSRV_PER_PROCESS_DATA *psPerProc)
 {
 	return (psPerProc != IMG_NULL) ? psPerProc->hOsPrivateData : IMG_NULL;
 }
-
 
 #ifdef INLINE_IS_PRAGMA
 #pragma inline(PVRSRVPerProcessPrivateData)

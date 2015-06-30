@@ -140,7 +140,6 @@ static IMG_BOOL _IsSystemStatePowered(PVRSRV_SYS_POWER_STATE eSystemPowerState)
 	return (IMG_BOOL)(eSystemPowerState < PVRSRV_SYS_POWER_STATE_D2);
 }
 
-
 /*!
 ******************************************************************************
 
@@ -211,7 +210,6 @@ PVRSRV_ERROR PVRSRVPowerLock(IMG_UINT32	ui32CallerID,
 	return eError;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -230,7 +228,6 @@ IMG_VOID PVRSRVPowerUnlock(IMG_UINT32	ui32CallerID)
 	OSUnlockResource(&gpsSysData->sPowerStateChangeResource, ui32CallerID);
 	OSPowerLockUnwrap();
 }
-
 
 /*!
 ******************************************************************************
@@ -441,7 +438,6 @@ PVRSRV_ERROR PVRSRVDevicePostPowerStateKM(IMG_BOOL					bAllDevices,
 	return eError;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -519,7 +515,6 @@ Exit:
 	return eError;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -594,7 +589,6 @@ ErrorExit:
 
 	return eError;
 }
-
 
 /*!
 ******************************************************************************
@@ -672,7 +666,6 @@ Exit:
 	return eError;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -721,7 +714,6 @@ ErrorExit:
 
 	return eError;
 }
-
 
 /*!
 ******************************************************************************
@@ -792,7 +784,6 @@ PVRSRV_ERROR PVRSRVRegisterPowerDevice(IMG_UINT32					ui32DeviceIndex,
 	return (PVRSRV_OK);
 }
 
-
 /*!
 ******************************************************************************
 
@@ -830,7 +821,6 @@ PVRSRV_ERROR PVRSRVRemovePowerDevice (IMG_UINT32 ui32DeviceIndex)
 	return (PVRSRV_OK);
 }
 
-
 /*!
 ******************************************************************************
 
@@ -867,7 +857,6 @@ IMG_BOOL PVRSRVIsDevicePowered(IMG_UINT32 ui32DeviceIndex)
 	return (psPowerDevice && (psPowerDevice->eCurrentPowerState == PVRSRV_DEV_POWER_STATE_ON))
 			? IMG_TRUE : IMG_FALSE;
 }
-
 
 /*!
 ******************************************************************************
@@ -935,7 +924,6 @@ PVRSRV_ERROR PVRSRVDevicePreClockSpeedChange(IMG_UINT32	ui32DeviceIndex,
 	return eError;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -982,7 +970,6 @@ IMG_VOID PVRSRVDevicePostClockSpeedChange(IMG_UINT32	ui32DeviceIndex,
 					ui32DeviceIndex, eError));
 		}
 	}
-
 
 	if (bIdleDevice)
 	{

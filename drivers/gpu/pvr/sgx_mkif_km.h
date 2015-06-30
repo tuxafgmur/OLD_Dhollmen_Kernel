@@ -47,7 +47,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "servicesint.h"
 #include "sgxapi_km.h"
 
-
 #if !defined (SGX_MP_CORE_SELECT)
 /* MP register control macros */
 #if defined(SGX_FEATURE_MP)
@@ -62,7 +61,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif /* SGX_FEATURE_MP */
 #endif
 
-
 /*!
  ******************************************************************************
  * CCB command structure for SGX
@@ -74,7 +72,6 @@ typedef struct _SGXMKIF_COMMAND_
 	IMG_UINT32				ui32Data[6];			/*!< array of other command control words */
 } SGXMKIF_COMMAND;
 
-
 /*!
  ******************************************************************************
  * CCB array of commands for SGX
@@ -83,7 +80,6 @@ typedef struct _PVRSRV_SGX_KERNEL_CCB_
 {
 	SGXMKIF_COMMAND		asCommands[256];		/*!< array of commands */
 } PVRSRV_SGX_KERNEL_CCB;
-
 
 /*!
  ******************************************************************************
@@ -94,7 +90,6 @@ typedef struct _PVRSRV_SGX_CCB_CTL_
 	IMG_UINT32				ui32WriteOffset;		/*!< write offset into array of commands (MUST be alligned to 16 bytes!) */
 	IMG_UINT32				ui32ReadOffset;			/*!< read offset into array of commands */
 } PVRSRV_SGX_CCB_CTL;
-
 
 /*!
  *****************************************************************************
@@ -162,7 +157,7 @@ typedef struct _SGXMKIF_HOST_CTL_
 typedef struct _SGXMKIF_CMDTA_SHARED_
 {
 	IMG_UINT32			ui32CtrlFlags;
-	
+
 	IMG_UINT32			ui32NumTAStatusVals;
 	IMG_UINT32			ui32Num3DStatusVals;
 
@@ -237,7 +232,7 @@ typedef struct _SGXMKIF_TRANSFERCMD_SHARED_
 	/* need to be able to check reads and writes on dest, and update writes */
 
  	IMG_UINT32			ui32NumDstSyncs;
- 	PVRSRV_DEVICE_SYNC_OBJECT	asDstSyncs[SGX_MAX_DST_SYNCS_TQ];	
+ 	PVRSRV_DEVICE_SYNC_OBJECT	asDstSyncs[SGX_MAX_DST_SYNCS_TQ];
 	/* KEEP THESE 4 VARIABLES TOGETHER FOR UKERNEL BLOCK LOAD */
 	IMG_UINT32		ui32TASyncWriteOpsPendingVal;
 	IMG_DEV_VIRTADDR	sTASyncWriteOpsCompleteDevVAddr;
@@ -253,7 +248,6 @@ typedef struct _SGXMKIF_TRANSFERCMD_SHARED_
 	IMG_UINT32 		ui32NumStatusVals;
 	CTL_STATUS  	sCtlStatusInfo[SGXTQ_MAX_STATUS];
 } SGXMKIF_TRANSFERCMD_SHARED, *PSGXMKIF_TRANSFERCMD_SHARED;
-
 
 #if defined(SGX_FEATURE_2D_HARDWARE)
 typedef struct _SGXMKIF_2DCMD_SHARED_ {
@@ -272,7 +266,6 @@ typedef struct _SGXMKIF_2DCMD_SHARED_ {
 } SGXMKIF_2DCMD_SHARED, *PSGXMKIF_2DCMD_SHARED;
 #endif /* SGX_FEATURE_2D_HARDWARE */
 
-
 typedef struct _SGXMKIF_HWDEVICE_SYNC_LIST_
 {
 	IMG_DEV_VIRTADDR	sAccessDevAddr;
@@ -280,7 +273,6 @@ typedef struct _SGXMKIF_HWDEVICE_SYNC_LIST_
 	/* Must be the last variable in the structure */
 	PVRSRV_DEVICE_SYNC_OBJECT	asSyncData[1];
 } SGXMKIF_HWDEVICE_SYNC_LIST, *PSGXMKIF_HWDEVICE_SYNC_LIST;
-
 
 /*!
  *****************************************************************************
@@ -336,7 +328,6 @@ typedef struct _SGXMKIF_HWDEVICE_SYNC_LIST_
 #endif
 #endif
 
-
 /* Cleanup command control word */
 #define	PVRSRV_CLEANUPCMD_RT		0x1U
 #define	PVRSRV_CLEANUPCMD_RC		0x2U
@@ -353,7 +344,6 @@ typedef struct _SGXMKIF_HWDEVICE_SYNC_LIST_
 #define PVRSRV_CTXSUSPCMD_SUSPEND	0x1U
 #define PVRSRV_CTXSUSPCMD_RESUME	0x2U
 
-
 #if defined(SGX_FEATURE_MULTIPLE_MEM_CONTEXTS)
 #define SGX_BIF_DIR_LIST_INDEX_EDM	(SGX_FEATURE_BIF_NUM_DIRLISTS - 1)
 #else
@@ -368,7 +358,6 @@ typedef struct _SGXMKIF_HWDEVICE_SYNC_LIST_
 #define	SGXMKIF_CC_INVAL_BIF_PD	0x2
 #define SGXMKIF_CC_INVAL_BIF_SL	0x4
 #define SGXMKIF_CC_INVAL_DATA	0x8
-
 
 /*!
  ******************************************************************************
@@ -394,7 +383,6 @@ typedef struct _SGX_MISCINFO_STRUCT_SIZES_
 	IMG_UINT32	ui32Sizeof_HOST_CTL;
 	IMG_UINT32	ui32Sizeof_COMMAND;
 } SGX_MISCINFO_STRUCT_SIZES;
-
 
 #if defined(SUPPORT_SGX_EDM_MEMORY_DEBUG)
 /*!
@@ -466,11 +454,8 @@ typedef struct _SGXMKIF_HWPERF_CB_
 	SGXMKIF_HWPERF_CB_ENTRY psHWPerfCBData[SGXMKIF_HWPERF_CB_SIZE];
 } SGXMKIF_HWPERF_CB;
 
-
 #endif /*  __SGX_MKIF_KM_H__ */
 
 /******************************************************************************
  End of file (sgx_mkif_km.h)
 ******************************************************************************/
-
-

@@ -117,7 +117,6 @@ typedef struct _PVRSRV_KERNEL_MEM_INFO_
 	/* Set when free call ocured and a mapping was still open */
 	IMG_BOOL				bPendingFree;
 
-
 #if defined(SUPPORT_MEMINFO_IDS)
 	#if !defined(USE_CODE)
 	/* Globally unique "stamp" for allocation (not re-used until wrap) */
@@ -166,7 +165,6 @@ typedef struct _PVRSRV_KERNEL_MEM_INFO_
 		IMG_UINT32 ui32OrigReqAlignment;
 	} sShareMemWorkaround;
 } PVRSRV_KERNEL_MEM_INFO;
-
 
 /*
 	Kernel Sync Info structure
@@ -254,7 +252,6 @@ typedef struct _PVRSRV_COMMAND
 	IMG_HANDLE					hCallbackData;		/*!< Command complete callback data */
 }PVRSRV_COMMAND, *PPVRSRV_COMMAND;
 
-
 /*!
  *****************************************************************************
  * Circular command buffer structure forming the queue of pending commands.
@@ -308,7 +305,6 @@ typedef struct _PVRSRV_QUEUE_INFO_
 	struct _PVRSRV_QUEUE_INFO_ *psNextKM;		/*!< The next queue in the system */
 }PVRSRV_QUEUE_INFO;
 
-
 typedef struct _PVRSRV_HEAP_INFO_KM_
 {
 	IMG_UINT32			ui32HeapID;
@@ -319,7 +315,6 @@ typedef struct _PVRSRV_HEAP_INFO_KM_
 	IMG_UINT32			ui32Attribs;
 	IMG_UINT32			ui32XTileStride;
 }PVRSRV_HEAP_INFO_KM;
-
 
 /*
 	Event Object information structure
@@ -332,7 +327,6 @@ typedef struct _PVRSRV_EVENTOBJECT_KM_
 	IMG_HANDLE	hOSEventKM;
 
 } PVRSRV_EVENTOBJECT_KM;
-
 
 /*!
  ******************************************************************************
@@ -394,7 +388,6 @@ typedef struct _PVRSRV_MISC_INFO_KM_
 	} sGetRefCountCtl;
 } PVRSRV_MISC_INFO_KM;
 
-
 /* insert command function pointer */
 typedef PVRSRV_ERROR (*PFN_INSERT_CMD) (PVRSRV_QUEUE_INFO*,
 										PVRSRV_COMMAND**,
@@ -407,7 +400,6 @@ typedef PVRSRV_ERROR (*PFN_INSERT_CMD) (PVRSRV_QUEUE_INFO*,
 										IMG_UINT32);
 /* submit command function pointer */
 typedef PVRSRV_ERROR (*PFN_SUBMIT_CMD) (PVRSRV_QUEUE_INFO*, PVRSRV_COMMAND*, IMG_BOOL);
-
 
 /***********************************************************************
 	Device Class Structures
@@ -427,7 +419,6 @@ typedef struct PVRSRV_DEVICECLASS_BUFFER_TAG
 	IMG_UINT32				ui32MemMapRefCount;
 } PVRSRV_DEVICECLASS_BUFFER;
 
-
 /*
 	Common Device Class client services information structure
 */
@@ -441,7 +432,6 @@ typedef struct PVRSRV_CLIENT_DEVICECLASS_INFO_TAG
 	IMG_HANDLE	hServices;
 } PVRSRV_CLIENT_DEVICECLASS_INFO;
 
-
 typedef enum
 {
 	PVRSRV_FREE_CALLBACK_ORIGIN_ALLOCATOR,
@@ -450,17 +440,14 @@ typedef enum
 }
 PVRSRV_FREE_CALLBACK_ORIGIN;
 
-
 IMG_IMPORT
 PVRSRV_ERROR FreeMemCallBackCommon(PVRSRV_KERNEL_MEM_INFO *psMemInfo,
                                    IMG_UINT32 ui32Param,
                                    PVRSRV_FREE_CALLBACK_ORIGIN eCallbackOrigin);
 
-
 IMG_IMPORT
 PVRSRV_ERROR PVRSRVQueueCommand(IMG_HANDLE hQueueInfo,
 								PVRSRV_COMMAND *psCommand);
-
 
 /*!
  * *****************************************************************************
@@ -543,7 +530,6 @@ PVRSRVMapMemInfoMem(const PVRSRV_CONNECTION *psConnection,
                     IMG_HANDLE hKernelMemInfo,
 #endif
                     PVRSRV_CLIENT_MEM_INFO **ppsClientMemInfo);
-
 
 #if defined (__cplusplus)
 }

@@ -26,7 +26,6 @@ static void on3demand_frame_done(void);
 static void on3demand_active(void);
 static void on3demand_timeout(struct work_struct *work);
 
-
 static struct sgxfreq_governor on3demand_gov = {
 	.name =	"on3demand",
 	.gov_start = on3demand_start,
@@ -59,7 +58,6 @@ static struct on3demand_data {
 
 /*FIXME: This should be dynamic and queried from platform */
 #define ON3DEMAND_FRAME_DONE_DEADLINE_MS 16
-
 
 /*********************** begin sysfs interface ***********************/
 
@@ -284,7 +282,6 @@ static void on3demand_predict(void)
 		odd.low_load_cnt = 0;
 	}
 }
-
 
 static void on3demand_active(void)
 {

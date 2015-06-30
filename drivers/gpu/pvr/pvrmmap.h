@@ -43,7 +43,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*!
  **************************************************************************
- @brief         map kernel memory into user memory. 
+ @brief         map kernel memory into user memory.
 
  @param			hModule - a handle to the device supplying the kernel memory
  @param			ppvLinAddr - pointer to where the user mode address should be placed
@@ -59,7 +59,6 @@ PVRSRV_ERROR PVRPMapKMem(IMG_HANDLE hModule, IMG_VOID **ppvLinAddr, IMG_VOID *pv
 #else
 PVRSRV_ERROR PVRPMapKMem(IMG_HANDLE hModule, IMG_VOID **ppvLinAddr, IMG_VOID *pvLinAddrKM, IMG_HANDLE *phMappingInfo, IMG_HANDLE hMHandle);
 #endif
-
 
 /*!
  **************************************************************************
@@ -78,4 +77,3 @@ IMG_BOOL PVRUnMapKMem(IMG_HANDLE hModule, IMG_HANDLE hMappingInfo, IMG_HANDLE hM
 #endif
 
 #endif /* _PVRMMAP_H_ */
-

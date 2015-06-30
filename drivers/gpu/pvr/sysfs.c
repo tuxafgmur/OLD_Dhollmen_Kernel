@@ -43,7 +43,7 @@ static ssize_t PVRSRVEglCfgShow(struct kobject *kobj, struct attribute *attr,
 	struct pvrsrv_attribute *pvrsrv_attr;
 
 	pvrsrv_attr = container_of(attr, struct pvrsrv_attribute, attr);
-	return snprintf(buffer, PAGE_SIZE, "0 0 android\n0 1 POWERVR_SGX%d_%d",
+	return snprintf(buffer, PAGE_SIZE, "0 0 POWERVR_SGX%d_%d",
 			pvrsrv_attr->sgx_version, pvrsrv_attr->sgx_revision);
 }
 

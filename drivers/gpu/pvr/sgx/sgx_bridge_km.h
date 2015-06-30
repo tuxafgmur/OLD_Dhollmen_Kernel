@@ -249,7 +249,6 @@ SGXAddSharedPBDescKM(PVRSRV_PER_PROCESS_DATA	*psPerProc,
 					 IMG_UINT32					ui32SharedPBDescSubKernelMemInfosCount,
 					 IMG_DEV_VIRTADDR			sHWPBDescDevVAddr);
 
-
 /*!
  * *****************************************************************************
  * @brief Gets device information that is not intended to be passed

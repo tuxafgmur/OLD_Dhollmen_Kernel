@@ -1,7 +1,7 @@
 /*************************************************************************/ /*!
 @Title          Timed Trace header
 @Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
-@Description	Timed Trace common header. Contains shared defines and 
+@Description	Timed Trace common header. Contains shared defines and
                 structures which are shared with the post processing tool.
 @License        Dual MIT/GPLv2
 
@@ -89,7 +89,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *       the next item.
  */
 
-
 #define PVRSRV_TRACE_HEADER		0
 #define PVRSRV_TRACE_TIMESTAMP		1
 #define PVRSRV_TRACE_HOSTUID		2
@@ -113,7 +112,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define PVRSRV_TRACE_SIZE_SHIFT		16
 #define PVRSRV_TRACE_TYPE_SHIFT		12
 #define PVRSRV_TRACE_COUNT_SHIFT	0
-
 
 #define WRITE_HEADER(n,m) \
 	((m & PVRSRV_TRACE_##n##_MASK) << PVRSRV_TRACE_##n##_SHIFT)

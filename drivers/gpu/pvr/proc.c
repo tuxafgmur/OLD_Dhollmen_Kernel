@@ -113,7 +113,6 @@ static struct proc_dir_entry* g_pProcDebugLevel;
 static struct proc_dir_entry* g_pProcPowerLevel;
 #endif
 
-
 static void ProcSeqShowVersion(struct seq_file *sfile,void* el);
 
 static void ProcSeqShowSysNodes(struct seq_file *sfile,void* el);
@@ -168,7 +167,6 @@ off_t printAppend(IMG_CHAR * buffer, size_t size, off_t off, const IMG_CHAR * fo
     }
 }
 
-
 /*!
 ******************************************************************************
 
@@ -194,7 +192,6 @@ void* ProcSeq1ElementOff2Element(struct seq_file *sfile, loff_t off)
 		return (void*)2;
 	return NULL;
 }
-
 
 /*!
 ******************************************************************************
@@ -228,7 +225,6 @@ void* ProcSeq1ElementHeaderOff2Element(struct seq_file *sfile, loff_t off)
 
 	return NULL;
 }
-
 
 /*!
 ******************************************************************************
@@ -283,7 +279,6 @@ static ssize_t pvr_proc_write(struct file *file, const char __user *buffer,
 
 	return dp->write_proc(file, buffer, count, dp->data);
 }
-
 
 /*!
 ******************************************************************************
@@ -385,8 +380,6 @@ static int pvr_proc_seq_show (struct seq_file *proc_seq_file, void *v)
     return 0;
 }
 
-
-
 /*!
 ******************************************************************************
 
@@ -416,7 +409,6 @@ static int pvr_proc_seq_show (struct seq_file *proc_seq_file, void *v)
  @Input  whandler : the function to interpret writes from the user
 
  @Return Ptr to proc entry , 0 for failure
-
 
 *****************************************************************************/
 static struct proc_dir_entry* CreateProcEntryInDirSeq(
@@ -483,7 +475,6 @@ static struct proc_dir_entry* CreateProcEntryInDirSeq(
     PVR_DPF((PVR_DBG_ERROR, "CreateProcEntryInDirSeq: cannot make proc entry /proc/%s/%s: no memory", PVRProcDirRoot, name));
     return NULL;
 }
-
 
 /*!
 ******************************************************************************
@@ -588,8 +579,6 @@ struct proc_dir_entry* CreateProcEntrySeq (
 								  );
 }
 
-
-
 /*!
 ******************************************************************************
 
@@ -600,8 +589,6 @@ struct proc_dir_entry* CreateProcEntrySeq (
  Create a file under /proc/pvr/<current process ID>.  Apart from the
  directory where the file is created, this works the same way as
  CreateProcEntry. It's seq_file version.
-
-
 
  @Input name : the name of the file to create
 
@@ -687,7 +674,6 @@ struct proc_dir_entry* CreatePerProcessProcEntrySeq (
     return CreateProcEntryInDirSeq(psPerProc->psProcDir, name, data, next_handler,
 								   show_handler,off2element_handler,startstop_handler,whandler);
 }
-
 
 /*!
 ******************************************************************************
@@ -821,7 +807,6 @@ static IMG_INT pvr_read_proc(IMG_CHAR *page, IMG_CHAR **start, off_t off,
     return len;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -888,7 +873,6 @@ static IMG_INT CreateProcEntryInDir(struct proc_dir_entry *pdir, const IMG_CHAR 
     return -ENOMEM;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -915,7 +899,6 @@ IMG_INT CreateProcEntry(const IMG_CHAR * name, read_proc_t rhandler, write_proc_
 {
     return CreateProcEntryInDir(dir, name, rhandler, whandler, data);
 }
-
 
 /*!
 ******************************************************************************
@@ -987,7 +970,6 @@ IMG_INT CreatePerProcessProcEntry(const IMG_CHAR * name, read_proc_t rhandler, w
     return CreateProcEntryInDir(psPerProc->psProcDir, name, rhandler, whandler, data);
 }
 
-
 /*!
 ******************************************************************************
 
@@ -1034,7 +1016,6 @@ IMG_INT CreateProcReadEntry(const IMG_CHAR * name, pvr_read_proc_t handler)
     return -ENOMEM;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -1074,7 +1055,6 @@ IMG_INT CreateProcEntries(IMG_VOID)
         return -ENOMEM;
     }
 
-
 #ifdef DEBUG
 
 	g_pProcDebugLevel = CreateProcEntrySeq("debug_level", NULL, NULL,
@@ -1105,7 +1085,6 @@ IMG_INT CreateProcEntries(IMG_VOID)
     return 0;
 }
 
-
 /*!
 ******************************************************************************
 
@@ -1128,7 +1107,6 @@ IMG_VOID RemoveProcEntry(const IMG_CHAR * name)
         PVR_DPF((PVR_DBG_MESSAGE, "Removing /proc/%s/%s", PVRProcDirRoot, name));
     }
 }
-
 
 /*!
 ******************************************************************************
@@ -1167,7 +1145,6 @@ IMG_VOID RemovePerProcessProcEntry(const IMG_CHAR *name)
         PVR_DPF((PVR_DBG_MESSAGE, "Removing proc entry %s from %s", name, psPerProc->psProcDir->name));
     }
 }
-
 
 /*!
 ******************************************************************************
@@ -1299,7 +1276,6 @@ static const IMG_CHAR *deviceTypeToString(PVRSRV_DEVICE_TYPE deviceType)
     }
 }
 
-
 static const IMG_CHAR *deviceClassToString(PVRSRV_DEVICE_CLASS deviceClass)
 {
     switch (deviceClass)
@@ -1387,9 +1363,9 @@ static void* ProcSeqOff2ElementSysNodes(struct seq_file * sfile, loff_t off)
 {
     SYS_DATA *psSysData;
     PVRSRV_DEVICE_NODE*psDevNode = IMG_NULL;
-    
+
     PVR_UNREFERENCED_PARAMETER(sfile);
-    
+
     if(!off)
     {
 	return PVR_PROC_SEQ_START_TOKEN;

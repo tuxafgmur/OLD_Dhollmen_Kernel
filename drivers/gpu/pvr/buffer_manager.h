@@ -132,7 +132,7 @@ struct _BM_HEAP_
 	DEV_ARENA_DESCRIPTOR	sDevArena;
 	MMU_HEAP				*pMMUHeap;
 	PDUMP_MMU_ATTRIB 		*psMMUAttrib;
-	
+
 	struct _BM_HEAP_ 		*psNext;
 	struct _BM_HEAP_ 		**ppsThis;
 	/* BIF tile stride for this heap */
@@ -236,7 +236,6 @@ BM_CreateContext(PVRSRV_DEVICE_NODE			*psDeviceNode,
 				 PVRSRV_PER_PROCESS_DATA	*psPerProc,
 				 IMG_BOOL					*pbCreated);
 
-
 /**
  *  @Function   BM_DestroyContext
  *
@@ -249,7 +248,6 @@ BM_CreateContext(PVRSRV_DEVICE_NODE			*psDeviceNode,
 PVRSRV_ERROR
 BM_DestroyContext (IMG_HANDLE hBMContext,
 					IMG_BOOL *pbCreated);
-
 
 /**
  *  @Function   BM_CreateHeap
@@ -275,7 +273,6 @@ BM_CreateHeap (IMG_HANDLE hBMContext,
  */
 IMG_VOID
 BM_DestroyHeap (IMG_HANDLE hDevMemHeap);
-
 
 /**
  *  @Function   BM_Reinitialise
@@ -367,7 +364,6 @@ BM_Wrap (	IMG_HANDLE hDevMemHeap,
 IMG_VOID
 BM_Free (BM_HANDLE hBuf,
 		IMG_UINT32 ui32Flags);
-
 
 /**
  *  @Function   BM_HandleToCpuVaddr
@@ -515,7 +511,6 @@ IMG_HANDLE BM_GetMMUHeap(IMG_HANDLE hDevMemHeap);
 **************************************************************************/
 PVRSRV_DEVICE_NODE* BM_GetDeviceNode(IMG_HANDLE hDevMemContext);
 
-
 /*!
 ******************************************************************************
  @Function	 	BM_GetMappingHandle
@@ -602,7 +597,7 @@ IMG_BOOL BM_MapPageAtOffset(IMG_HANDLE hBMHandle, IMG_UINT32 ui32Offset);
  @Input     hBMHandle - Handle to BM mapping
 
  @Input     ui32VirtOffset - Virtual offset into allocation
- 
+
  @Output    pui32PhysOffset - Physical offset
 
  @Return	IMG_TRUE if the virtual offset is physically backed
@@ -626,7 +621,7 @@ IMG_BOOL BM_VirtOffsetToPhysical(IMG_HANDLE hBMHandle,
    memory allocation to be refcounted, and shared iff the IDs chosen
    match */
 /* This API is difficult to use, but saves a lot of plumbing in other
-   APIs.  The next generation of this library should have this functionality 
+   APIs.  The next generation of this library should have this functionality
    plumbed in properly */
 PVRSRV_ERROR BM_XProcWorkaroundSetShareIndex(IMG_UINT32 ui32Index);
 PVRSRV_ERROR BM_XProcWorkaroundUnsetShareIndex(IMG_UINT32 ui32Index);

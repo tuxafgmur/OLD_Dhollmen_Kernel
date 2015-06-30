@@ -59,7 +59,6 @@ extern "C" {
 /* SGXDeviceMap Flag defines */
 #define		SGX_HOSTPORT_PRESENT			0x00000001UL
 
-
 /*
 	SGX PDUMP register bank name (prefix)
 */
@@ -71,7 +70,6 @@ extern "C" {
 
 /*Forward declaration*/
 typedef struct _PVRSRV_STUB_PBDESC_ PVRSRV_STUB_PBDESC;
-
 
 typedef struct _PVRSRV_SGX_CCB_INFO_ *PPVRSRV_SGX_CCB_INFO;
 
@@ -125,7 +123,6 @@ typedef struct _PVRSRV_SGXDEV_INFO_
 
 	PVRSRV_STUB_PBDESC		*psStubPBDescListKM;
 
-
 	/* kernel memory context info */
 	IMG_DEV_PHYADDR			sKernelPDDevPAddr;
 
@@ -175,8 +172,8 @@ typedef struct _PVRSRV_SGXDEV_INFO_
 	SGX_MISCINFO_STRUCT_SIZES	sSGXStructSizes;
 
 	/*
-		if we don't preallocate the pagetables we must 
-		insert newly allocated page tables dynamically 
+		if we don't preallocate the pagetables we must
+		insert newly allocated page tables dynamically
 	*/
 	IMG_VOID				*pvMMUContextList;
 
@@ -205,7 +202,6 @@ typedef struct _PVRSRV_SGXDEV_INFO_
 	IMG_DEV_PHYADDR 		sBIFResetPageDevPAddr;
 	IMG_UINT32				*pui32BIFResetPD;
 	IMG_UINT32				*pui32BIFResetPT;
-
 
 #if defined(SUPPORT_HW_RECOVERY)
 	/* Timeout callback handle */
@@ -267,7 +263,6 @@ typedef struct _PVRSRV_SGXDEV_INFO_
 
 } PVRSRV_SGXDEV_INFO;
 
-
 typedef struct _SGX_TIMING_INFORMATION_
 {
 	IMG_UINT32			ui32CoreClockSpeed;
@@ -319,7 +314,6 @@ typedef struct _SGX_DEVICE_MAP_
 #endif
 } SGX_DEVICE_MAP;
 
-
 struct _PVRSRV_STUB_PBDESC_
 {
 	IMG_UINT32		ui32RefCount;
@@ -351,7 +345,6 @@ typedef struct _PVRSRV_SGX_CCB_INFO_
 	IMG_UINT32				ui32CCBDumpWOff;		/*!< for pdumping */
 #endif
 } PVRSRV_SGX_CCB_INFO;
-
 
 typedef struct _SGX_BRIDGE_INIT_INFO_KM_
 {
@@ -410,13 +403,11 @@ typedef struct _SGX_BRIDGE_INIT_INFO_KM_
 
 } SGX_BRIDGE_INIT_INFO_KM;
 
-
 typedef struct _SGX_INTERNEL_STATUS_UPDATE_KM_
 {
 	CTL_STATUS				sCtlStatus;
 	IMG_HANDLE				hKernelMemInfo;
 } SGX_INTERNEL_STATUS_UPDATE_KM;
-
 
 typedef struct _SGX_CCB_KICK_KM_
 {
@@ -475,7 +466,6 @@ typedef struct _SGX_CCB_KICK_KM_
 	IMG_UINT32	ui32WriteOpsPendingVal;
 #endif
 } SGX_CCB_KICK_KM;
-
 
 #if defined(TRANSFER_QUEUE)
 typedef struct _PVRSRV_TRANSFER_SGX_KICK_KM_
@@ -548,12 +538,12 @@ PVRSRV_ERROR SGXInitialise(PVRSRV_SGXDEV_INFO	*psDevInfo,
 						   IMG_BOOL				bHardwareRecovery);
 PVRSRV_ERROR SGXDeinitialise(IMG_HANDLE hDevCookie);
 
-PVRSRV_ERROR SGXPrePowerState(IMG_HANDLE				hDevHandle, 
-							  PVRSRV_DEV_POWER_STATE	eNewPowerState, 
+PVRSRV_ERROR SGXPrePowerState(IMG_HANDLE				hDevHandle,
+							  PVRSRV_DEV_POWER_STATE	eNewPowerState,
 							  PVRSRV_DEV_POWER_STATE	eCurrentPowerState);
 
-PVRSRV_ERROR SGXPostPowerState(IMG_HANDLE				hDevHandle, 
-							   PVRSRV_DEV_POWER_STATE	eNewPowerState, 
+PVRSRV_ERROR SGXPostPowerState(IMG_HANDLE				hDevHandle,
+							   PVRSRV_DEV_POWER_STATE	eNewPowerState,
 							   PVRSRV_DEV_POWER_STATE	eCurrentPowerState);
 
 PVRSRV_ERROR SGXPreClockSpeedChange(IMG_HANDLE				hDevHandle,

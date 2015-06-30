@@ -6,35 +6,35 @@
   allocator was originally intended to manage address spaces in
   practice the resource allocator is generic and can manages arbitrary
   sets of integers.
- 
+
   Resources are allocated from arenas. Arena's can be created with an
   initial span of resources. Further resources spans can be added to
   arenas. A call back mechanism allows an arena to request further
   resource spans on demand.
- 
+
   Each arena maintains an ordered list of resource segments each
   described by a boundary tag. Each boundary tag describes a segment
   of resources which are either 'free', available for allocation, or
   'busy' currently allocated. Adjacent 'free' segments are always
   coallesced to avoid fragmentation.
- 
+
   For allocation, all 'free' segments are kept on lists of 'free'
   segments in a table index by pvr_log2(segment size). ie Each table index
   n holds 'free' segments in the size range 2**(n-1) -> 2**n.
- 
+
   Allocation policy is based on an *almost* best fit
   stratedy. Choosing any segment from the appropriate table entry
   guarantees that we choose a segment which is with a power of 2 of
   the size we are allocating.
- 
+
   Allocated segments are inserted into a self scaling hash table which
   maps the base resource of the span to the relevant boundary
   tag. This allows the code to get back to the bounary tag without
   exporting explicit boundary tag references through the API.
- 
+
   Each arena has an associated quantum size, all allocations from the
   arena are made in multiples of the basic quantum.
- 
+
   On resource exhaustion in an arena, a callback if provided will be
   used to request further resources. Resouces spans allocated by the
   callback mechanism are delimited by special boundary tag markers of
@@ -132,7 +132,6 @@ typedef enum RESOURCE_TYPE_TAG {
 
 } RESOURCE_TYPE;
 
-
 static IMG_UINT32 ui32BoundaryTagID = 0;
 
 IMG_UINT32 ValidateArena(RA_ARENA *pArena);
@@ -173,7 +172,6 @@ struct _BT_
 
 };
 typedef struct _BT_ BT;
-
 
 /* resource allocation arena */
 struct _RA_ARENA_
@@ -974,7 +972,6 @@ _FreeBT (RA_ARENA *pArena, BT *pBT, IMG_BOOL bFreeBackingStore)
 		_FreeListInsert (pArena, pBT);
 }
 
-
 /*!
 ******************************************************************************
 	@Function       _AttemptAllocAligned
@@ -1146,8 +1143,6 @@ _AttemptAllocAligned (RA_ARENA *pArena,
 	return IMG_FALSE;
 }
 
-
-
 /*!
 ******************************************************************************
 	@Function       RA_Create
@@ -1186,7 +1181,6 @@ RA_Create (IMG_CHAR *name,
 	PVR_DPF ((PVR_DBG_MESSAGE,
 			  "RA_Create: name='%s', base=0x%x, uSize=0x%x, alloc=0x%x, free=0x%x",
 			  name, base, uSize, (IMG_UINTPTR_T)imp_alloc, (IMG_UINTPTR_T)imp_free));
-
 
 	if (OSAllocMem(PVRSRV_OS_PAGEABLE_HEAP,
 					 sizeof (*pArena),
@@ -1607,7 +1601,6 @@ RA_Alloc (RA_ARENA *pArena,
 	return bResult;
 }
 
-
 #if defined(VALIDATE_ARENA_TEST)
 
 /*!
@@ -1686,7 +1679,6 @@ IMG_UINT32 ValidateArena(RA_ARENA *pArena)
 						PVR_DBG_BREAK;
 					}
 				break;
-
 
 				case IMPORTED_RESOURCE_SPAN_START:
 
@@ -1770,7 +1762,6 @@ IMG_UINT32 ValidateArena(RA_ARENA *pArena)
 
 #endif
 
-
 /*!
 ******************************************************************************
 	@Function       RA_Free
@@ -1841,7 +1832,6 @@ RA_Free (RA_ARENA *pArena, IMG_UINTPTR_T base, IMG_BOOL bFreeBackingStore)
 	}
 }
 
-
 /*!
 ******************************************************************************
 	@Function       RA_GetNextLiveSegment
@@ -1889,7 +1879,6 @@ IMG_BOOL RA_GetNextLiveSegment(IMG_HANDLE hArena, RA_SEGMENT_DETAILS *psSegDetai
 	return IMG_FALSE;
 }
 
-
 #ifdef USE_BM_FREESPACE_CHECK
 RA_ARENA* pJFSavedArena = IMG_NULL;
 
@@ -1932,7 +1921,6 @@ IMG_VOID CheckBMFreespace(IMG_VOID)
 	}
 }
 #endif
-
 
 #if (defined(CONFIG_PROC_FS) && defined(CONFIG_PVR_PROC_FS)) || defined (RA_STATS)
 static IMG_CHAR *
@@ -2292,7 +2280,6 @@ static void* RA_ProcSeqOff2ElementRegs(struct seq_file * sfile, loff_t off)
 
 #endif /* defined(CONFIG_PROC_FS) && defined(DEBUG) */
 
-
 #ifdef RA_STATS
 /*!
 ******************************************************************************
@@ -2318,7 +2305,6 @@ PVRSRV_ERROR RA_GetStats(RA_ARENA *pArena,
 	CHECK_SPACE(ui32StrLen);
 	i32Count = OSSNPrintf(pszStr, 100, "\nArena '%s':\n", pArena->name);
 	UPDATE_SPACE(pszStr, i32Count, ui32StrLen);
-
 
 	CHECK_SPACE(ui32StrLen);
 	i32Count = OSSNPrintf(pszStr, 100, "  allocCB=%p freeCB=%p handle=%p quantum=%d\n",
@@ -2400,7 +2386,7 @@ PVRSRV_ERROR RA_GetStats(RA_ARENA *pArena,
 }
 
 PVRSRV_ERROR RA_GetStatsFreeMem(RA_ARENA *pArena,
-								IMG_CHAR **ppszStr, 
+								IMG_CHAR **ppszStr,
 								IMG_UINT32 *pui32StrLen)
 {
 	IMG_CHAR 	*pszStr = *ppszStr;
@@ -2413,7 +2399,7 @@ PVRSRV_ERROR RA_GetStatsFreeMem(RA_ARENA *pArena,
 	UPDATE_SPACE(pszStr, i32Count, ui32StrLen);
 	*ppszStr = pszStr;
 	*pui32StrLen = ui32StrLen;
-	
+
 	return PVRSRV_OK;
 }
 #endif
@@ -2421,7 +2407,3 @@ PVRSRV_ERROR RA_GetStatsFreeMem(RA_ARENA *pArena,
 /******************************************************************************
  End of file (ra.c)
 ******************************************************************************/
-
-
-
-

@@ -43,14 +43,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DBGDRVIF_
 #define _DBGDRVIF_
 
-
 #if defined(__linux__)
 
 #define FILE_DEVICE_UNKNOWN             0
 #define METHOD_BUFFERED                 0
 #define FILE_ANY_ACCESS                 0
 
-#define CTL_CODE( DeviceType, Function, Method, Access ) (Function) 
+#define CTL_CODE( DeviceType, Function, Method, Access ) (Function)
 #define MAKEIOCTLINDEX(i)	((i) & 0xFFF)
 
 #else
@@ -140,12 +139,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define DEBUG_SERVICE_WAITFOREVENT		CTL_CODE(FILE_DEVICE_UNKNOWN, DEBUG_SERVICE_IOCTL_BASE + 0x18, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define DEBUG_SERVICE_SETCONNNOTIFY		CTL_CODE(FILE_DEVICE_UNKNOWN, DEBUG_SERVICE_IOCTL_BASE + 0x19, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
-
 typedef enum _DBG_EVENT_
 {
 	DBG_EVENT_STREAM_DATA = 1
 } DBG_EVENT;
-
 
 /*****************************************************************************
  In/Out Structures
@@ -373,7 +370,6 @@ typedef struct _DBGKM_SERVICE_TABLE_
 *****************************************************************************/
 IMG_VOID DBGDrvGetServiceTable(DBGKM_SERVICE_TABLE **fn_table);
 #endif
-
 
 #endif
 /*****************************************************************************

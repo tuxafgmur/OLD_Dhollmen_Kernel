@@ -33,9 +33,9 @@
 #include <linux/notifier.h>
 #include <plat/sgx_omaplfb.h>
 
-#include "img_defs.h"
-#include "servicesext.h"
-#include "kerneldisplay.h"
+#include "../../../gpu/pvr/img_defs.h"
+#include "../../../gpu/pvr/servicesext.h"
+#include "../../../gpu/pvr/kerneldisplay.h"
 #include "omaplfb.h"
 
 /*
@@ -73,7 +73,6 @@ struct ion_client *gpsIONClient;
 #endif
 
 #define OMAPLFB_COMMAND_COUNT		1
-
 #define	OMAPLFB_VSYNC_SETTLE_COUNT	5
 
 #define	OMAPLFB_MAX_NUM_DEVICES		FB_MAX
@@ -1514,7 +1513,6 @@ static OMAPLFB_DEVINFO *OMAPLFBInitDev(unsigned uiFBDevID)
 	{
 		printk(KERN_ERR DRIVER_PREFIX
 			": %s: Device %u: PVR Services device registration failed\n", __FUNCTION__, uiFBDevID);
-
 		goto ErrorDeInitFBDev;
 	}
 

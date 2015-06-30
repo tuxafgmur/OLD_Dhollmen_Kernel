@@ -42,16 +42,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _METRICS_
 #define _METRICS_
 
-
 #if defined (__cplusplus)
 extern "C" {
 #endif
 
-
 #if defined(DEBUG) || defined(TIMING)
 
-
-typedef struct 
+typedef struct
 {
 	IMG_UINT32 ui32Start;
 	IMG_UINT32 ui32Stop;
@@ -59,18 +56,16 @@ typedef struct
 	IMG_UINT32 ui32Count;
 } Temporal_Data;
 
-extern Temporal_Data asTimers[]; 
+extern Temporal_Data asTimers[];
 
 extern IMG_UINT32 PVRSRVTimeNow(IMG_VOID);
 extern IMG_VOID   PVRSRVSetupMetricTimers(IMG_VOID *pvDevInfo);
 extern IMG_VOID   PVRSRVOutputMetricTotals(IMG_VOID);
 
-
 #define PVRSRV_TIMER_DUMMY				0
 
 #define PVRSRV_TIMER_EXAMPLE_1			1
 #define PVRSRV_TIMER_EXAMPLE_2			2
-
 
 #define PVRSRV_NUM_TIMERS		(PVRSRV_TIMER_EXAMPLE_2 + 1)
 
@@ -102,7 +97,6 @@ extern IMG_VOID   PVRSRVOutputMetricTotals(IMG_VOID);
 									asTimers[X].ui32Count = 0; \
 								}
 
-
 #if defined(__sh__)
 
 #define TST_REG   ((volatile IMG_UINT8 *) (psDevInfo->pvSOCRegsBaseKM)) 	// timer start register
@@ -115,11 +109,7 @@ extern IMG_VOID   PVRSRVOutputMetricTotals(IMG_VOID);
 
 #endif /* defined(__sh__) */
 
-
-
 #else /* defined(DEBUG) || defined(TIMING) */
-
-
 
 #define PVRSRV_TIME_START(X)
 #define PVRSRV_TIME_SUSPEND(X)
@@ -130,14 +120,11 @@ extern IMG_VOID   PVRSRVOutputMetricTotals(IMG_VOID);
 #define PVRSRVSetupMetricTimers(X)
 #define PVRSRVOutputMetricTotals()
 
-
-
 #endif /* defined(DEBUG) || defined(TIMING) */
 
 #if defined(__cplusplus)
 }
 #endif
-
 
 #endif /* _METRICS_ */
 

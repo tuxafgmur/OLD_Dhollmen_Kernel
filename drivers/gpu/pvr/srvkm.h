@@ -42,7 +42,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef SRVKM_H
 #define SRVKM_H
 
-
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -69,7 +68,6 @@ extern "C" {
 
 	IMG_VOID PVRSRVScheduleDeviceCallbacks(IMG_VOID);
 
-
 #if defined (__cplusplus)
 }
 #endif
@@ -91,15 +89,15 @@ LOOP_UNTIL_TIMEOUT(MAX_HW_TIME_US)
 		bTimeout = IMG_FALSE;
 		break;
 	}
-	
+
 	OSWaitus(MAX_HW_TIME_US/WAIT_TRY_COUNT);
 } END_LOOP_UNTIL_TIMEOUT();
 
 -----------------------------------------------------------------------------*/
 
-/*	uiNotLastLoop will remain at 1 until the timeout has expired, at which time		
+/*	uiNotLastLoop will remain at 1 until the timeout has expired, at which time
  * 	it will be decremented and the loop executed one final time. This is necessary
- *	when preemption is enabled. 
+ *	when preemption is enabled.
  */
 /* PRQA S 3411,3431 12 */ /* critical format, leave alone */
 #define LOOP_UNTIL_TIMEOUT(TIMEOUT) \
