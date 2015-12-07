@@ -389,6 +389,17 @@ asmlinkage void __exception do_undefinstr(struct pt_regs *regs)
 	if (call_undef_hook(regs, instr) == 0)
 		return;
 
+	if ((processor_mode(regs) != SVC_MODE) && thumb_mode(regs)) {
+		if ((instr & 0x0310) == 0x0310) { /* Retry for division */
+			unsigned int instr2;
+			get_user(instr2, (u16 __user *)pc + 1);
+			instr <<= 16;
+			instr |= instr2;
+			if (call_undef_hook(regs, instr) == 0)
+				return;
+		}
+	}
+
 #ifdef CONFIG_DEBUG_USER
 	if (user_debug & UDBG_UNDEFINED) {
 		printk(KERN_INFO "%s (%d): undefined instruction: pc=%p\n",
