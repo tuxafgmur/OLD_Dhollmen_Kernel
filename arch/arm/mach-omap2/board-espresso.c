@@ -52,7 +52,6 @@
 #include "omap_muxtbl.h"
 
 #include "sec_common.h"
-#include "sec_debug.h"
 #include "sec_muxtbl.h"
 
 #define ESPRESSO_MEM_BANK_0_SIZE	0x20000000
@@ -197,7 +196,6 @@ static void __init espresso_init(void)
 
 	/* initialize sec common infrastructures */
 	sec_common_init();
-	sec_debug_init_crash_key(NULL);
 
 	/* initialize each drivers */
 	omap4_espresso_serial_init();
@@ -223,11 +221,9 @@ static void __init espresso_init(void)
 	/* Allow HSI omap_device to be registered later */
 	omap_hsi_allow_registration();
 #endif
-#ifdef CONFIG_SEC_DEBUG
-	if (sec_debug_get_level())
-		platform_add_devices(espresso_dbg_devices,
-				     ARRAY_SIZE(espresso_dbg_devices));
-#endif
+        platform_add_devices(espresso_dbg_devices,
+                            ARRAY_SIZE(espresso_dbg_devices));
+
 	sec_common_init_post();
 }
 
@@ -256,15 +252,12 @@ static void __init espresso_reserve(void)
 	omap4_espresso_init_carveout_sizes(get_omap_ion_platform_data());
 	omap_ion_init();
 #endif
-#ifdef CONFIG_SEC_DEBUG
 	/* do the static reservations first */
-	if (sec_debug_get_level()) {
 #if defined(CONFIG_ANDROID_RAM_CONSOLE)
-		memblock_remove(ESPRESSO_RAMCONSOLE_START,
-				ESPRESSO_RAMCONSOLE_SIZE);
+	memblock_remove(ESPRESSO_RAMCONSOLE_START,
+			ESPRESSO_RAMCONSOLE_SIZE);
 #endif
-	}
-#endif
+
 	memblock_remove(PHYS_ADDR_SMC_MEM, PHYS_ADDR_SMC_SIZE);
 	memblock_remove(PHYS_ADDR_DUCATI_MEM, PHYS_ADDR_DUCATI_SIZE);
 

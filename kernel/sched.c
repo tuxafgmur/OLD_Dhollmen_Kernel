@@ -84,8 +84,6 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
 
-#include <mach/sec_addon.h>
-
 ATOMIC_NOTIFIER_HEAD(migration_notifier_head);
 
 /*
@@ -4363,8 +4361,6 @@ need_resched:
 		rq = cpu_rq(cpu);
 	} else
 		raw_spin_unlock_irq(&rq->lock);
-
-	sec_debug_task_log(cpu, rq->curr);
 
 	post_schedule(rq);
 
