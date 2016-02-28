@@ -53,7 +53,6 @@
 
 #include "sec_common.h"
 #include "sec_debug.h"
-#include "sec_getlog.h"
 #include "sec_muxtbl.h"
 
 /* gpio to distinguish WiFi and USA-BBY
@@ -221,6 +220,7 @@ static void __init espresso10_init(void)
 	omap4_espresso10_input_init();
 	omap4_espresso10_sensors_init();
 	omap4_espresso10_jack_init();
+	omap4_espresso10_camera_init();
 	omap4_espresso10_reboot_init();
 	omap4_espresso10_none_modem_init();
 
@@ -240,11 +240,6 @@ static void __init espresso10_map_io(void)
 {
 	omap2_set_globals_443x();
 	omap44xx_map_common_io();
-
-	sec_getlog_supply_meminfo(ESPRESSO10_MEM_BANK_0_SIZE,
-				  ESPRESSO10_MEM_BANK_0_ADDR,
-				  ESPRESSO10_MEM_BANK_1_SIZE,
-				  ESPRESSO10_MEM_BANK_1_ADDR);
 }
 
 static void omap4_espresso10_init_carveout_sizes(

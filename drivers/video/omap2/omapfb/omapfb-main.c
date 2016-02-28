@@ -2486,8 +2486,6 @@ static int omapfb_probe(struct platform_device *pdev)
 		}
 	}
 
-	sec_getlog_supply_fbinfo(fbdev->fbs[0]);
-
 	r = omapfb_create_sysfs(fbdev);
 	if (r) {
 		dev_err(fbdev->dev, "failed to create sysfs entries\n");
