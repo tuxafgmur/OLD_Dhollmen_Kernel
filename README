@@ -5,20 +5,21 @@ Code not attributable to another one is from my own authorship.
 
 Credits to Kernel-Team, Samsung, Google, CyanogenMod and everyone who has contributed.
 
-*** HOW TO COMPILE ***
 
-# Sets environment
+*****   HOW TO COMPILE   *****
+
+# Environment
 export DIRE=$PWD/Dhollmen
 export KERNELDIR=$DIRE/Dhollmen_Kernel
 export ARCH=arm
 
-# Select toolchain you like to use
-export CROSS_DIR=/opt/toolchains/Linaro-arm-eabi-4.8/bin
+# Toolchain to use 
+export CROSS_DIR=/opt/toolchains/Google-arm-linux-androideabi-4.9/bin
 # or
-export CROSS_DIR=/opt/toolchains/Google-arm-eabi-4.8/bin
+export CROSS_DIR=/opt/toolchains/Linaro-arm-linux-androideabi-4.9/bin
 
-export CROSS_COMPILE=$CROSS_DIR/arm-eabi-
-export ARM_CROSS_COMPILE=$CROSS_COMPILE
+
+export CROSS_COMPILE=$CROSS_DIR/arm-linux-androideabi-
 
 # Create directories
 mkdir -p $DIRE
@@ -32,20 +33,22 @@ git clone https://github.com/Dhollmen/Dhollmen_Kernel
 
 cd $KERNELDIR
 
-# Copy config file for your tablet model
-cp ./arch/arm/configs/dhollmen_P51XX_defconfig .config
-# or
-cp ./arch/arm/configs/dhollmen_P31XX_defconfig .config
+# Fresh build directory
+rm -rf ./Out
+mkdir -p ./Out
 
-# Compile
-make ARCH=arm -j<n>      ##  <n> --> CPU cores + 1
+# Copy def config file
+make  O=./Out dhollmen_espresso_defconfig
+
+# Build the kernel
+make -j<n>    O=./Out           ##  <n> = --> CPU cores + 1
 
 # Copy kernel image
-cp ./arch/arm/boot/zImage $DIRE/Zimage/
+cp ./Out/arch/arm/boot/zImage $DIRE/Zimage/
 
 # Copy and strip modules
 rm -f $DIRE/Modules/*
-find . -type f -name *.ko -exec cp {} $DIRE/Modules/ \;
+find ./Out/. -type f -name *.ko -exec cp {} $DIRE/Modules/ \;
 $"$CROSS_COMPILE"strip --strip-unneeded $DIRE/Modules/*.ko
 
 cd $DIRE
