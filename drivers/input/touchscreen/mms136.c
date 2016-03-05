@@ -219,14 +219,12 @@ static bool fw_updater(struct ts_data *ts, char const *mode)
 		u8 *fw_data;
 		struct file *filp;
 		mm_segment_t oldfs;
-		char file_name[20] = "/sdcard/";
+                char file_name[20] = "/sdcard/mms136.bin";
 
 		tsp_log("force upload from external file.");
 
 		oldfs = get_fs();
 		set_fs(KERNEL_DS);
-
-		sprintf(file_name, "%s.bin", ts->platform_data->model_name);
 
 		filp = filp_open(file_name, O_RDONLY, 0);
 		if (IS_ERR_OR_NULL(filp)) {
@@ -521,9 +519,8 @@ static void get_config_ver(void *device_data)
 	}
 
 	set_default_result(data);
-	sprintf(data->cmd_buff, "%s_%s_%d%d%d%d",
-				ts_data->platform_data->model_name, TSP_VENDOR,
-				buf[0], buf[1], buf[2], buf[3]);
+	sprintf(data->cmd_buff, "%s_%d%d%d%d",
+				TSP_VENDOR, buf[0], buf[1], buf[2], buf[3]);
 	set_cmd_result(data, data->cmd_buff, strlen(data->cmd_buff));
 
 	data->cmd_state = OK;
@@ -1122,8 +1119,6 @@ static struct attribute_group touchscreen_attr_group = {
 };
 #endif
 
-#define TRACKING_COORD			0
-
 #define TS_INPUT_PACKET_SIZE_REG	0x0F
 #define TS_INPUT_INFOR_REG		0x10
 #define TS_WRONG_RESPONSE		0x0F
@@ -1143,9 +1138,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 	}
 
 	event_packet_size = (int) buf[0];
-#if TRACKING_COORD
-	pr_info("tsp: event_packet_size: %.2x", event_packet_size);
-#endif
 	if (event_packet_size <= 0 ||
 	    event_packet_size > MELFAS_MAX_TOUCH * 6) {
 		pr_err("tsp: Ghost IRQ.");
@@ -1177,12 +1169,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 
 		if (ts->finger_state[id] && (buf[i] & 0x80) == 0) {
 			ts->finger_cnt--;
-#if TRACKING_COORD
-			tsp_log("tsp: finger %d up (%d, %d)\n", id, x, y);
-#else
-			tsp_log("tsp: finger %d up remain: %d",	id,
-								ts->finger_cnt);
-#endif
 			input_mt_slot(ts->input_dev, id);
 			input_mt_report_slot_state(ts->input_dev,
 							MT_TOOL_FINGER, false);
@@ -1204,16 +1190,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 		if (ts->finger_state[id] == 0) {
 			ts->finger_state[id] = 1;
 			ts->finger_cnt++;
-#if TRACKING_COORD
-			tsp_log("tsp: finger %d down (%d, %d)\n", id, x, y);
-#else
-			tsp_log("tsp: finger %d down remain: %d", id,
-								ts->finger_cnt);
-#endif
-		} else {
-#if TRACKING_COORD
-			tsp_log("tsp: finger %d move (%d, %d)\n", id, x, y);
-#endif
 		}
 	}
 

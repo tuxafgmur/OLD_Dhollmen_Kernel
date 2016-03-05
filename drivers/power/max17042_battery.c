@@ -326,7 +326,7 @@ static int max17042_reset_soc(struct max17042_fuelgauge_callbacks *ptr)
 
 	/* delay for current stablization */
 	msleep(500);
-	dev_info(&chip->client->dev,
+	dev_dbg(&chip->client->dev,
 		"%s: %s - VCELL(%d), VFOCV(%d), VfSOC(%d), RepSOC(%d), "
 		"current(%d), avg current(%d)\n",
 		__func__, "Before quick-start",
@@ -338,7 +338,7 @@ static int max17042_reset_soc(struct max17042_fuelgauge_callbacks *ptr)
 		max17042_get_avg_current(chip->client));
 
 	if (!chip->pdata->jig_on) {
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			"%s: JIG Not connected -> return\n", __func__);
 		return 0;
 	}
@@ -354,7 +354,7 @@ static int max17042_reset_soc(struct max17042_fuelgauge_callbacks *ptr)
 	max17042_write_reg(chip->client, MAX17402_FullCAP, chip->info.capacity);
 	msleep(500);
 
-	dev_info(&chip->client->dev,
+	dev_dbg(&chip->client->dev,
 		"%s: %s - VCELL(%d), VFOCV(%d), VfSOC(%d), RepSOC(%d), "
 		"current(%d), avg current(%d)\n",
 		__func__, "After quick-start",
@@ -369,7 +369,7 @@ static int max17042_reset_soc(struct max17042_fuelgauge_callbacks *ptr)
 
 	vfocv = max17042_get_vfocv(chip->client);
 	if (vfocv < QUICKSTART_POWER_OFF_VOLTAGE) {
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			"%s: Power off condition(%d)\n", __func__, vfocv);
 
 		fullcap = max17042_read_reg(chip->client, MAX17402_FullCAP);
@@ -377,11 +377,11 @@ static int max17042_reset_soc(struct max17042_fuelgauge_callbacks *ptr)
 		max17042_write_reg(chip->client, MAX17042_RepCap,
 			(u16)(fullcap * 9 / 1000));
 		msleep(200);
-		dev_info(&chip->client->dev, "%s : new soc=%d, vfocv=%d\n",
+		dev_dbg(&chip->client->dev, "%s : new soc=%d, vfocv=%d\n",
 			__func__, max17042_get_soc(chip->client), vfocv);
 	}
 
-	dev_info(&chip->client->dev,
+	dev_dbg(&chip->client->dev,
 		"%s : Additional step - VfOCV(%d), VfSOC(%d), RepSOC(%d)\n",
 		__func__, max17042_get_vfocv(chip->client),
 		max17042_get_vfsoc(chip->client),
@@ -406,13 +406,6 @@ static void max17042_set_battery_type(struct max17042_chip *chip)
 		pr_info("%s : Unknown battery is set to SDI type.\n", __func__);
 		chip->info.battery_type = SDI_BATTERY_TYPE;
 	}
-
-#if 0
-	pr_info("%s : DesignCAP(0x%04x), Battery type(%s)\n",
-			__func__, data,
-			chip->info.battery_type == SDI_BATTERY_TYPE ?
-			"SDI_TYPE_BATTERY" : "BYD_TYPE_BATTERY");
-#endif
 
 	switch (chip->info.battery_type) {
 	case BYD_BATTERY_TYPE:
@@ -481,7 +474,7 @@ static void max17042_adjust_capacity(struct max17042_fuelgauge_callbacks *ptr)
 	/* 1. Write RemCapREP(05h)=0; */
 	max17042_write_reg(chip->client, MAX17042_RepCap, data);
 	msleep(200);
-	dev_info(&chip->client->dev,
+	dev_dbg(&chip->client->dev,
 		"%s : After adjust - RepSOC(%d)\n", __func__,
 		max17042_get_soc(chip->client));
 
@@ -508,7 +501,7 @@ int max17042_check_cap_corruption(struct max17042_fuelgauge_callbacks *ptr)
 	/* If usgin Jig or low batt compensation flag is set,
 	   then skip checking. */
 	if (chip->pdata->jig_on) {
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			"%s : Return by Using Jig(%d)\n", __func__,
 			chip->pdata->jig_on);
 		return 0;
@@ -549,13 +542,13 @@ int max17042_check_cap_corruption(struct max17042_fuelgauge_callbacks *ptr)
 		|| (((mixcap+530) < chip->info.previous_mixcap)
 			|| (mixcap > (chip->info.previous_mixcap+530)))) {
 		max17042_periodic_read(chip->client);
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			"[FG_Recovery] (B) VfSOC(%d), prevVfSOC(%d),",
 			vfsoc, chip->info.previous_vfsoc);
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			" RepSOC(%d), prevRepSOC(%d), MixCap(%d),",
 			repsoc, chip->info.previous_repsoc, (mixcap/2));
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			" prevMixCap(%d),VfOCV(0x%04x, %d)\n",
 			(chip->info.previous_mixcap/2), vfocv, pr_vfocv);
 
@@ -594,11 +587,11 @@ int max17042_check_cap_corruption(struct max17042_fuelgauge_callbacks *ptr)
 		temp2 = temp / 1000000;
 		pr_vfocv += (temp2 << 4);
 
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			"[FG_Recovery] (A) newVfSOC(%d), newRepSOC(%d),",
 			max17042_get_vfsoc(chip->client),
 			max17042_get_soc(chip->client));
-		dev_info(&chip->client->dev,
+		dev_dbg(&chip->client->dev,
 			" newMixCap(%d), newVfOCV(0x%04x, %d)\n",
 			(max17042_read_reg(chip->client, MAX17042_RemCap)/2),
 			new_vfocv, pr_vfocv);
@@ -624,7 +617,7 @@ static void low_batt_compensation(struct i2c_client *client, u32 level)
 	int read_val;
 	u32 temp;
 
-	dev_info(&client->dev, "%s : Adjust SOCrep to %d!!\n", __func__, level);
+	dev_dbg(&client->dev, "%s : Adjust SOCrep to %d!!\n", __func__, level);
 
 	read_val = max17042_read_reg(client, MAX17402_FullCAP);
 	if (read_val < 0)
@@ -701,56 +694,55 @@ static void add_low_batt_comp_cnt(struct max17042_chip *chip,
 	}
 }
 
-static int get_low_batt_threshold(int range, int level, int nCurrent)
+static int get_low_batt_threshold(struct max17042_chip *chip,
+			int range, int level, int nCurrent)
 {
 	int ret = 0;
 
 	switch (range) {
-	/* P4 & P8 needs one more level */
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10)
 	case 5:
 		if (level == 1)
-			ret = SDI_Range5_1_Offset +
-			      ((nCurrent * SDI_Range5_1_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range5_1_offset +
+			      ((nCurrent * chip->pdata->sdi_compensation.range5_1_slope) / 1000);
 		else if (level == 3)
-			ret = SDI_Range5_3_Offset +
-			      ((nCurrent * SDI_Range5_3_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range5_3_offset +
+			      ((nCurrent * chip->pdata->sdi_compensation.range5_3_slope) / 1000);
 		break;
-#endif
+
 	case 4:
 		if (level == 1)
-			ret = SDI_Range4_1_Offset + \
-			      ((nCurrent * SDI_Range4_1_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range4_1_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range4_1_slope) / 1000);
 		else if (level == 3)
-			ret = SDI_Range4_3_Offset + \
-			      ((nCurrent * SDI_Range4_3_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range4_3_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range4_3_slope) / 1000);
 		break;
 
 	case 3:
 		if (level == 1)
-			ret = SDI_Range3_1_Offset + \
-			      ((nCurrent * SDI_Range3_1_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range3_1_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range3_1_slope) / 1000);
 		else if (level == 3)
-			ret = SDI_Range3_3_Offset + \
-			      ((nCurrent * SDI_Range3_3_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range3_3_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range3_3_slope) / 1000);
 		break;
 
 	case 2:
 		if (level == 1)
-			ret = SDI_Range2_1_Offset + \
-			      ((nCurrent * SDI_Range2_1_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range2_1_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range2_1_slope) / 1000);
 		else if (level == 3)
-			ret = SDI_Range2_3_Offset + \
-			      ((nCurrent * SDI_Range2_3_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range2_3_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range2_3_slope) / 1000);
 		break;
 
 	case 1:
 		if (level == 1)
-			ret = SDI_Range1_1_Offset + \
-			      ((nCurrent * SDI_Range1_1_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range1_1_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range1_1_slope) / 1000);
 		else if (level == 3)
-			ret = SDI_Range1_3_Offset + \
-			      ((nCurrent * SDI_Range1_3_Slope) / 1000);
+			ret = chip->pdata->sdi_compensation.range1_3_offset + \
+			      ((nCurrent * chip->pdata->sdi_compensation.range1_3_slope) / 1000);
 		break;
 
 	default:
@@ -799,71 +791,65 @@ static int max17042_low_batt_compensation(
 		fg_avg_current = max17042_get_avg_current(chip->client);
 		fg_min_current = min(fg_avg_current, bat_info.fg_current);
 
-		if (fg_min_current < CURRENT_RANGE_MAX) {
+                if (fg_min_current < chip->pdata->current_range.range_max) {
 			if (bat_info.soc >= 2 &&
-				bat_info.vcell < get_low_batt_threshold(
-					CURRENT_RANGE_MAX_NUM,
+				bat_info.vcell < get_low_batt_threshold(chip,
+					chip->pdata->current_range.range_max_num,
 					1, fg_min_current))
 				add_low_batt_comp_cnt(chip,
-					CURRENT_RANGE_MAX_NUM, 1);
+                                        chip->pdata->current_range.range_max_num, 1);
 			else if (bat_info.soc >= 4 &&
-				bat_info.vcell < get_low_batt_threshold(
-					CURRENT_RANGE_MAX_NUM,
+				bat_info.vcell < get_low_batt_threshold(chip,
+					chip->pdata->current_range.range_max_num,                                        
 					3, fg_min_current))
 				add_low_batt_comp_cnt(chip,
-					CURRENT_RANGE_MAX_NUM, 3);
+                                        chip->pdata->current_range.range_max_num, 3);
 			else
 				bCntReset = 1;
-		}
-		/* P4 & P8 needs more level */
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10)
-		else if (fg_min_current >= CURRENT_RANGE5 &&
-				fg_min_current < CURRENT_RANGE4) {
+		} else if (fg_min_current >= chip->pdata->current_range.range5 &&
+				fg_min_current < chip->pdata->current_range.range4) {
 			if (bat_info.soc >= 2 && bat_info.vcell <
-				get_low_batt_threshold(4, 1,
+                                get_low_batt_threshold(chip, 4, 1,
 					fg_min_current))
 				add_low_batt_comp_cnt(chip, 4, 1);
 			else if (bat_info.soc >= 4 && bat_info.vcell <
-				get_low_batt_threshold(4, 3,
+                                get_low_batt_threshold(chip, 4, 3,
 					fg_min_current))
 				add_low_batt_comp_cnt(chip, 4, 3);
 			else
 				bCntReset = 1;
-		}
-#endif
-		else if (fg_min_current >= CURRENT_RANGE4 &&
-				fg_min_current < CURRENT_RANGE3) {
+		} else if (fg_min_current >= chip->pdata->current_range.range4 &&
+				fg_min_current < chip->pdata->current_range.range3) {
 			if (bat_info.soc >= 2 && bat_info.vcell <
-				get_low_batt_threshold(3, 1,
+                                get_low_batt_threshold(chip, 3, 1,
 					fg_min_current))
-
 				add_low_batt_comp_cnt(chip, 3, 1);
 			else if (bat_info.soc >= 4 && bat_info.vcell <
-				get_low_batt_threshold(3, 3,
+				get_low_batt_threshold(chip, 3, 3,
 					fg_min_current))
 				add_low_batt_comp_cnt(chip, 3, 3);
 			else
 				bCntReset = 1;
-		} else if (fg_min_current >= CURRENT_RANGE3 &&
-				fg_min_current < CURRENT_RANGE2) {
+		} else if (fg_min_current >= chip->pdata->current_range.range3 &&
+				fg_min_current < chip->pdata->current_range.range2) {
 			if (bat_info.soc >= 2 && bat_info.vcell <
-				get_low_batt_threshold(2, 1,
+				get_low_batt_threshold(chip, 2, 1,
 					fg_min_current))
 				add_low_batt_comp_cnt(chip, 2, 1);
 			else if (bat_info.soc >= 4 && bat_info.vcell <
-				get_low_batt_threshold(2, 3,
+				get_low_batt_threshold(chip, 2, 3,
 					fg_min_current))
 				add_low_batt_comp_cnt(chip, 2, 3);
 			else
 				bCntReset = 1;
-		} else if (fg_min_current >= CURRENT_RANGE2 &&
-				fg_min_current < CURRENT_RANGE1) {
+		} else if (fg_min_current >= chip->pdata->current_range.range2 &&
+				fg_min_current < chip->pdata->current_range.range1) {
 			if (bat_info.soc >= 2 && bat_info.vcell <
-				get_low_batt_threshold(1, 1,
+				get_low_batt_threshold(chip, 1, 1,
 					fg_min_current))
 				add_low_batt_comp_cnt(chip, 1, 1);
 			else if (bat_info.soc >= 4 && bat_info.vcell <
-				get_low_batt_threshold(1, 3,
+				get_low_batt_threshold(chip, 1, 3,
 					fg_min_current))
 				add_low_batt_comp_cnt(chip, 1, 3);
 			else
@@ -884,14 +870,14 @@ static int max17042_low_batt_compensation(
 
 		/* if compensation finished, then read SOC again!!*/
 		if (chip->info.low_batt_comp_flag) {
-			pr_info("%s : MIN_CURRENT(%d), AVG_CURRENT(%d),",
+			pr_debug("%s : MIN_CURRENT(%d), AVG_CURRENT(%d),",
 				__func__, fg_min_current, fg_avg_current);
-			pr_info(" CURRENT(%d), SOC(%d), VCELL(%d)\n",
+			pr_debug(" CURRENT(%d), SOC(%d), VCELL(%d)\n",
 				bat_info.fg_current, bat_info.soc,
 				bat_info.vcell);
 
 			bat_info.soc = max17042_get_soc(chip->client);
-			pr_info("%s : SOC is set to %d\n",
+			pr_debug("%s : SOC is set to %d\n",
 				__func__, bat_info.soc);
 		}
 	}
@@ -984,7 +970,7 @@ static int max17042_check_status_reg(struct i2c_client *client)
 
 	/* 1. Check Smn was generatedread */
 	status_data = max17042_read_reg(client, MAX17042_STATUS);
-	dev_info(&client->dev, "%s - addr(0x00), data(0x%04x)\n",
+	dev_dbg(&client->dev, "%s - addr(0x00), data(0x%04x)\n",
 			__func__, status_data);
 
 	if (status_data & (0x1 << 10))
@@ -993,7 +979,7 @@ static int max17042_check_status_reg(struct i2c_client *client)
 	/* 2. clear Status reg */
 	status_data &= 0xFF;
 	if (max17042_write_reg(client, MAX17042_STATUS, status_data) < 0) {
-		dev_info(&client->dev,
+		dev_dbg(&client->dev,
 			"%s: Failed to write STATUS_REG\n", __func__);
 		return -1;
 	}
@@ -1130,7 +1116,7 @@ static void max17042_update_remcap_to_fullcap(
 	max17042_write_reg(chip->client, MAX17402_FullCAP, (u16)remcap);
 	msleep(200);
 
-	dev_info(&chip->client->dev,
+	dev_dbg(&chip->client->dev,
 		"Before FullCap : 0x%x, After Fullcap : 0x%x, SOC : %d\n",
 		fullcap, max17042_read_reg(chip->client, MAX17402_FullCAP),
 		max17042_get_soc(chip->client));
@@ -1176,7 +1162,7 @@ static int max17042_get_value(struct max17042_fuelgauge_callbacks *ptr,
 			value);
 		break;
 	default:
-		dev_info(&chip->client->dev, "UNKNOWN FUEL PROP : %d\n",
+		dev_dbg(&chip->client->dev, "UNKNOWN FUEL PROP : %d\n",
 				fg_prop);
 		return -EINVAL;
 	}
@@ -1257,7 +1243,7 @@ static int __devinit max17042_probe(struct i2c_client *client,
 	max17042_periodic_read(client);
 
 	max17042_alert_init(client);
-	dev_info(&client->dev, "%s: probe done\n", __func__);
+	dev_dbg(&client->dev, "%s: probe done\n", __func__);
 
 	return 0;
 

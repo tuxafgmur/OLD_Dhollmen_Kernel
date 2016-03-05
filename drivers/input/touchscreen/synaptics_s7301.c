@@ -355,16 +355,11 @@ static bool fw_updater(struct ts_data *ts, char *mode)
 		goto out;
 	}
 
-#ifdef CONFIG_TOUCHSCREEN_OLD_FW_STD
 	ts->fw_info->version[0] = fw->data[0xb100];
 	ts->fw_info->version[1] = fw->data[0xb101];
 	ts->fw_info->version[2] = fw->data[0xb102];
 	ts->fw_info->version[3] = fw->data[0xb103];
 	ts->fw_info->version[4] = 0;
-#else
-	ts->fw_info->hw_version = (int)fw->data[0xb102];
-	ts->fw_info->version = (int)fw->data[0xb103];
-#endif
 
 	if (!strcmp("force", mode)) {
 		pr_info("tsp: fw_updater: force upload.\n");
@@ -418,39 +413,16 @@ static bool fw_updater(struct ts_data *ts, char *mode)
 			pr_err("tsp: fw. ver. read failed.");
 			goto out;
 		}
-#ifdef CONFIG_TOUCHSCREEN_OLD_FW_STD
-		strncpy(ts->fw_info_ic.version, buf, 4);
 
-		pr_info("tsp: binary fw. ver: 0x%s, IC fw. ver: 0x%s\n",
-							ts->fw_info->version,
-							ts->fw_info_ic.version);
+		strncpy(ts->fw_info_ic.version, buf, 4);
 		if (strncmp(ts->fw_info->version, ts->fw_info_ic.version, 4)
 									> 0) {
-			pr_info("tsp: fw_updater: FW upgrade enter.\n");
 			ret = synaptics_fw_update(ts->client, fw->data,
 						ts->platform_data->gpio_irq);
 		} else {
-			pr_info("tsp: fw_updater: No need FW update.\n");
 			ret = true;
 			updated = false;
 		}
-#else
-		ts->fw_info_ic.hw_version = (int)buf[2];
-		ts->fw_info_ic.version = (int)buf[3];
-
-		pr_info("tsp: binary fw. ver: 0x%.2x, IC fw. ver: 0x%.2x\n",
-							ts->fw_info->version,
-							ts->fw_info_ic.version);
-		if (ts->fw_info->version > ts->fw_info_ic.version) {
-			pr_info("tsp: fw_updater: FW upgrade enter.\n");
-			ret = synaptics_fw_update(ts->client, fw->data,
-						ts->platform_data->gpio_irq);
-		} else {
-			pr_info("tsp: fw_updater: No need FW update.\n");
-			ret = true;
-			updated = false;
-		}
-#endif
 	}
 
 	if (updated) {
@@ -458,20 +430,8 @@ static bool fw_updater(struct ts_data *ts, char *mode)
 			pr_err("tsp: fw. ver. read failed.");
 			goto out;
 		}
-#ifdef CONFIG_TOUCHSCREEN_OLD_FW_STD
 		strncpy(ts->fw_info_ic.version, buf, 4);
 
-		pr_info("tsp: binary fw. ver: 0x%s, IC fw. ver: 0x%s\n",
-							ts->fw_info->version,
-							ts->fw_info_ic.version);
-#else
-		ts->fw_info_ic.hw_version = (int)buf[2];
-		ts->fw_info_ic.version = (int)buf[3];
-
-		pr_info("tsp: binary fw. ver: 0x%.2x, IC fw. ver: 0x%.2x\n",
-							ts->fw_info->version,
-							ts->fw_info_ic.version);
-#endif
 	}
 out:
 	release_firmware(fw);
@@ -559,12 +519,8 @@ static void get_fw_ver_bin(void *device_data)
 	data->cmd_state = RUNNING;
 
 	set_default_result(data);
-#ifdef CONFIG_TOUCHSCREEN_OLD_FW_STD
+
 	sprintf(data->cmd_buff, "%s", ts_data->fw_info->version);
-#else
-	sprintf(data->cmd_buff, "SY%.2x%.4x", ts_data->fw_info->hw_id,
-						ts_data->fw_info->version);
-#endif
 	set_cmd_result(data, data->cmd_buff, strlen(data->cmd_buff));
 
 	data->cmd_state = OK;
@@ -579,12 +535,8 @@ static void get_fw_ver_ic(void *device_data)
 	data->cmd_state = RUNNING;
 
 	set_default_result(data);
-#ifdef CONFIG_TOUCHSCREEN_OLD_FW_STD
+
 	sprintf(data->cmd_buff, "%s", ts_data->fw_info_ic.version);
-#else
-	sprintf(data->cmd_buff, "SY%.2x%.4x", ts_data->fw_info_ic.hw_id,
-						ts_data->fw_info_ic.version);
-#endif
 	set_cmd_result(data, data->cmd_buff, strlen(data->cmd_buff));
 
 	data->cmd_state = OK;
@@ -599,10 +551,9 @@ static void get_config_ver(void *device_data)
 	data->cmd_state = RUNNING;
 
 	set_default_result(data);
-	sprintf(data->cmd_buff, "%s_%s_%s",
-					ts->platform_data->model_name,
-					TSP_VENDOR,
-					ts->fw_info->release_date);
+	sprintf(data->cmd_buff, "%s_%s",
+				TSP_VENDOR,
+				ts->fw_info->release_date);
 	set_cmd_result(data, data->cmd_buff, strlen(data->cmd_buff));
 
 	data->cmd_state = OK;
@@ -945,7 +896,7 @@ static void run_tx_to_gnd_read(void *device_data)
 	return;
 }
 
-struct tsp_cmd tsp_cmds[] = {
+struct tsp_cmd tsp_cmds_synaptics[] = {    
 	{TSP_CMD("fw_update", fw_update),},
 	{TSP_CMD("get_fw_ver_bin", get_fw_ver_bin),},
 	{TSP_CMD("get_fw_ver_ic", get_fw_ver_ic),},
@@ -1170,8 +1121,8 @@ static int __init init_sec_factory_test(struct ts_data *ts)
 	}
 
 	INIT_LIST_HEAD(&factory_data->cmd_list_head);
-	for (i = 0; i < ARRAY_SIZE(tsp_cmds); i++)
-		list_add_tail(&tsp_cmds[i].list, &factory_data->cmd_list_head);
+	for (i = 0; i < ARRAY_SIZE(tsp_cmds_synaptics); i++)
+		list_add_tail(&tsp_cmds_synaptics[i].list, &factory_data->cmd_list_head);
 
 	mutex_init(&factory_data->cmd_lock);
 	factory_data->cmd_is_running = false;
@@ -1232,8 +1183,6 @@ static void ts_late_resume(struct early_suspend *h)
 }
 #endif
 
-#define TRACKING_COORD			0
-
 static irqreturn_t ts_irq_handler(int irq, void *handle)
 {
 	struct ts_data *ts = (struct ts_data *)handle;
@@ -1263,10 +1212,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 		pr_err("tsp: ts_irq_event: i2c failed\n");
 		return IRQ_HANDLED;
 	}
-#if TRACKING_COORD
-	pr_info("tsp: finger state regigster %.2x, %.2x, %.2x\n",
-						state[0], state[1], state[2]);
-#endif
 	for (i = 0, id = 0; i < 3; i++) {
 		for (j = 0; j < 4 && id < MAX_TOUCH_NUM; j++, id++) {
 			/* check the new finger state */
@@ -1293,13 +1238,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 			}
 
 			if (cur_state == 0 && ts->finger_state[id] == true) {
-#if TRACKING_COORD
-				tsp_debug("%d up (%d, %d, %d)\n",
-							id, x, y, point[4]);
-#else
-				tsp_debug("%d up. remain: %d\n",
-							id, --(ts->finger_cnt));
-#endif
 				input_mt_slot(ts->input_dev, id);
 				input_mt_report_slot_state(ts->input_dev,
 							MT_TOOL_FINGER, false);
@@ -1350,10 +1288,6 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 			input_sync(ts->input_dev);
 
 			if (cur_state == 1 && ts->finger_state[id] == false) {
-#if TRACKING_COORD
-				tsp_debug("%d dn (%d, %d, %d)\n",
-							id, x, y, point[4]);
-#else
 #ifdef CONFIG_TOUCHSCREEN_SUPPORT_SYNA_SURFACE
 				tsp_debug("%d dn. remain: %d palm: %d.\n",
 							id,
@@ -1363,13 +1297,7 @@ static irqreturn_t ts_irq_handler(int irq, void *handle)
 				tsp_debug("%d dn. remain: %d.\n",
 							id, ++(ts->finger_cnt));
 #endif
-#endif
 				ts->finger_state[id] = true;
-			} else {
-#if TRACKING_COORD
-				tsp_debug("%d drag (%d, %d, %d)\n",
-							id, x, y, point[4]);
-#endif
 			}
 		}
 	}

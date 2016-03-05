@@ -49,10 +49,8 @@
 #include "../../../arch/arm/mach-omap2/mux.h"
 #include "../../../arch/arm/mach-omap2/omap_muxtbl.h"
 
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO)
+#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO
 #include "../../../arch/arm/mach-omap2/board-espresso.h"
-#elif defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10)
-#include "../../../arch/arm/mach-omap2/board-espresso10.h"
 #endif
 
 #define WM8994_DEFAULT_MCLK1	26000000
@@ -99,9 +97,7 @@ static struct device *jack_dev;
 #endif /* CONFIG_FACTORY_PBA_JACK_TEST_SUPPORT */
 #endif /* not CONFIG_SAMSUNG_JACK */
 
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
+#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO
 struct snd_soc_codec *the_codec;
 int dock_status;
 #endif /* defined ESPRESSO */
@@ -118,12 +114,11 @@ static struct gpio main_mic_bias = {
 	.label  = "MICBIAS_EN",
 };
 
-#ifdef CONFIG_SND_USE_SUB_MIC
 static struct gpio sub_mic_bias = {
 	.flags  = GPIOF_OUT_INIT_LOW,
 	.label  = "SUB_MICBIAS_EN",
 };
-#endif /* CONFIG_SND_USE_SUB_MIC */
+
 
 #ifdef CONFIG_SND_EAR_GND_SEL
 static struct gpio ear_select = {
@@ -199,14 +194,12 @@ static int main_mic_bias_event(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-#ifdef CONFIG_SND_USE_SUB_MIC
 static int sub_mic_bias_event(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
 	gpio_set_value(sub_mic_bias.gpio, SND_SOC_DAPM_EVENT_ON(event));
 	return 0;
 }
-#endif /* CONFIG_SND_USE_SUB_MIC */
 
 #ifdef CONFIG_SND_EAR_GND_SEL
 static const struct soc_enum hp_mode_enum[] = {
@@ -303,7 +296,6 @@ static int set_input_clamp(struct snd_kcontrol *kcontrol,
 		snd_soc_update_bits(codec, WM8994_INPUT_MIXER_1,
 				WM8994_INPUTS_CLAMP, 0);
 	}
-	pr_info("set fm input_clamp : %s\n", input_clamp_text[input_clamp]);
 
 	return 0;
 }
@@ -326,8 +318,6 @@ static int set_aif2_mode(struct snd_kcontrol *kcontrol,
 		return 0;
 
 	aif2_mode = ucontrol->value.integer.value[0];
-
-	pr_info("set aif2 mode : %s\n", aif2_mode_text[aif2_mode]);
 
 	return 0;
 }
@@ -355,8 +345,6 @@ static int set_pm_mode(struct snd_kcontrol *kcontrol,
 		pm_qos_update_request(&pm_qos_handle, 7);
 
 	pm_mode = ucontrol->value.integer.value[0];
-
-	pr_info("set pm mode : %s\n", pm_mode_text[pm_mode]);
 
 	return 0;
 }
@@ -491,16 +479,13 @@ static int set_main_mic_bias_mode(struct snd_kcontrol *kcontrol,
 }
 #endif /* #ifdef CONFIG_SND_FORCE_BIAS_MUTE_CONTROL */
 
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
+#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO
 void notify_dock_status(int status)
 {
 	if (!the_codec)
 		return;
 
 	dock_status = status;
-	pr_info("%s: status=%d", __func__, dock_status);
 
 	if (the_codec->suspended)
 		return;
@@ -724,8 +709,6 @@ static int omap4_wm8994_aif2_hw_params(struct snd_pcm_substream *substream,
 	int prate;
 	int bclk;
 
-	pr_debug("%s: enter, aif2_mode=%d\n", __func__, aif2_mode);
-
 	prate = params_rate(params);
 	switch (prate) {
 	case 8000:
@@ -801,18 +784,8 @@ static const struct snd_kcontrol_new omap4_controls[] = {
 	SOC_DAPM_PIN_SWITCH("SPK"),
 	SOC_DAPM_PIN_SWITCH("RCV"),
 	SOC_DAPM_PIN_SWITCH("LINEOUT"),
-
 	SOC_DAPM_PIN_SWITCH("Main Mic"),
-
-#ifdef CONFIG_SND_USE_SUB_MIC
-	SOC_DAPM_PIN_SWITCH("Sub Mic"),
-#endif /* CONFIG_SND_USE_SUB_MIC */
-
 	SOC_DAPM_PIN_SWITCH("Headset Mic"),
-
-#ifdef CONFIG_FM_RADIO
-	SOC_DAPM_PIN_SWITCH("FM In"),
-#endif /* CONFIG_FM_RADIO */
 
 #ifdef CONFIG_SND_EAR_GND_SEL
 	SOC_ENUM_EXT("HP Output Mode", hp_mode_enum[0],
@@ -843,6 +816,10 @@ static const struct snd_kcontrol_new omap4_controls[] = {
 #endif /* CONFIG_SND_FORCE_BIAS_MUTE_CONTROL */
 };
 
+static const struct snd_kcontrol_new omap4_submic_controls[] = {
+	SOC_DAPM_PIN_SWITCH("Sub Mic"),
+};
+
 const struct snd_soc_dapm_widget omap4_dapm_widgets[] = {
 	SND_SOC_DAPM_HP("HP", NULL),
 	SND_SOC_DAPM_SPK("SPK", NULL),
@@ -855,21 +832,15 @@ const struct snd_soc_dapm_widget omap4_dapm_widgets[] = {
 
 #ifdef CONFIG_SND_FORCE_BIAS_MUTE_CONTROL
 	SND_SOC_DAPM_MIC("Main Mic", NULL),
-#ifdef CONFIG_SND_USE_SUB_MIC
-	SND_SOC_DAPM_MIC("Sub Mic", NULL),
-#endif /* CONFIG_SND_USE_SUB_MIC */
 #else
 	SND_SOC_DAPM_MIC("Main Mic", main_mic_bias_event),
-#ifdef CONFIG_SND_USE_SUB_MIC
-	SND_SOC_DAPM_MIC("Sub Mic", sub_mic_bias_event),
-#endif /* CONFIG_SND_USE_SUB_MIC */
 #endif /* CONFIG_SND_FORCE_BIAS_MUTE_CONTROL */
 
 	SND_SOC_DAPM_MIC("Headset Mic", NULL),
+};
 
-#ifdef CONFIG_FM_RADIO
-	SND_SOC_DAPM_LINE("FM In", NULL),
-#endif /* CONFIG_FM_RADIO */
+const struct snd_soc_dapm_widget omap4_dapm_submic_widgets[] = {
+	SND_SOC_DAPM_MIC("Sub Mic", sub_mic_bias_event),
 };
 
 const struct snd_soc_dapm_route omap4_dapm_routes[] = {
@@ -884,9 +855,7 @@ const struct snd_soc_dapm_route omap4_dapm_routes[] = {
 	{ "RCV", NULL, "HPOUT2N" },
 	{ "RCV", NULL, "HPOUT2P" },
 
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
+#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO
 	{ "LINEOUT", NULL, "LINEOUT1N" },
 	{ "LINEOUT", NULL, "LINEOUT1P" },
 #else /* defined ESPRESSO */
@@ -897,11 +866,6 @@ const struct snd_soc_dapm_route omap4_dapm_routes[] = {
 	{ "IN1LP", NULL, "Main Mic" },
 	{ "IN1LN", NULL, "Main Mic" },
 
-#ifdef CONFIG_SND_USE_SUB_MIC
-	{ "IN2RP:VXRP", NULL, "Sub Mic" },
-	{ "IN2RN", NULL, "Sub Mic" },
-#endif /* CONFIG_SND_USE_SUB_MIC */
-
 #ifndef CONFIG_SAMSUNG_JACK
 	{ "IN1RP", NULL, "Headset Mic" },
 	{ "IN1RN", NULL, "Headset Mic" },
@@ -910,15 +874,11 @@ const struct snd_soc_dapm_route omap4_dapm_routes[] = {
 	{ "IN1RN", NULL, "MICBIAS2" },
 	{ "MICBIAS2", NULL, "Headset Mic" },
 #endif /* CONFIG_SAMSUNG_JACK */
+};
 
-#ifdef CONFIG_FM_RADIO
-	{ "IN2LN", NULL, "FM In" },
-#ifdef CONFIG_SND_USE_SUB_MIC
-	{ "IN2LP:VXRN", NULL, "FM In" },
-#else /* CONFIG_SND_USE_SUB_MIC */
-	{ "IN2RN", NULL, "FM In" },
-#endif /* not CONFIG_SND_USE_SUB_MIC */
-#endif /* CONFIG_FM_RADIO */
+const struct snd_soc_dapm_route omap4_submic_dapm_routes[] = {
+	{ "IN2RP:VXRP", NULL, "Sub Mic" },
+	{ "IN2RN", NULL, "Sub Mic" },
 };
 
 #ifndef CONFIG_SAMSUNG_JACK
@@ -942,7 +902,6 @@ static ssize_t earjack_state_show(struct device *dev,
 static ssize_t earjack_state_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t size)
 {
-	pr_info("%s : operate nothing\n", __func__);
 
 	return size;
 }
@@ -964,7 +923,6 @@ static ssize_t earjack_key_state_show(struct device *dev,
 static ssize_t earjack_key_state_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t size)
 {
-	pr_info("%s : operate nothing\n", __func__);
 
 	return size;
 }
@@ -972,7 +930,6 @@ static ssize_t earjack_key_state_store(struct device *dev,
 static ssize_t earjack_select_jack_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-	pr_info("%s : operate nothing\n", __func__);
 
 	return 0;
 }
@@ -1016,19 +973,17 @@ static DEVICE_ATTR(state, S_IRUGO | S_IWUSR | S_IWGRP,
 int omap4_wm8994_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_codec *codec = rtd->codec;
+        struct wm8994_priv *wm8994 = snd_soc_codec_get_drvdata(codec);
 #ifndef CONFIG_SAMSUNG_JACK
 	struct wm1811_machine_priv *wm1811
 		= snd_soc_card_get_drvdata(codec->card);
 	struct wm8994 *control = codec->control_data;
-	struct wm8994_priv *wm8994 = snd_soc_codec_get_drvdata(codec);
 #endif /* not CONFIG_SAMSUNG_JACK */
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	struct snd_soc_dai *aif1_dai = rtd->codec_dai;
 	int ret;
 
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
+#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO
 	the_codec = codec;
 #endif	/* defined ESPRESSO */
 
@@ -1037,13 +992,45 @@ int omap4_wm8994_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_add_controls(codec, omap4_controls,
 				ARRAY_SIZE(omap4_controls));
 
+	if (wm8994->pdata->use_submic) {
+		sub_mic_bias.gpio = omap_muxtbl_get_gpio_by_name(sub_mic_bias.label);
+		if (sub_mic_bias.gpio == -EINVAL) {
+			pr_err("%s: failed to get gpio name for %s\n", __func__, sub_mic_bias.label);
+			wm8994->pdata->use_submic = false;
+			goto submic_error;
+		}
+		ret = gpio_request(sub_mic_bias.gpio, "sub_mic_bias");
+		if (ret < 0) {
+			pr_err("%s: failed to request gpio %s\n", __func__, sub_mic_bias.label);
+			wm8994->pdata->use_submic = false;
+			goto submic_error;
+		}
+		gpio_direction_output(sub_mic_bias.gpio, 0);
+
+		snd_soc_add_controls(codec, omap4_submic_controls,
+					ARRAY_SIZE(omap4_submic_controls));
+	}
+submic_error:
+
 	ret = snd_soc_dapm_new_controls(dapm, omap4_dapm_widgets,
 					ARRAY_SIZE(omap4_dapm_widgets));
+
+	if (wm8994->pdata->use_submic) {
+		snd_soc_dapm_new_controls(dapm, omap4_dapm_submic_widgets,
+					ARRAY_SIZE(omap4_dapm_submic_widgets));
+	}
+
 	if (ret != 0)
 		dev_err(codec->dev, "Failed to add DAPM widgets: %d\n", ret);
 
 	ret = snd_soc_dapm_add_routes(dapm, omap4_dapm_routes,
 					ARRAY_SIZE(omap4_dapm_routes));
+
+	if (wm8994->pdata->use_submic) {
+		snd_soc_dapm_add_routes(dapm, omap4_submic_dapm_routes,
+						ARRAY_SIZE(omap4_submic_dapm_routes));
+	}
+
 	if (ret != 0)
 		dev_err(codec->dev, "Failed to add DAPM routes: %d\n", ret);
 
@@ -1057,15 +1044,8 @@ int omap4_wm8994_init(struct snd_soc_pcm_runtime *rtd)
 		dev_err(codec->dev, "Failed to enable AIF1CLK: %d\n", ret);
 
 	/* set up NC codec pins */
-#ifdef CONFIG_FM_RADIO
-#ifndef CONFIG_SND_USE_SUB_MIC
-	snd_soc_dapm_nc_pin(dapm, "IN2LP:VXRN");
-	snd_soc_dapm_nc_pin(dapm, "IN2RP:VXRP");
-#endif /* not CONFIG_SND_USE_SUB_MIC */
-#else /* CONFIG_FM_RADIO */
 	snd_soc_dapm_nc_pin(dapm, "IN2LP:VXRN");
 	snd_soc_dapm_nc_pin(dapm, "IN2LN");
-#endif /* not CONFIG_FM_RADIO */
 
 	/* set up ignore pins */
 	snd_soc_dapm_ignore_suspend(dapm, "RCV");
@@ -1073,13 +1053,10 @@ int omap4_wm8994_init(struct snd_soc_pcm_runtime *rtd)
 	snd_soc_dapm_ignore_suspend(dapm, "LINEOUT");
 	snd_soc_dapm_ignore_suspend(dapm, "HP");
 	snd_soc_dapm_ignore_suspend(dapm, "Main Mic");
-#ifdef CONFIG_SND_USE_SUB_MIC
-	snd_soc_dapm_ignore_suspend(dapm, "Sub Mic");
-#endif /* CONFIG_SND_USE_SUB_MIC */
+	if (wm8994->pdata->use_submic) {
+		snd_soc_dapm_ignore_suspend(dapm, "Sub Mic");
+	}
 	snd_soc_dapm_ignore_suspend(dapm, "Headset Mic");
-#ifdef CONFIG_FM_RADIO
-	snd_soc_dapm_ignore_suspend(dapm, "FM In");
-#endif /* CONFIG_FM_RADIO */
 	snd_soc_dapm_ignore_suspend(dapm, "AIF1DACDAT");
 	snd_soc_dapm_ignore_suspend(dapm, "AIF2DACDAT");
 	snd_soc_dapm_ignore_suspend(dapm, "AIF3DACDAT");
@@ -1241,16 +1218,13 @@ static struct snd_soc_dai_link omap4_dai[] = {
 },
 };
 
-#if defined(CONFIG_MACH_SAMSUNG_ESPRESSO) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_10) \
-	|| defined(CONFIG_MACH_SAMSUNG_ESPRESSO_CHN_CMCC)
+#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO
 static int wm8994_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_codec *codec = card->rtd->codec;
 	struct wm8994_priv *wm8994 = snd_soc_codec_get_drvdata(codec);
 
 	if (dock_status == 1 && wm8994->vmid_mode == WM8994_VMID_FORCE) {
-		pr_info("%s: entering force vmid mode\n", __func__);
 		wm8994_vmid_mode(codec, WM8994_VMID_NORMAL);
 	}
 
@@ -1265,7 +1239,6 @@ static int wm8994_resume_post(struct snd_soc_card *card)
 	struct wm8994_priv *wm8994 = snd_soc_codec_get_drvdata(codec);
 
 	if (dock_status == 1 && wm8994->vmid_mode == WM8994_VMID_NORMAL) {
-		pr_info("%s: entering normal vmid mode\n", __func__);
 		wm8994_vmid_mode(codec, WM8994_VMID_FORCE);
 	}
 
@@ -1405,19 +1378,6 @@ static int __init omap4_audio_init(void)
 		goto main_mic_err;
 	gpio_direction_output(main_mic_bias.gpio, 0);
 
-#ifdef CONFIG_SND_USE_SUB_MIC
-	sub_mic_bias.gpio = omap_muxtbl_get_gpio_by_name(sub_mic_bias.label);
-	if (sub_mic_bias.gpio == -EINVAL) {
-		pr_err("failed to get gpio name for %s\n", sub_mic_bias.label);
-		ret = -EINVAL;
-		goto sub_mic_err;
-	}
-	ret = gpio_request(sub_mic_bias.gpio, "sub_mic_bias");
-	if (ret < 0)
-		goto sub_mic_err;
-	gpio_direction_output(sub_mic_bias.gpio, 0);
-#endif /* CONFIG_SND_USE_SUB_MIC */
-
 #ifdef CONFIG_SND_EAR_GND_SEL
 	hp_output_mode = 1;
 	ear_select.gpio = omap_muxtbl_get_gpio_by_name(ear_select.label);
@@ -1495,10 +1455,6 @@ lineout_select_err:
 	gpio_free(ear_select.gpio);
 ear_select_err:
 #endif /* CONFIG_SND_EAR_GND_SEL */
-#ifdef CONFIG_SND_USE_SUB_MIC
-	gpio_free(sub_mic_bias.gpio);
-sub_mic_err:
-#endif /* CONFIG_SND_USE_SUB_MIC */
 	gpio_free(main_mic_bias.gpio);
 main_mic_err:
 	gpio_free(mclk.gpio);

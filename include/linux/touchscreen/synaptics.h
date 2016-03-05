@@ -18,18 +18,10 @@
 
 #include <linux/i2c.h>
 
-#ifdef CONFIG_TOUCHSCREEN_OLD_FW_STD
 struct synaptics_fw_info {
 	char version[5];
 	const char release_date[5];
 };
-#else
-struct synaptics_fw_info {
-	int version;
-	int hw_id;
-	const char release_date[5];
-};
-#endif
 
 void synaptics_set_i2c_client(struct i2c_client *);
 bool synaptics_fw_update(struct i2c_client *, const u8 *, const int);
