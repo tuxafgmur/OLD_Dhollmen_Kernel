@@ -181,13 +181,6 @@ static unsigned int get_nr_run_avg(void)
 #define FREQ_FOR_RESPONSIVENESS		(300000)
 /* for fast decrease */
 
-#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO_10
-#define FREQ_FOR_FAST_DOWN		(1216000)
-#else
-#define FREQ_FOR_FAST_DOWN		(1200000)
-#endif
-#define UP_THRESHOLD_AT_FAST_DOWN	(95)
-
 #define HOTPLUG_DOWN_INDEX		(0)
 #define HOTPLUG_UP_INDEX		(1)
 

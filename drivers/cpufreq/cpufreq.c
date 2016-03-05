@@ -34,11 +34,7 @@
 #include <trace/events/power.h>
 
 #ifdef CONFIG_OMAP4430_TOP_CPU
-#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO_10
 #define BootSpeed 1216000
-#else
-#define BootSpeed 1200000
-#endif
 #else
 #define BootSpeed 1008000
 #endif

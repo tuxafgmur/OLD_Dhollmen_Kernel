@@ -1138,8 +1138,7 @@ static int __init omap_cpufreq_init(void)
 
 		ret = omap_duty_cooling_init();
 		if (ret)
-			pr_warn("%s: omap_duty_cooling_init failed\n",
-					__func__);
+			pr_warn("%s: omap_duty_cooling_init failed\n", __func__);
 	}
 
 #ifdef CONFIG_DVFS_LIMIT
