@@ -19,12 +19,9 @@
  */
 
 #include <linux/yas.h>
-#ifdef CONFIG_YAS_ACC_MULTI_SUPPORT
-#include <linux/yas_accel.h>
-#else
 #define CHIP_NAME	"BMA254"
 #define VENDOR_NAME	"BOSCH"
-#endif
+
 #define YAS_BMA250_RESOLUTION	256
 
 /* Axes data range  [um/s^2] */
@@ -1010,7 +1007,6 @@ static int yas_get_motion_interrupt(void)
 	if (acc_data.chip_id == YAS_BMA254_CHIP_ID) {
 		reg = yas_bma250_read_reg_byte(
 			YAS_BMA250_ACC_INT_STATUS0);
-		pr_info("%s: ACC_INT_STATUS %x\n", __func__, reg);
 		if (reg & 0x04)
 			result = 1;
 	}
