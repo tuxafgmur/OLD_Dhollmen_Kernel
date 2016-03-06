@@ -44,11 +44,7 @@
  * runqueue average
  */
 
-#ifndef CONFIG_CPU_EXYNOS4210
 #define RQ_AVG_TIMER_RATE	10
-#else
-#define RQ_AVG_TIMER_RATE	20
-#endif
 
 struct runqueue_data {
 	unsigned int nr_run_avg;
@@ -149,15 +145,14 @@ static unsigned int get_nr_run_avg(void)
  * It helps to keep variable names smaller, simpler
  */
 
-#define DEF_SAMPLING_DOWN_FACTOR	(2)
-#define MAX_SAMPLING_DOWN_FACTOR	(100000)
+#define DEF_SAMPLING_DOWN_FACTOR	(1)
+#define MAX_SAMPLING_DOWN_FACTOR	(3)
 #define DEF_FREQUENCY_DOWN_DIFFERENTIAL	(5)
-#define DEF_FREQUENCY_UP_THRESHOLD	(80)
+#define DEF_FREQUENCY_UP_THRESHOLD	(70)
 
 /* for multiple freq_step */
 #define DEF_UP_THRESHOLD_DIFF		(5)
 
-#define DEF_FREQUENCY_MIN_SAMPLE_RATE	(10000)
 #define MIN_FREQUENCY_UP_THRESHOLD	(11)
 #define MAX_FREQUENCY_UP_THRESHOLD	(100)
 #define DEF_SAMPLING_RATE		(40000)
@@ -179,8 +174,8 @@ static unsigned int get_nr_run_avg(void)
 
 #define UP_THRESHOLD_AT_MIN_FREQ	(40)
 #define FREQ_FOR_RESPONSIVENESS		(300000)
-/* for fast decrease */
 
+/* for fast decrease */
 #define HOTPLUG_DOWN_INDEX		(0)
 #define HOTPLUG_UP_INDEX		(1)
 
@@ -260,7 +255,6 @@ static struct dbs_tuners {
 	unsigned int max_cpu_lock;
 	unsigned int min_cpu_lock;
 	atomic_t hotplug_lock;
-	unsigned int dvfs_debug;
 	unsigned int max_freq;
 	unsigned int min_freq;
 #ifdef CONFIG_HAS_EARLYSUSPEND
@@ -283,7 +277,6 @@ static struct dbs_tuners {
 	.max_cpu_lock = DEF_MAX_CPU_LOCK,
 	.min_cpu_lock = DEF_MIN_CPU_LOCK,
 	.hotplug_lock = ATOMIC_INIT(0),
-	.dvfs_debug = 0,
 #ifdef CONFIG_HAS_EARLYSUSPEND
 	.early_suspend = -1,
 #endif
@@ -476,7 +469,6 @@ show_one(cpu_down_freq, cpu_down_freq);
 show_one(up_nr_cpus, up_nr_cpus);
 show_one(max_cpu_lock, max_cpu_lock);
 show_one(min_cpu_lock, min_cpu_lock);
-show_one(dvfs_debug, dvfs_debug);
 show_one(up_threshold_at_min_freq, up_threshold_at_min_freq);
 show_one(freq_for_responsiveness, freq_for_responsiveness);
 static ssize_t show_hotplug_lock(struct kobject *kobj, struct attribute *attr, char *buf)
@@ -785,18 +777,6 @@ static ssize_t store_hotplug_lock(struct kobject *a, struct attribute *b,
 	return count;
 }
 
-static ssize_t store_dvfs_debug(struct kobject *a, struct attribute *b,
-				const char *buf, size_t count)
-{
-	unsigned int input;
-	int ret;
-	ret = sscanf(buf, "%u", &input);
-	if (ret != 1)
-		return -EINVAL;
-	dbs_tuners_ins.dvfs_debug = input > 0;
-	return count;
-}
-
 static ssize_t store_up_threshold_at_min_freq(struct kobject *a, struct attribute *b,
 				   const char *buf, size_t count)
 {
@@ -839,7 +819,6 @@ define_one_global_rw(up_nr_cpus);
 define_one_global_rw(max_cpu_lock);
 define_one_global_rw(min_cpu_lock);
 define_one_global_rw(hotplug_lock);
-define_one_global_rw(dvfs_debug);
 define_one_global_rw(up_threshold_at_min_freq);
 define_one_global_rw(freq_for_responsiveness);
 
@@ -862,7 +841,6 @@ static struct attribute *dbs_attributes[] = {
 	&max_cpu_lock.attr,
 	&min_cpu_lock.attr,
 	&hotplug_lock.attr,
-	&dvfs_debug.attr,
 	&hotplug_freq_1_1.attr,
 	&hotplug_freq_2_0.attr,
 	&hotplug_freq_2_1.attr,
@@ -937,28 +915,9 @@ static void cpu_down_work(struct work_struct *work)
 
 static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
 {
-#ifndef CONFIG_ARCH_EXYNOS4
 	if (p->cur == p->max)
 		return;
-#endif
-
 	__cpufreq_driver_target(p, freq, CPUFREQ_RELATION_L);
-}
-
-/*
- * print hotplug debugging info.
- * which 1 : UP, 0 : DOWN
- */
-static void debug_hotplug_check(int which, int rq_avg, int freq,
-			 struct cpu_usage *usage)
-{
-	int cpu;
-	printk(KERN_ERR "CHECK %s rq %d.%02d freq %d [", which ? "up" : "down",
-	       rq_avg / 100, rq_avg % 100, freq);
-	for_each_online_cpu(cpu) {
-		printk(KERN_ERR "(%d, %d), ", cpu, usage->load[cpu]);
-	}
-	printk(KERN_ERR "]\n");
 }
 
 static int check_up(void)
@@ -1008,8 +967,6 @@ static int check_up(void)
 		min_rq_avg = min(min_rq_avg, rq_avg);
 		min_avg_load = min(min_avg_load, avg_load);
 
-		if (dbs_tuners_ins.dvfs_debug)
-			debug_hotplug_check(1, rq_avg, freq, usage);
 	}
 
 	if (min_freq >= up_freq && min_rq_avg > up_rq) {
@@ -1017,8 +974,6 @@ static int check_up(void)
 			if (min_avg_load < 65)
 				return 0;
 		}
-		printk(KERN_ERR "[PEGASUSQ IN] %s %d>=%d && %d>%d\n",
-			__func__, min_freq, up_freq, min_rq_avg, up_rq);
 		hotplug_history->num_hist = 0;
 		return 1;
 	}
@@ -1072,14 +1027,10 @@ static int check_down(void)
 		max_rq_avg = max(max_rq_avg, rq_avg);
 		max_avg_load = max(max_avg_load, avg_load);
 
-		if (dbs_tuners_ins.dvfs_debug)
-			debug_hotplug_check(0, rq_avg, freq, usage);
 	}
 
 	if ((max_freq <= down_freq && max_rq_avg <= down_rq)
 		|| (online >= 3 && max_avg_load < 30)) {
-		printk(KERN_ERR "[PEGASUSQ OUT] %s %d<=%d && %d<%d\n",
-			__func__, max_freq, down_freq, max_rq_avg, down_rq);
 		hotplug_history->num_hist = 0;
 		return 1;
 	}
