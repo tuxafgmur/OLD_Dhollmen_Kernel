@@ -987,10 +987,10 @@ static ssize_t store_voltage_table(struct cpufreq_policy *policy,
 			buf += (strlen(size_cur)+1);
 
 			// Force smartreflex to recalibrate based on new voltages
-#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO_10
+#ifdef CONFIG_OMAP4430_TOP_CPU
 			if (freq_table[i].frequency <= 1216000 &&
 #else
-			if (freq_table[i].frequency <= 1200000 &&
+			if (freq_table[i].frequency <= 1008000 &&
 #endif
 				freq_table[i].frequency >= policymin) {
 				vdata = omap_voltage_get_curr_vdata(mpu_voltdm);

@@ -162,7 +162,7 @@ struct omap_volt_data omap443x_vdd_iva_volt_data[] = {
 
 #define OMAP4430_VDD_CORE_OPP50_UV		1000000 	/* 1025000 */
 #define OMAP4430_VDD_CORE_OPP100_UV		1175000 	/* 1200000 */
-#if defined(CONFIG_OMAP4430_TOP_CPU) || defined(CONFIG_OMAP4430_TOP_GPU)
+#ifdef CONFIG_OMAP4430_TOP_GPU
 #define OMAP4430_VDD_CORE_OPP100_OV_UV		1225000 	/* 1250000 */
 #endif
 
@@ -173,7 +173,7 @@ struct omap_volt_data omap443x_vdd_core_volt_data[] = {
 	VOLT_DATA_DEFINE(OMAP4430_VDD_CORE_OPP100_UV, 0,
 			OMAP44XX_CONTROL_FUSE_CORE_OPP100,
 			0xf9, 0x16, OMAP_ABB_NONE),
-#if defined(CONFIG_OMAP4430_TOP_CPU) || defined(CONFIG_OMAP4430_TOP_GPU)
+#ifdef CONFIG_OMAP4430_TOP_GPU
 	VOLT_DATA_DEFINE(OMAP4430_VDD_CORE_OPP100_OV_UV, 0,
 			OMAP44XX_CONTROL_FUSE_CORE_OPP100OV,
 			0xf9, 0x16, OMAP_ABB_NONE),
@@ -1042,17 +1042,11 @@ int __init omap4_opp_init(void)
 		goto out;
 #ifdef CONFIG_OMAP4430_TOP_CPU
 	else {
-#ifdef CONFIG_MACH_SAMSUNG_ESPRESSO_10
 		omap4_opp_enable("mpu", 1216000000);
 		omap4_opp_enable("mpu", 1360000000);
 		omap4_opp_enable("mpu", 1420000000);
-		omap4_opp_enable("mpu", 1460000000);
-#else
-		omap4_opp_enable("mpu", 1200000000);
-		omap4_opp_enable("mpu", 1350000000);
-		omap4_opp_enable("mpu", 1420000000);
 		omap4_opp_enable("mpu", 1480000000);
-#endif
+		omap4_opp_enable("mpu", 1520000000);
 	}
 #endif
 

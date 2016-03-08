@@ -68,11 +68,11 @@ static struct regulator_init_data vbatt_initdata = {
 		.always_on = 1,
 	},
 	.num_consumer_supplies = ARRAY_SIZE(vbatt_supplies),
-	.consumer_supplies = (struct regulator_consumer_supply *) vbatt_supplies,
+	.consumer_supplies = vbatt_supplies,
 };
 
 static struct fixed_voltage_config vbatt_config = {
-	.init_data = (struct regulator_init_data *) &vbatt_initdata,
+	.init_data = &vbatt_initdata,
 	.microvolts = 1800000,
 	.supply_name = "VBATT",
 	.gpio = -EINVAL,
@@ -96,7 +96,7 @@ static struct regulator_init_data wm1811_ldo1_initdata = {
 		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
 	},
 	.num_consumer_supplies = ARRAY_SIZE(wm1811_ldo1_supplies),
-	.consumer_supplies = (struct regulator_consumer_supply *) wm1811_ldo1_supplies,
+	.consumer_supplies = wm1811_ldo1_supplies,
 };
 
 static struct regulator_consumer_supply wm1811_ldo2_supplies[] = {
@@ -109,7 +109,7 @@ static struct regulator_init_data wm1811_ldo2_initdata = {
 		.always_on = true,  /* Actually status changed by LDO1 */
 	},
 	.num_consumer_supplies = ARRAY_SIZE(wm1811_ldo2_supplies),
-	.consumer_supplies = (struct regulator_consumer_supply *) wm1811_ldo2_supplies,
+	.consumer_supplies = wm1811_ldo2_supplies,
 };
 
 static struct wm8994_pdata wm1811_pdata = {
@@ -127,10 +127,10 @@ static struct wm8994_pdata wm1811_pdata = {
 
 	.ldo = {
 		{
-			.init_data = (struct regulator_init_data *) &wm1811_ldo1_initdata,
+			.init_data = &wm1811_ldo1_initdata,
 		},
 		{
-			.init_data = (struct regulator_init_data *) &wm1811_ldo2_initdata,
+			.init_data = &wm1811_ldo2_initdata,
 		}
 	},
 
@@ -212,17 +212,17 @@ static struct regulator_consumer_supply espresso_vusim_supply[] = {
 
 static struct regulator_init_data espresso_vusim = {
 	.constraints = {
-			.min_uV = 3300000,
-			.max_uV = 3300000,
-			.apply_uV = true,
-			.valid_modes_mask = REGULATOR_MODE_NORMAL
-					  | REGULATOR_MODE_STANDBY,
-			.valid_ops_mask = REGULATOR_CHANGE_MODE
-					| REGULATOR_CHANGE_STATUS,
-			.state_mem = {
-				.enabled = true,
-			},
-			.always_on = true,
+                .min_uV = 3300000,
+                .max_uV = 3300000,
+                .apply_uV = true,
+                .valid_modes_mask = REGULATOR_MODE_NORMAL
+                                    | REGULATOR_MODE_STANDBY,
+                .valid_ops_mask     = REGULATOR_CHANGE_MODE
+                                    | REGULATOR_CHANGE_STATUS,
+                .state_mem = {
+                        .enabled = true,
+                },
+                .always_on = true,
 	},
 	.num_consumer_supplies	= ARRAY_SIZE(espresso_vusim_supply),
 	.consumer_supplies	= espresso_vusim_supply,

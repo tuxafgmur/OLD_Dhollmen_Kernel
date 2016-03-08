@@ -261,18 +261,7 @@ const struct clkops clkops_omap2_dflt = {
  */
 void omap2_clk_disable(struct clk *clk)
 {
-	/* Sometimes, it fails to enable dss interface clock,
-	 * due to usecount mismatch, and it causes l3 bus error
-	 * because kernel tries to access dss register without interface clock.
-	 * Until fix the issue, adds below log to debug.
-	 */
-	if (!strncmp(clk->name, "dss_fck", 7))
-		pr_info("%s: dss interface clock usecount = %d\n",
-						__func__, clk->usecount);
-
 	if (clk->usecount == 0) {
-		WARN(1, "clock: %s: omap2_clk_disable() called, but usecount "
-		     "already 0?", clk->name);
 		return;
 	}
 
@@ -321,8 +310,6 @@ int omap2_clk_enable(struct clk *clk)
 	if (clk->parent) {
 		ret = omap2_clk_enable(clk->parent);
 		if (ret) {
-			WARN(1, "clock: %s: could not enable parent %s: %d\n",
-			     clk->name, clk->parent->name, ret);
 			goto oce_err1;
 		}
 	}
@@ -330,8 +317,6 @@ int omap2_clk_enable(struct clk *clk)
 	if (clk->clkdm) {
 		ret = clkdm_clk_enable(clk->clkdm, clk);
 		if (ret) {
-			WARN(1, "clock: %s: could not enable clockdomain %s: "
-			     "%d\n", clk->name, clk->clkdm->name, ret);
 			goto oce_err2;
 		}
 	}
@@ -340,7 +325,6 @@ int omap2_clk_enable(struct clk *clk)
 		trace_clock_enable(clk->name, 1, smp_processor_id());
 		ret = clk->ops->enable(clk);
 		if (ret) {
-			WARN(1, "clock: %s: could not enable: %d\n", clk->name, ret);
 			goto oce_err3;
 		}
 	}
@@ -492,8 +476,6 @@ int __init omap2_clk_switch_mpurate_at_boot(const char *mpurate_ck_name)
 
 	r = clk_set_rate(mpurate_ck, mpurate);
 	if (IS_ERR_VALUE(r)) {
-		WARN(1, "clock: %s: unable to set MPU rate to %d: %d\n",
-		     mpurate_ck->name, mpurate, r);
 		return -EINVAL;
 	}
 
