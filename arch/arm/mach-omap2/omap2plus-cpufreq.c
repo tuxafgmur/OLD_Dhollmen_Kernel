@@ -51,13 +51,10 @@
 #include "dvfs.h"
 #include "prcm44xx.h"
 
-#ifdef CONFIG_OMAP4430_TOP_GPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 #include <linux/syscalls.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
-#endif
-
-#ifdef CONFIG_OMAP4_VOLTAGE_LEVEL
 #include "smartreflex.h"
 #endif
 
@@ -293,7 +290,7 @@ void omap_cpufreq_max_limit_free(unsigned int nId)
 }
 #endif
 
-#ifdef CONFIG_OMAP4430_TOP_GPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 static int gpu_top_speed;
 #endif
 
@@ -808,7 +805,7 @@ struct freq_attr omap_cpufreq_attr_screen_off_freq = {
 	.store = store_screen_off_freq,
 };
 
-#ifdef CONFIG_OMAP4430_TOP_GPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 
 typedef unsigned long mm_segment_t;
 
@@ -892,7 +889,7 @@ static struct freq_attr omap_cpufreq_attr_gpu_top_speed = {
 
 #endif
 
-#ifdef CONFIG_OMAP4_VOLTAGE_LEVEL
+#ifdef CONFIG_OMAP4430_TOP_PERF
 /*
  * Each opp needs to have a discrete entry in both volt data and  dependent volt
  * data (opp4xxx_data.c). Make a new voltage entry for each opp.
@@ -987,19 +984,14 @@ static ssize_t store_voltage_table(struct cpufreq_policy *policy,
 			buf += (strlen(size_cur)+1);
 
 			// Force smartreflex to recalibrate based on new voltages
-#ifdef CONFIG_OMAP4430_TOP_CPU
-			if (freq_table[i].frequency <= 1216000 &&
-#else
-			if (freq_table[i].frequency <= 1008000 &&
-#endif
-				freq_table[i].frequency >= policymin) {
+			if (freq_table[i].frequency <= 1216000 && freq_table[i].frequency >= policymin) {
 				vdata = omap_voltage_get_curr_vdata(mpu_voltdm);
 				if (!vdata) {
 				  pr_err("%s: unable to find current voltage for vdd_%s\n", __func__, mpu_voltdm->name);
 				} else {
 				  if (volt_old > mpu_voltdm->curr_volt->volt_nominal) {
 				    omap_sr_disable(mpu_voltdm);
-       			    ret = omap_device_scale(mpu_dev, mpu_dev, freq_table[i].frequency);
+                                    ret = omap_device_scale(mpu_dev, mpu_dev, freq_table[i].frequency);
 				    omap_voltage_calib_reset(mpu_voltdm);
 				    voltdm_reset(mpu_voltdm);
 				    omap_sr_enable(mpu_voltdm, vdata);
@@ -1007,7 +999,7 @@ static ssize_t store_voltage_table(struct cpufreq_policy *policy,
 					mpu_voltdm->name, policy->cur);
 				  } else
 				    pr_info("nominal voltage too high, bailing!\n");
-				}
+                                }
 			}
 		}
 		else {
@@ -1024,16 +1016,14 @@ static struct freq_attr omap_voltage_table = {
 	.show = show_voltage_table,
 	.store = store_voltage_table,
 };
-#endif	/* CONFIG_OMAP4_VOLTAGE_LEVEL */
+#endif	/* CONFIG_OMAP4430_TOP_PERF */
 
 static struct freq_attr *omap_cpufreq_attr[] = {
 	&cpufreq_freq_attr_scaling_available_freqs,
 	&omap_cpufreq_attr_screen_off_freq,
-#ifdef CONFIG_OMAP4430_TOP_GPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 	&omap_cpufreq_attr_gpu_top_speed,
 	&gpu_clock,
-#endif
-#ifdef CONFIG_OMAP4_VOLTAGE_LEVEL
 	&omap_voltage_table,
 #endif
 	NULL,
@@ -1089,7 +1079,7 @@ static int __init omap_cpufreq_init(void)
 {
 	int ret;
 
-#ifdef CONFIG_OMAP4430_TOP_GPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 	gpu_top_speed = 1;
 #endif
 

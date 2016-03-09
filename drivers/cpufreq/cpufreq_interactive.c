@@ -74,7 +74,7 @@ static u64 hispeed_freq;
 
 /* Go to hi speed when CPU load at or above this value. */
 
-#ifdef CONFIG_OMAP4430_TOP_CPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 #define DEFAULT_GO_HISPEED_LOAD 85
 #else
 #define DEFAULT_GO_HISPEED_LOAD 95
@@ -88,7 +88,7 @@ static unsigned long screen_off_differential;
 /*
  * The minimum amount of time to spend at a frequency before we can ramp down.
  */
-#ifdef CONFIG_OMAP4430_TOP_CPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 #define DEFAULT_MIN_SAMPLE_TIME (30 * USEC_PER_MSEC)
 #else
 #define DEFAULT_MIN_SAMPLE_TIME (80 * USEC_PER_MSEC)

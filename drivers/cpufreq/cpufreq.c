@@ -33,7 +33,7 @@
 
 #include <trace/events/power.h>
 
-#ifdef CONFIG_OMAP4430_TOP_CPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
 #define BootSpeed 1216000
 #else
 #define BootSpeed 1008000

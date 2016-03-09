@@ -188,7 +188,7 @@ static ssize_t clock_store(struct device *dev, struct device_attribute *attr,
                 || _data == 600000
                 || _data == 800000
                 || _data == 1008000
-#ifdef CONFIG_OMAP4430_TOP_CPU
+#ifdef CONFIG_OMAP4430_TOP_PERF
                 || _data == 1216000
                 || _data == 1360000
                 || _data == 1420000

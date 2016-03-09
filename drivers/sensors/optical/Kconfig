@@ -1,10 +1,12 @@
 config OPTICAL_BH1721
          tristate "Rohm bh1721 Optical Sensor"
          depends on I2C
+         default n
 
 config OPTICAL_AL3201
-         tristate "Rohm bh1721 Optical Sensor"
+         tristate "Rohm al3201 Optical Sensor"
          depends on I2C
+         default n
 
 config OPTICAL_GP2AP020A00F
 	depends on I2C
